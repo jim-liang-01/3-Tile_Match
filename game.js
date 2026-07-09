@@ -2706,7 +2706,7 @@ function renderLeaderboard() {
         let avatarSrc = player.playerAvatar || 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Animal';
         if (avatarSrc.startsWith('emoji:')) {
             const emoji = avatarSrc.substring(6);
-            avatarSrc = getEmojiSvgDataUrl(emoji);
+            avatarSrc = getPixelArtDataUrlFromEmoji(emoji);
         }
 
         const row = document.createElement('div');
@@ -2762,9 +2762,56 @@ async function changeAvatar(animalId) {
 }
 
 function getEmojiSvgDataUrl(emoji) {
-    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" rx="50" fill="#fff5f7"/><text y="75" x="12" font-size="70">${emoji}</text></svg>`;
+    // 🚀 UX & 視覺優化：採用精確的 text-anchor 居中對齊，並將字級擴大至 82px，
+    // 同時使用 system-ui 字型家族，確保在 Safari, Chrome 都能渲染出超大、高清、完美的向量圓形萌寵頭像！
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" rx="50" fill="#fff5f7"/><text x="50" y="80" text-anchor="middle" font-size="82" font-family="system-ui, -apple-system, sans-serif">${emoji}</text></svg>`;
     const base64 = btoa(unescape(encodeURIComponent(svgString)));
     return `data:image/svg+xml;base64,${base64}`;
+}
+
+function getPixelArtDataUrlFromEmoji(emoji) {
+    const animal = TILE_TEMPLATES.find(t => t.emoji === emoji);
+    if (!animal) {
+        // 如果沒找到對應的像素模板，降級使用高清 Emoji 向量圖
+        return getEmojiSvgDataUrl(emoji);
+    }
+    
+    // 1. 建立一個 16x16 像素的迷你畫布，用來精準繪製 1-to-1 原始像素
+    const pixelCanvas = document.createElement('canvas');
+    pixelCanvas.width = 16;
+    pixelCanvas.height = 16;
+    const pCtx = pixelCanvas.getContext('2d');
+    
+    for (let r = 0; r < 16; r++) {
+        for (let c = 0; c < 16; c++) {
+            const char = animal.grid[r][c];
+            if (char !== '.' && PALETTE[char]) {
+                pCtx.fillStyle = PALETTE[char];
+                pCtx.fillRect(c, r, 1, 1);
+            }
+        }
+    }
+    
+    // 2. 建立 128x128 高解析度頭像畫布，繪製粉色圓形底色
+    const mainCanvas = document.createElement('canvas');
+    mainCanvas.width = 128;
+    mainCanvas.height = 128;
+    const ctx = mainCanvas.getContext('2d');
+    
+    ctx.fillStyle = '#fff5f7';
+    ctx.beginPath();
+    ctx.arc(64, 64, 64, 0, Math.PI * 2); // 圓形底
+    ctx.fill();
+    
+    // 3. 🛡️ 關閉平滑縮放（Nearest-Neighbor Scaling），保證 16x16 像素無失真、鋸齒分明、銳利呈現！
+    ctx.imageSmoothingEnabled = false;
+    ctx.msImageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    
+    // 留下 16px 邊界，將 16x16 放大至 96x96 像素
+    ctx.drawImage(pixelCanvas, 0, 0, 16, 16, 16, 16, 96, 96);
+    
+    return mainCanvas.toDataURL('image/png');
 }
 
 function updateAvatarUI(avatarStr) {
@@ -2773,7 +2820,8 @@ function updateAvatarUI(avatarStr) {
     
     if (avatarStr.startsWith('emoji:')) {
         const emoji = avatarStr.substring(6);
-        avatarEl.src = getEmojiSvgDataUrl(emoji);
+        // 🚀 頂級視覺更新：直接渲染為手繪像素風頭像！
+        avatarEl.src = getPixelArtDataUrlFromEmoji(emoji);
     } else {
         avatarEl.src = avatarStr;
     }

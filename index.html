@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可愛動物森林：每日限定堆疊消 (Cute Animal Forest)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Pixel-style and custom fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Global JS Error Interceptor -->
+    <script>
+        window.addEventListener('error', function(e) {
+            const errBox = document.getElementById('debug-err-box') || document.createElement('div');
+            errBox.id = 'debug-err-box';
+            errBox.style = 'position: fixed; top: 0; left: 0; right: 0; background: #fee2e2; color: #991b1b; padding: 12px; font-family: monospace; font-size: 11px; border-bottom: 2px solid #ef4444; z-index: 9999; overflow-y: auto; max-height: 160px; text-align: left;';
+            errBox.innerHTML = '<strong>🐞 偵測到 JavaScript 錯誤（請回報此資訊）：</strong><br>' + e.message + '<br>檔案: ' + e.filename + '<br>行號: ' + e.lineno + '，列號: ' + e.colno;
+            document.body.appendChild(errBox);
+        });
+    </script>
+
+    <!-- Firebase SDK (Compat Version for simple global imports) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-[#fcf8f2] text-[#4a3e3d] min-h-screen flex flex-col items-center justify-between font-sans selection:bg-pink-300 selection:text-pink-900 overflow-x-hidden">
+
+    <!-- 🌲 Instant-Render Retro Loading Splash Screen (z-[300] to cover everything instantly on slow networks) -->
+    <div id="app-splash" style="position: fixed; inset: 0; background-color: #fcf8f2; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; transition: opacity 0.4s ease;">
+        <div style="font-size: 70px; margin-bottom: 20px; animation: bounce-splash 1.2s infinite; select-none: none;">🐼</div>
+        <div style="font-size: 16px; font-weight: 900; color: #ff8fa3; margin-bottom: 8px; letter-spacing: 1px;">正在進入萌寵森林...</div>
+        <div style="font-size: 10px; color: #94a3b8; font-weight: bold; animation: pulse-splash 1.5s infinite;">正在同步森林魔法組態，請稍候 🚍</div>
+        <style>
+            @keyframes bounce-splash {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-15px); }
+            }
+            @keyframes pulse-splash {
+                0%, 100% { opacity: 0.5; }
+                50% { opacity: 1; }
+            }
+        </style>
+    </div>
+
+    <!-- Header Section (Restart button removed) -->
+    <header class="w-full max-w-4xl px-4 py-3 flex justify-between items-center border-b-4 border-[#e9decb] bg-[#fffbf4] mt-2 rounded-t-2xl shadow-md">
+        <div class="flex items-center gap-3">
+            <span class="text-3xl animate-bounce">🐼</span>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-[#ff8fa3] tracking-wider font-pixel shadow-sm">可愛動物森林</h1>
+                <p class="text-xs text-gray-500 font-bold" id="header-subtitle">每日限定挑戰 • 像素堆疊消</p>
+            </div>
+        </div>
+        
+        <!-- User Authentication Area -->
+        <div id="user-profile" class="hidden items-center gap-2">
+            <div class="flex flex-col items-end leading-none">
+                <span id="user-name" class="text-xs font-black text-gray-700 truncate max-w-[100px]">遊客</span>
+                <span id="user-stats" class="text-[9px] text-pink-400 font-bold mt-0.5 cursor-help" title="正在載入戰績...">🏆 0勝/0敗 (0%)</span>
+            </div>
+            <img id="user-avatar" class="w-8 h-8 rounded-full border-2 border-pink-300 bg-pink-100" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Panda" alt="Avatar">
+            <button id="btn-logout" class="flex items-center gap-1 px-2 py-1 hover:bg-red-50 hover:text-red-500 hover:border-red-200 text-gray-500 rounded-lg text-[10px] font-black tracking-tight transition-all border border-gray-200 active:scale-95" title="登出">
+                <span>🚪</span>
+                <span>登出</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="w-full max-w-4xl px-2 py-4 flex-1 flex flex-col md:flex-row gap-4 items-stretch relative">
+        
+        <!-- Left Side: Game Board (Stack Field) -->
+        <div class="flex-1 bg-[#fffdf9] rounded-2xl border-4 border-[#e9decb] relative flex flex-col justify-between overflow-hidden shadow-lg min-h-[460px] md:min-h-[580px]">
+            
+            <!-- Game Status / Level Info -->
+            <div class="px-3 py-2.5 bg-[#fef7ed] flex flex-wrap gap-2 justify-between items-center text-xs border-b-4 border-[#e9decb]">
+                <div class="flex items-center gap-2">
+                    <span id="level-badge" class="px-2.5 py-1 bg-[#ffb3c1] text-[#a11d33] font-black rounded-full shadow-sm text-[10.5px]">載入中...</span>
+                    <span id="tile-ratio" class="text-gray-600 font-bold text-[11px]">剩餘: 0 / 0</span>
+                </div>
+                
+                <!-- Ticket & Hearts Gauge in Top Status Bar -->
+                <div class="flex items-center gap-2 bg-white px-2.5 py-1 rounded-full border border-[#e9decb] shadow-sm">
+                    <span class="text-[10px] text-gray-500 font-black" id="lbl-tickets-left">🎫 x3</span>
+                    <span id="ticket-visual-hearts" class="text-xs select-none">❤️ ❤️ ❤️</span>
+                </div>
+                
+                <div class="flex gap-2 text-gray-500 font-bold text-[11px]">
+                    <span>種類: <strong id="info-types" class="text-pink-500">?</strong></span>
+                    <span>層數: <strong id="info-layers" class="text-blue-400">?</strong></span>
+                </div>
+            </div>
+
+            <!-- Stacking Canvas / Field Container (Height adjusted to h-[480px] md:h-[500px] to prevent occlusion) -->
+            <div id="game-field" class="h-[480px] md:h-[500px] relative w-full overflow-hidden flex items-center justify-center p-2">
+                <div id="stack-container" style="width: 500px; height: 400px;" class="relative mx-auto transition-transform duration-300 flex-shrink-0">
+                    <!-- Dynamic Layer Cards go here -->
+                </div>
+            </div>
+
+            <!-- Matching Slots Bar (7 slots) (Optimized flex slots alignment) -->
+            <div class="bg-[#fdfbf7] p-4 border-t-4 border-[#e9decb] flex flex-col items-center">
+                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2 flex justify-between w-full max-w-[450px] px-1">
+                    <span>🐾 小動物巴士 (最多乘坐 7 隻)</span>
+                    <span id="slot-count-text" class="text-pink-500 font-bold">0 / 7</span>
+                </div>
+                <div class="relative w-full max-w-[450px] h-[78px] bg-[#f5efe6] rounded-xl border-2 border-[#d5c7b3] flex items-center p-2 shadow-inner">
+                    <div id="slots-container" class="relative z-10 w-full h-full flex items-center justify-between gap-1">
+                        <!-- Clicked tiles fly in here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Skill Items Bar -->
+            <div class="px-4 py-3 bg-[#fefdfa] border-t-2 border-[#e9decb] flex justify-center gap-3 md:gap-4 select-none">
+                <button id="skill-undo" class="flex-1 max-w-[120px] py-1.5 px-2 bg-[#ffe5ec] hover:bg-[#ffccd5] border-b-4 border-[#ff8fa3] active:border-b-0 active:mt-1 rounded-xl flex flex-col items-center transition-all disabled:opacity-40 disabled:pointer-events-none relative group text-pink-700">
+                    <span class="text-xl">↩️</span>
+                    <span class="text-[10px] font-black">時光倒流</span>
+                    <span id="count-undo" class="absolute -top-1.5 -right-1.5 bg-[#ff4d6d] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow">1</span>
+                </button>
+                <button id="skill-out3" class="flex-1 max-w-[120px] py-1.5 px-2 bg-[#e8f5e9] hover:bg-[#c8e6c9] border-b-4 border-[#81c784] active:border-b-0 active:mt-1 rounded-xl flex flex-col items-center transition-all disabled:opacity-40 disabled:pointer-events-none relative group text-green-700">
+                    <span class="text-xl">📤</span>
+                    <span class="text-[10px] font-black">移出巴士</span>
+                    <span id="count-out3" class="absolute -top-1.5 -right-1.5 bg-[#4caf50] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow">1</span>
+                </button>
+                <button id="skill-shuffle" class="flex-1 max-w-[120px] py-1.5 px-2 bg-[#e3f2fd] hover:bg-[#bbdefb] border-[#64b5f6] border-b-4 active:border-b-0 active:mt-1 rounded-xl flex flex-col items-center transition-all disabled:opacity-40 disabled:pointer-events-none relative group text-blue-700">
+                    <span class="text-xl">🔀</span>
+                    <span class="text-[10px] font-black">森林派對</span>
+                    <span id="count-shuffle" class="absolute -top-1.5 -right-1.5 bg-[#2196f3] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow">1</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Side: Sidebar Panel (Contains Animal Codex only) -->
+        <div class="w-full md:w-80 flex flex-col">
+            <div class="bg-[#fffdf9] p-4 rounded-2xl border-4 border-[#e9decb] shadow-md flex-1 flex flex-col">
+                <div class="p-3 bg-[#ffe5ec]/50 border border-[#ffccd5] rounded-xl flex flex-col gap-1.5 mb-3 shadow-inner">
+                    <div class="flex justify-between text-xs font-black text-[#5c4a49]">
+                        <span>🏁 每日探險關卡</span>
+                        <span id="lbl-level-num" class="text-pink-500 font-pixel text-[10px]">1 / 5</span>
+                    </div>
+                    <div class="w-full h-3 bg-white rounded-full overflow-hidden p-0.5 border border-[#ffccd5]">
+                        <div id="bar-level-progress" class="h-full bg-[#ff8fa3] rounded-full transition-all duration-500" style="width: 33.3%;"></div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Tabs: Codex vs Leaderboard -->
+                <div class="flex border-b-2 border-[#f5efe6] pb-1 gap-1 select-none">
+                    <button id="tab-codex" class="flex-1 pb-1.5 text-xs font-black text-[#ff8fa3] border-b-2 border-[#ff8fa3] tracking-wider transition-all focus:outline-none">
+                        📖 萌友圖鑑
+                    </button>
+                    <button id="tab-leaderboard" class="flex-1 pb-1.5 text-xs font-black text-gray-400 border-b-2 border-transparent tracking-wider hover:text-pink-400 transition-all focus:outline-none">
+                        🏆 森林英雄榜
+                    </button>
+                </div>
+
+                <!-- Codex Panel -->
+                <div id="panel-codex" class="flex-1 overflow-y-auto max-h-[340px] md:max-h-[420px] mt-2 space-y-2 pr-1">
+                    <div id="codex-container">
+                        <!-- Codex entries -->
+                    </div>
+                </div>
+
+                <!-- Leaderboard Panel -->
+                <div id="panel-leaderboard" class="flex-1 overflow-y-auto max-h-[340px] md:max-h-[420px] mt-2 flex flex-col pr-1 hidden">
+                    <!-- Leaderboard Type Tabs -->
+                    <div class="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200 mb-2 text-[10px] font-black select-none">
+                        <button id="tab-leaderboard-daily" class="flex-1 py-1 rounded bg-white text-gray-700 shadow-sm transition-all focus:outline-none">每日</button>
+                        <button id="tab-leaderboard-weekly" class="flex-1 py-1 rounded text-gray-500 hover:text-gray-700 transition-all focus:outline-none">每週</button>
+                        <button id="tab-leaderboard-monthly" class="flex-1 py-1 rounded text-gray-500 hover:text-gray-700 transition-all focus:outline-none">每月</button>
+                    </div>
+                    <!-- Leaderboard Container -->
+                    <div id="leaderboard-container" class="flex-1 space-y-1.5 overflow-y-auto pr-0.5">
+                        <!-- Leaderboard entries -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Out-of-slot storage -->
+    <div id="out3-storage" class="w-full max-w-4xl px-4 py-2 bg-[#fffdf9] border-2 border-dashed border-[#ffb3c1] rounded-2xl mb-4 hidden animate-fade-in flex-col items-center">
+        <div class="text-[10px] text-gray-500 font-bold mb-1 flex justify-between w-full max-w-[300px]">
+            <span>🌿 臨時草地圍欄 (點選小動物可返回巴士)</span>
+            <span class="text-pink-500 font-bold" id="out3-count-text">0 / 3</span>
+        </div>
+        <div class="flex gap-2 p-2 bg-[#f4fbf4] rounded-xl border border-green-200 min-h-[70px] min-w-[200px] justify-center items-center" id="out3-container"></div>
+    </div>
+
+    <!-- MODAL OVERLAYS (Direct children of body, positioned FIXED at z-[100] to cover everything) -->
+
+    <!-- Firebase Login Wall Overlay (z-[100]) -->
+    <div id="login-overlay" class="fixed inset-0 bg-[#fcf8f2]/95 backdrop-blur-md z-[100] flex flex-col items-center justify-start md:justify-center overflow-y-auto p-4 py-10 md:p-6 text-center animate-fade-in">
+        <div class="bg-white p-8 rounded-2xl border-4 border-[#ffb3c1] max-w-sm w-full shadow-2xl relative overflow-hidden my-auto">
+            <div class="absolute top-0 inset-x-0 h-3 bg-[#ffb3c1]"></div>
+            <span class="text-6xl mb-4 block animate-bounce">🏕️</span>
+            <h2 class="text-xl font-black text-gray-700 font-pixel mb-1 text-[#ff8fa3]">歡迎光臨萌寵森林</h2>
+            <p class="text-xs text-gray-500 mb-6 font-bold leading-relaxed">這是一個每日限定挑戰！所有玩家每天都將面對相同的獨刻關卡，請登入以扣除每日乘車券並統計您的戰績！</p>
+            
+            <div class="space-y-2.5">
+                <button id="btn-login-google" class="w-full py-2.5 bg-[#4285f4] hover:bg-[#357ae8] text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 border-b-4 border-[#1a56cc] active:border-b-0 active:mt-1 transition-all shadow-md">
+                    <span class="text-base">🌐</span> 使用 Google 快速登入
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game No-More-Tickets Overlay (z-[100]) -->
+    <div id="ticket-overlay" class="fixed inset-0 bg-[#fcf8f2]/95 backdrop-blur-md z-[100] flex flex-col items-center justify-start md:justify-center overflow-y-auto p-4 py-10 md:p-6 text-center animate-fade-in hidden">
+        <div class="bg-white p-8 rounded-2xl border-4 border-[#ffb3c1] max-w-sm w-full shadow-2xl relative my-auto">
+            <span class="text-6xl mb-4 block animate-bounce">🚌</span>
+            <h2 class="text-xl font-black text-gray-700 font-pixel mb-1 text-[#ff8fa3]">今天乘車券已用完</h2>
+            <p class="text-xs text-gray-500 mb-6 font-bold leading-relaxed">
+                真遺憾！今天巴士的所有座位都滿載囉！每位玩家每天限定玩 <strong class="text-pink-500">3</strong> 局，明天的全新森林派對將在午夜重新開啟！
+            </p>
+            <div class="p-3 bg-[#fef7ed] border border-[#e9decb] rounded-xl text-[10px] text-left text-gray-500 font-bold space-y-1 mb-4">
+                <div>📅 今天的日期: <span id="info-ticket-date" class="text-pink-500">2026-06-26</span></div>
+                <div>🎫 剩餘乘車券: <span class="text-red-500">0 / 3 張</span></div>
+            </div>
+            <p class="text-[10px] text-gray-400 font-bold">💡 明天會更換全新配置的所有 3 大關卡哦！</p>
+            
+            <button id="btn-close-ticket" class="mt-4 w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-xs rounded-xl border-b-4 border-gray-300 active:border-b-0 active:mt-1 transition-all shadow-sm">
+                留在森林隨意逛逛 🌲
+            </button>
+        </div>
+    </div>
+    
+    <!-- Victory/Defeat Overlay Screen (z-[100]) -->
+    <div id="game-overlay" class="fixed inset-0 bg-[#fcf8f2]/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-start md:justify-center overflow-y-auto p-4 py-10 md:p-6 text-center animate-fade-in hidden">
+        <div class="bg-white p-8 rounded-2xl border-4 border-[#ffb3c1] max-w-md w-full shadow-2xl relative overflow-hidden my-auto">
+            <div class="absolute top-0 inset-x-0 h-3 bg-[#ffb3c1]"></div>
+            
+            <div id="overlay-icon" class="text-6xl mb-4 animate-bounce">🎉</div>
+            <h2 id="overlay-title" class="text-2xl font-black text-[#ff8fa3] mb-2 font-pixel">森林派對大成功！</h2>
+            <p id="overlay-subtitle" class="text-gray-600 mb-6 text-sm font-bold">你成功送所有小動物回家啦！</p>
+            
+            <!-- Overlay Level Stats -->
+            <div id="overlay-stats" class="bg-[#fef7ed] p-4 rounded-xl mb-6 text-xs text-left space-y-2 border-2 border-[#e9decb] text-[#5c4a49]"></div>
+
+            <div class="flex flex-col gap-2">
+                <button id="btn-overlay-action" class="w-full py-3 bg-[#ff8fa3] hover:bg-[#ffb3c1] text-white font-black text-base border-b-4 border-[#ff4d6d] active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md">
+                    進入下一關 🐾
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 bg-[#fffbf4] text-center text-[10px] text-gray-400 border-t-4 border-[#e9decb] mt-auto shadow-inner relative z-[110]">
+        <p class="font-pixel">🐾 可愛動物森林 © 2026 | 完美像素風美學</p>
+        <p class="mt-1 font-semibold text-gray-400">極致治癒的每日限定堆疊消 • 相同種子相同關卡</p>
+        
+        <!-- Discreet Debug Mode Toggle in Footer -->
+        <div class="absolute right-4 bottom-3 flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
+            <input type="checkbox" id="debug-mode" class="h-3 w-3 rounded accent-pink-400">
+            <label for="debug-mode" class="text-[9px] font-bold text-gray-400 select-none">🐞 除錯模式</label>
+        </div>
+    </footer>
+
+    <!-- Audio and Particle rendering system -->
+    <canvas id="particles-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <!-- JS Files 
+         BUG FIX: 將 config.js（Firebase 連線設定檔）放在 game.js 之前載入！
+         這能從架構上徹底保證「代碼與組態分離」。您在 config.js 中填寫的 Firebase Credentials
+         在將來的任何遊戲引擎升級時，都絕對不會被我的 write_file 覆蓋！完美安全！) -->
+    <script src="config.js"></script>
+    <script src="game.js?v=1.0.1"></script>
+</body>
+</html>

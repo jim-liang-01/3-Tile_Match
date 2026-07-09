@@ -1,0 +1,207 @@
+/* 像素風與遊戲核心樣式 */
+
+/* Noto Sans TC or fallback */
+body {
+    font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Pixel Font for titles and values */
+.font-pixel {
+    font-family: 'Press Start 2P', 'Noto Sans TC', cursive, sans-serif;
+}
+
+/* Animations */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-bounce {
+    animation: bounce 1.2s infinite;
+}
+
+.animate-fade-in {
+    animation: fade-in 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #fdfbf7;
+}
+::-webkit-scrollbar-thumb {
+    background: #e9decb;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #ffb3c1;
+}
+
+/* Custom Tile Style */
+.game-tile {
+    box-sizing: border-box; /* BUG FIX: Ensure width/height includes border */
+    position: absolute;
+    width: 58px;
+    height: 70px;
+    border-radius: 8px;
+    background: #fffdf9;
+    border: 3px solid #3d302d;
+    box-shadow: 0 4px 0 #d5c7b3, inset 0 2px 0 #ffffff;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.15s ease, filter 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Overlapping Tile - Softly Darkened State */
+.game-tile.is-locked {
+    filter: brightness(0.65) saturate(0.7);
+    box-shadow: 0 4px 0 #baa693, inset 0 2px 0 #dddddd;
+    cursor: not-allowed;
+}
+
+/* Normal Hover state (when not locked) */
+.game-tile:not(.is-locked):hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 0 #d5c7b3, inset 0 2px 0 #ffffff;
+    filter: brightness(1.05);
+    background: #ffffff;
+}
+
+/* Active pressed state */
+.game-tile:not(.is-locked):active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #3d302d, inset 0 1px 0 #ffffff;
+}
+
+/* Mini Tile inside Slots and out3-storage */
+.mini-tile {
+    width: 48px;
+    height: 58px;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 2px solid #3d302d;
+    box-shadow: 0 2px 0 #e9decb, inset 0 1px 0 #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mini-tile:hover {
+    transform: scale(1.05);
+}
+
+/* Styling of custom range input sliders */
+input[type="range"]::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: #f1c40f;
+    border: 2px solid #111;
+    box-shadow: 0 2px 0 #95a5a6;
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+    background: #f39c12;
+}
+
+/* Grid Layout container styling */
+#stack-container {
+    perspective: 800px;
+}
+
+/* Shadow effect under stacks */
+.stack-shadow {
+    position: absolute;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.15);
+    border: 2px dashed rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+}
+
+/* Floating animation for active powerups indicators */
+.glow-pulse {
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(241, 196, 15, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(241, 196, 15, 0.8);
+    }
+}
+
+/* Shake animation for Shuffling effect */
+.animate-shake {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+}
+
+@keyframes shake {
+    10%, 90% {
+        transform: translate3d(-2px, 0, 0);
+    }
+    20%, 80% {
+        transform: translate3d(4px, 0, 0);
+    }
+    30%, 50%, 70% {
+        transform: translate3d(-6px, 0, 0);
+    }
+    40%, 60% {
+        transform: translate3d(6px, 0, 0);
+    }
+}
+
+/* Codex locked and shiny styling */
+.locked-grayscale {
+    filter: grayscale(100%) opacity(50%);
+    background-color: #f3f3f3 !important;
+    border-color: #dcd6c5 !important;
+    cursor: not-allowed;
+    pointer-events: none; /* 徹底停用任何點擊與游標反應 */
+}
+
+.shiny-border {
+    position: relative;
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6), inset 0 0 4px rgba(255, 215, 0, 0.4);
+    animation: shiny-glow 1.5s infinite alternate;
+}
+
+@keyframes shiny-glow {
+    0% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.4), inset 0 0 2px rgba(255, 215, 0, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 12px rgba(255, 215, 0, 0.9), inset 0 0 6px rgba(255, 215, 0, 0.6);
+    }
+}
+

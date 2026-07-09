@@ -1694,12 +1694,6 @@ async function syncDailyTickets() {
 }
 
 async function consumeTicket() {
-    const isDebugMode = document.getElementById('debug-mode') && document.getElementById('debug-mode').checked;
-    if (isDebugMode) {
-        console.log("🐞 [除錯開發模式] 免費開啟關卡，不消耗乘車券！");
-        return true;
-    }
-
     if (dailyTicketsLeft <= 0) {
         showTicketOverlay();
         return false;
@@ -1948,36 +1942,12 @@ function setupEventListeners() {
         }
     });
 
-    const toggle = document.getElementById('debug-mode');
-    if (toggle) {
-        toggle.addEventListener('change', (e) => {
-            syncDebugCheckboxes(e.target.checked);
-        });
-    }
-
     const btnCloseTicket = document.getElementById('btn-close-ticket');
     if (btnCloseTicket) {
         btnCloseTicket.addEventListener('click', () => {
             Sound.playClick();
             hideTicketOverlay();
         });
-    }
-}
-
-function syncDebugCheckboxes(checked) {
-    const el = document.getElementById('debug-mode');
-    if (el) el.checked = checked;
-    
-    if (checked) {
-        hideTicketOverlay();
-        if (dailyTicketsLeft <= 0) {
-            dailyTicketsLeft = 3;
-            updateTicketsUI();
-        }
-        console.log("🐞 [除錯開發模式] 已啟用：正在為您重新開始本關...");
-        startGame(true);
-    } else {
-        renderField();
     }
 }
 
@@ -2072,7 +2042,6 @@ function renderField() {
     evaluateTileOverlaps();
     
     const sortedTiles = [...GameState.tiles].sort((a, b) => a.layer - b.layer);
-    const isDebugMode = document.getElementById('debug-mode') && document.getElementById('debug-mode').checked;
     
     sortedTiles.forEach(tile => {
         const el = document.createElement('div');
@@ -2094,18 +2063,6 @@ function renderField() {
         const nameText = el.appendChild(document.createElement('span'));
         nameText.className = "text-[9px] text-[#5c4a49] font-black tracking-tighter leading-none pointer-events-none select-none mt-0.5";
         nameText.innerText = tile.template.name.substring(3);
-        
-        if (isDebugMode) {
-            el.style.outline = "2px solid " + (tile.isLocked ? "#ef4444" : "#22c55e");
-            const debugPanel = document.createElement('div');
-            debugPanel.className = "absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-white font-mono font-bold leading-none p-1 text-center";
-            debugPanel.style.fontSize = '8px';
-            debugPanel.style.backgroundColor = tile.isLocked ? "rgba(239, 68, 68, 0.45)" : "rgba(34, 197, 94, 0.45)";
-            debugPanel.style.borderRadius = "5px";
-            debugPanel.style.textShadow = "1px 1px 0 black";
-            debugPanel.innerHTML = `L:${tile.layer}<br>X:${Math.round(tile.x)}<br>Y:${Math.round(tile.y)}`;
-            el.appendChild(debugPanel);
-        }
         
         el.addEventListener('click', (e) => handleTileClick(tile, e));
         container.appendChild(el);
@@ -2156,7 +2113,7 @@ async function handleTileClick(tile, event) {
     });
 }
 
-// 18. 卡牌飛入動畫
+// 18. 卡牌飛入動畫 (採用 CSS translate3d + scale 進行 GPU 硬體加速，徹底解決手機端卡頓 Reflow 痛點！)
 function animateTileFly(fromRect, targetSlotIdx, tile, onComplete) {
     const slotsContainer = document.getElementById('slots-container');
     const targetSlotEl = slotsContainer.children[targetSlotIdx];
@@ -2171,6 +2128,8 @@ function animateTileFly(fromRect, targetSlotIdx, tile, onComplete) {
     flyEl.style.borderWidth = '2px';
     flyEl.style.borderColor = '#2b1f1d';
     flyEl.style.boxShadow = '0 3px 0 #e9decb';
+    flyEl.style.transform = 'translate3d(0, 0, 0)';
+    flyEl.style.transformOrigin = 'top left';
     
     const canvas = document.createElement('canvas');
     canvas.width = 36;
@@ -2180,15 +2139,14 @@ function animateTileFly(fromRect, targetSlotIdx, tile, onComplete) {
     document.body.appendChild(flyEl);
     drawTileCanvas(canvas, tile.template);
     
-    const targetX = targetRect.left;
-    const targetY = targetRect.top;
+    const deltaX = targetRect.left - fromRect.left;
+    const deltaY = targetRect.top - fromRect.top;
+    const scaleX = targetRect.width / fromRect.width;
+    const scaleY = targetRect.height / fromRect.height;
     
-    flyEl.style.transition = "all 0.22s cubic-bezier(0.215, 0.610, 0.355, 1)";
+    flyEl.style.transition = "transform 0.22s cubic-bezier(0.215, 0.610, 0.355, 1)";
     flyEl.clientHeight; // reflow
-    flyEl.style.left = `${targetX}px`;
-    flyEl.style.top = `${targetY}px`;
-    flyEl.style.width = `${targetRect.width}px`;
-    flyEl.style.height = `${targetRect.height}px`;
+    flyEl.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
     
     flyEl.addEventListener('transitionend', () => {
         flyEl.remove();

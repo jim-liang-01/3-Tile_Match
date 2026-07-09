@@ -107,8 +107,8 @@
                     <span>🐾 小動物巴士 (最多乘坐 7 隻)</span>
                     <span id="slot-count-text" class="text-pink-500 font-bold">0 / 7</span>
                 </div>
-                <div class="relative w-full max-w-[450px] h-[78px] bg-[#f5efe6] rounded-xl border-2 border-[#d5c7b3] flex items-center p-2 shadow-inner">
-                    <div id="slots-container" class="relative z-10 w-full h-full flex items-center justify-between gap-1">
+                <div class="relative w-full max-w-[450px] min-h-[78px] h-auto bg-[#f5efe6] rounded-xl border-2 border-[#d5c7b3] flex items-center p-2 shadow-inner">
+                    <div id="slots-container" class="relative z-10 w-full h-full flex flex-wrap items-center justify-center gap-1 md:gap-1.5 py-1">
                         <!-- Clicked tiles fly in here -->
                     </div>
                 </div>
@@ -252,12 +252,6 @@
     <footer class="w-full py-4 bg-[#fffbf4] text-center text-[10px] text-gray-400 border-t-4 border-[#e9decb] mt-auto shadow-inner relative z-[110]">
         <p class="font-pixel">🐾 可愛動物森林 © 2026 | 完美像素風美學</p>
         <p class="mt-1 font-semibold text-gray-400">極致治癒的每日限定堆疊消 • 相同種子相同關卡</p>
-        
-        <!-- Discreet Debug Mode Toggle in Footer -->
-        <div class="absolute right-4 bottom-3 flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
-            <input type="checkbox" id="debug-mode" class="h-3 w-3 rounded accent-pink-400">
-            <label for="debug-mode" class="text-[9px] font-bold text-gray-400 select-none">🐞 除錯模式</label>
-        </div>
     </footer>
 
     <!-- Audio and Particle rendering system -->

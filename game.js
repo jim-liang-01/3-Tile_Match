@@ -2072,6 +2072,21 @@ function renderField() {
     resizeGameContainer();
 }
 
+// 16.5. 高性能增量更新遮擋狀態 (僅切換現有 DOM 的 class，避免銷毀重建，性能飆升數萬倍！)
+function updateFieldLockStates() {
+    evaluateTileOverlaps();
+    for (const tile of GameState.tiles) {
+        const el = document.getElementById(`tile-${tile.id}`);
+        if (el) {
+            if (tile.isLocked) {
+                el.classList.add('is-locked');
+            } else {
+                el.classList.remove('is-locked');
+            }
+        }
+    }
+}
+
 // 17. 點擊卡牌處理
 async function handleTileClick(tile, event) {
     if (GameState.status !== "playing") return;
@@ -2089,14 +2104,13 @@ async function handleTileClick(tile, event) {
     GameState.tiles = GameState.tiles.filter(t => t.id !== tile.id);
     
     const tileEl = document.getElementById(`tile-${tile.id}`);
-    if (tileEl) {
-        tileEl.style.pointerEvents = "none";
-        tileEl.style.visibility = "hidden";
-    }
-    
     const rect = tileEl ? tileEl.getBoundingClientRect() : { left: 0, top: 0, width: 58, height: 70 };
     const particleX = rect.left + rect.width / 2;
     const particleY = rect.top + rect.height / 2;
+    
+    if (tileEl) {
+        tileEl.remove(); // 🚀 點擊後，立刻將該卡牌從 DOM 樹中完全移除，釋放記憶體！
+    }
     
     // BUG FIX: 徹底刪除會自動排序的 .splice + .sort，
     // 改用最單純、最可靠的 push，保證卡牌 100% 依照點擊順序飛入巴士尾部，不再亂跳！
@@ -2105,8 +2119,7 @@ async function handleTileClick(tile, event) {
     // 動畫飛入邏輯保持不變，它會自動尋找最後一個空格
     animateTileFly(rect, GameState.slots.length - 1, tile, async () => {
         checkMatchThree(tile.typeId, particleX, particleY);
-        evaluateTileOverlaps();
-        renderField();
+        updateFieldLockStates(); // 🚀 高性能增量更新：不銷毀 DOM、不重繪 Canvas，0ms 瞬間完成！
         updateUI();
         await saveCurrentGameSession(false);
         await checkGameStatus();

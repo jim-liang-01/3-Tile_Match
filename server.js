@@ -636,8 +636,8 @@ app.post('/api/save-session', verifyFirebaseToken, async (req, res) => {
                 }
             }
             
-            // C. 安全重溫校驗：驗證新增加的這幾步是否合法！
-            const verification = validateMovesLog(dateStr, dailyLevelIndex, clientMoves, midGameState.status || 'playing');
+            // C. 安全重溫校驗：驗證新增加的這幾步是否合法，並進行道具數量原子守恆判定！
+            const verification = validateMovesLog(dateStr, dailyLevelIndex, clientMoves, midGameState.status || 'playing', midGameState.skills);
             if (!verification.success) {
                 return res.status(400).json({ error: `中途存檔步驟校驗失敗：${verification.error}` });
             }
@@ -1187,7 +1187,7 @@ function distributeTilesToLayers(total, layersCount) {
     return dist;
 }
 
-function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult) {
+function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, clientSkills = null) {
     const curLevel = LEVELS[currentLevelIndex];
     if (!curLevel) return { success: false, error: "無效的關卡索引" };
 
@@ -1388,6 +1388,17 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult) {
 
     if (simResult !== finalResult) {
         return { success: false, error: `模擬結果為 ${simResult}，但上報結果為 ${finalResult}！` };
+    }
+
+    // 🔒 道具/技能數量守恆原子校驗：確保客戶端上報的存檔中剩餘技能數，絕對沒有非法「無中生有」地增加！
+    if (clientSkills) {
+        const u = clientSkills.undo !== undefined ? clientSkills.undo : 1;
+        const o = clientSkills.out3 !== undefined ? clientSkills.out3 : 1;
+        const s = clientSkills.shuffle !== undefined ? clientSkills.shuffle : 1;
+        
+        if (u > simSkills.undo || o > simSkills.out3 || s > simSkills.shuffle) {
+            return { success: false, error: `檢測到道具數量非法溢出或竄改！重播推導剩餘: (↩️:${simSkills.undo}, 📤:${simSkills.out3}, 🔄:${simSkills.shuffle})，但上報存檔為: (↩️:${u}, 📤:${o}, 🔄:${s})` };
+        }
     }
 
     return { success: true };

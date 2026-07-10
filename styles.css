@@ -1,5 +1,20 @@
 /* 像素風與遊戲核心樣式 */
 
+/* ⚡ 強制開啟 GPU 硬體加速，徹底解決初始與移動卡頓 */
+#stack-container {
+    /* 觸發瀏覽器建立獨立圖層 */
+    will-change: transform;
+    /* 避免因抗鋸齒邊緣導致的頻繁重繪 */
+    backface-visibility: hidden;
+    /* 確保觸發 GPU 渲染路徑 */
+    transform: translateZ(0);
+}
+
+.game-tile {
+    /* 確保卡牌在移動時也使用 GPU 加速 */
+    will-change: transform;
+}
+
 /* Noto Sans TC or fallback */
 body {
     font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;

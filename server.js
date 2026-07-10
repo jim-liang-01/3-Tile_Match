@@ -549,12 +549,32 @@ app.get('/api/sync-daily-session/:dateStr', verifyFirebaseToken, async (req, res
         }
         
         // 🚀 高效優化：如果雲端的 midGameState 為空，直接由後端主動進行初始化，回傳完整的初始殘局快照！
-        if (!dailySession.midGameState && dailySession.dailyLevelIndex < LEVELS.length) {
-            dailySession.midGameState = getInitialMidGameState(dateStr, dailySession.dailyLevelIndex);
+        // if (!dailySession.midGameState && dailySession.dailyLevelIndex < LEVELS.length) {
+        //     dailySession.midGameState = getInitialMidGameState(dateStr, dailySession.dailyLevelIndex);
+        // }
+
+        let outOfTickets = false;
+
+        if (!dailySession.midGameState) {
+            if (dailySession.ticketsUsed >= 3) {
+                dailySession.tiles = [];
+                outOfTickets = true;
+                console.log(`🛡️ [安全防護] 玩家 ${uid} 票券已耗盡且無進行中牌局，已強制銷毀後端回傳內容。`);
+            } else if (dailySession.dailyLevelIndex < LEVELS.length) {
+                dailySession.midGameState = getInitialMidGameState(dateStr, dailySession.dailyLevelIndex);
+            }
         }
         
         // 🚀 高效優化：直接在後端依據當前關卡 dailyLevelIndex 產生確定性佈局並伴隨同步狀態一次性下發！
-        dailySession.tiles = generateLevelLayout(dateStr, dailySession.dailyLevelIndex);
+        if (!outOfTickets) {
+            dailySession.tiles = generateLevelLayout(dateStr, dailySession.dailyLevelIndex);
+        }
+        
+        // 🛡️ [安全防護] 若票券已耗盡且沒有進行中的牌局，則強制銷毀回傳內容，徹底杜絕無票恢復！
+        // if (dailySession.ticketsUsed >= 3 && !dailySession.midGameState) {
+        //     dailySession.tiles = [];
+        //     console.log(`🛡️ [安全防護] 玩家 ${uid} 票券已耗盡且無進行中牌局，已強制銷毀後端回傳內容。`);
+        // }
         
         return res.json({ success: true, dailySession });
     } catch (e) {

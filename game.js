@@ -1508,7 +1508,7 @@ async function restoreMidGameState(state, preloadedTiles = null) {
     updateUI();
     
     // 更新關卡指示器與徽章 UI，避免還原高關卡時 UI 顯示為第一關
-    loadLevelWithoutRestart(GameState.currentLevelIndex);
+    loadLevelWithoutRestart(GameState.currentLevelIndex, true); // 👈 確保傳入 true
     const badge = document.getElementById('level-badge');
     if (badge) badge.innerText = curLevel.badge;
     
@@ -1709,25 +1709,34 @@ async function syncDailyTickets() {
         return;
     }
     
-    if (dailyTicketsLeft <= 0 && GameState.currentLevelIndex === 0 && GameState.status !== "victory") {
-        showTicketOverlay();
-    } else {
+    // 🛡️ [狀態優先] 
+    console.log("🔍 [Debug] syncDailyTickets state:", {
+        midGameState: dailySession.midGameState,
+        ticketsLeft: dailyTicketsLeft
+    });
+
+    if (dailySession.midGameState !== null && dailySession.midGameState !== undefined) {
+        // 有存檔：直接恢復，強制隱藏票券不足 UI
+        console.log("📂 [牌局恢復] 恢復今日未完結之牌局進度：第 " + (GameState.currentLevelIndex + 1) + " 關");
         hideTicketOverlay();
-        loadLevelWithoutRestart(GameState.currentLevelIndex);
-        
-        // 恢復今日中途之牌局
-        if (dailySession.midGameState) {
-            console.log("📂 [牌局恢復] 恢復今日未完結之牌局進度：第 " + (GameState.currentLevelIndex + 1) + " 關");
-            restoreMidGameState(dailySession.midGameState, dailySession.tiles);
-        } else {
-            startGame(true, dailySession.tiles);
-        }
+        restoreMidGameState(dailySession.midGameState, dailySession.tiles);
+    } else if (dailyTicketsLeft <= 0) {
+        // 無存檔且無票：徹底封鎖
+        console.log("🚫 [無票局] 無存檔且無票，顯示封鎖畫面。");
+        loadLevelWithoutRestart(GameState.currentLevelIndex, false);
+        showTicketOverlay(true);
+    } else {
+        // 有票且無存檔：正常開始
+        console.log("✅ [新牌局] 有票且無存檔，開始新遊戲。");
+        hideTicketOverlay();
+        loadLevelWithoutRestart(GameState.currentLevelIndex, false);
+        startGame(true, dailySession.tiles);
     }
 }
 
 async function consumeTicket() {
     if (dailyTicketsLeft <= 0) {
-        showTicketOverlay();
+        showTicketOverlay(true);
         return false;
     }
     
@@ -1775,9 +1784,15 @@ function updateTicketsUI() {
     }
 }
 
-function showTicketOverlay() {
-    document.getElementById('ticket-overlay').classList.remove('hidden');
+function showTicketOverlay(canClose = true) {
+    const overlay = document.getElementById('ticket-overlay');
+    overlay.classList.remove('hidden');
     document.getElementById('info-ticket-date').innerText = getTodayString();
+    
+    const btnClose = document.getElementById('btn-close-ticket');
+    if (btnClose) {
+        btnClose.style.display = canClose ? 'block' : 'none';
+    }
 }
 
 function hideTicketOverlay() {
@@ -1785,7 +1800,8 @@ function hideTicketOverlay() {
     if (overlay) overlay.classList.add('hidden');
 }
 
-function loadLevelWithoutRestart(levelIdx) {
+function loadLevelWithoutRestart(levelIdx, suppressDepletionUI = false) {
+    console.log(`🔍 [Debug] loadLevelWithoutRestart: levelIdx=${levelIdx}, suppressDepletionUI=${suppressDepletionUI}, ticketsLeft=${dailyTicketsLeft}`);
     GameState.currentLevelIndex = Math.min(LEVELS.length - 1, Math.max(0, levelIdx));
     
     const progressPercent = ((GameState.currentLevelIndex + 1) / LEVELS.length) * 100;
@@ -1794,6 +1810,25 @@ function loadLevelWithoutRestart(levelIdx) {
     
     const lbl = document.getElementById('lbl-level-num');
     if (lbl) lbl.innerText = `${GameState.currentLevelIndex + 1} / ${LEVELS.length}`;
+    
+    // 🛡️ [防禦性 UI] 若無票券，且未設定隱藏提示，強制清空並顯示提示
+    if (dailyTicketsLeft <= 0 && !suppressDepletionUI) {
+        console.log("🚫 [Debug] loadLevelWithoutRestart: Showing depletion UI");
+        const stackContainer = document.getElementById('stack-container');
+        if (stackContainer) {
+            stackContainer.innerHTML = `
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-[#fffdf9] rounded-2xl select-none animate-fade-in z-50">
+                    <span class="text-6xl mb-4">🖤</span>
+                    <h2 class="text-lg font-black text-gray-500 font-pixel mb-3">今日乘車券已用盡</h2>
+                    <p class="text-xs text-gray-400 font-bold leading-relaxed">
+                        明天的乘車券將在午夜重新發放，請明天再來挑戰吧！🐾
+                    </p>
+                </div>
+            `;
+        }
+    } else {
+        console.log("✅ [Debug] loadLevelWithoutRestart: NOT showing depletion UI");
+    }
 }
 
 function drawTileCanvas(canvas, template) {
@@ -1970,7 +2005,25 @@ function setupEventListeners() {
                 startGame(false);
             }
         } else {
-            startGame(false);
+            // 檢查票券後再決定是否開始
+            if (dailyTicketsLeft <= 0) {
+                // 若無票券，清空場景並強制渲染票券不足提示
+                document.getElementById('stack-container').innerHTML = "";
+                document.getElementById('slots-container').innerHTML = "";
+                document.getElementById('out3-storage').classList.add('hidden');
+                document.getElementById('out3-container').innerHTML = "";
+                
+                // 必須重新呼叫一次以觸發防禦性 UI 渲染
+                loadLevelWithoutRestart(GameState.currentLevelIndex, false);
+                showTicketOverlay(true);
+            } else {
+                // 有票，重置畫面以便開始新局
+                document.getElementById('stack-container').innerHTML = "";
+                document.getElementById('slots-container').innerHTML = "";
+                document.getElementById('out3-storage').classList.add('hidden');
+                document.getElementById('out3-container').innerHTML = "";
+                startGame(false);
+            }
         }
     });
 
@@ -2013,6 +2066,13 @@ function setupAuthEvents() {
 async function startGame(isContinuing = false, preloadedTiles = null) {
     if (!currentUser) {
         document.getElementById('login-overlay').classList.remove('hidden');
+        return;
+    }
+
+    // 🔒 嚴格安全檢查：不允許無票開始新局
+    if (!isContinuing && dailyTicketsLeft <= 0) {
+        console.warn("🚫 [安全封鎖] 票券不足，拒絕開始新局。");
+        showTicketOverlay();
         return;
     }
 
@@ -2351,11 +2411,13 @@ async function endGame(result) {
         }
     } else {
         Sound.playLose();
-        if (subtitle) subtitle.innerText = "好遺憾！小巴座位已塞滿。重試將扣除 1 張今日乘車券（剩餘 " + dailyTicketsLeft + " 張）";
+        if (subtitle) subtitle.innerText = dailyTicketsLeft > 0 
+            ? "好遺憾！小巴座位已塞滿。重試將扣除 1 張今日乘車券（剩餘 " + dailyTicketsLeft + " 張）"
+            : "好遺憾！小巴座位已塞滿，且今日乘車券已耗盡。";
         if (actionBtn) {
-            actionBtn.innerText = dailyTicketsLeft > 0 ? "重新挑戰 🔄" : "票券不足 🖤";
-            actionBtn.disabled = dailyTicketsLeft <= 0;
-            actionBtn.className = "w-full py-3 bg-blue-400 hover:bg-blue-300 disabled:bg-gray-300 disabled:border-gray-400 text-white font-black text-base border-b-4 border-blue-600 disabled:border-b-0 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md";
+            actionBtn.innerText = dailyTicketsLeft > 0 ? "重新挑戰 🔄" : "知道了 (返回) 🐾";
+            actionBtn.disabled = false; // 永遠允許返回主畫面，不管有沒有票
+            actionBtn.className = "w-full py-3 bg-blue-400 hover:bg-blue-300 text-white font-black text-base border-b-4 border-blue-600 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md";
         }
     }
 }

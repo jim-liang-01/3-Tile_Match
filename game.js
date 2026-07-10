@@ -1162,20 +1162,35 @@ function preRenderTiles() {
 }
 
 // ==========================================
-// 🚀 8. 遊戲載入與生命週期管理
+// 🚀 8. 遊戲載入與生命週期管理 (分段優化版)
 // ==========================================
 function initAll() {
-    console.log("🌲 萌寵森林啟動：正在初始化引擎...");
+    console.log("🌲 萌寵森林啟動：開始階段載入...");
     initFirebase();
-    preRenderTiles(); // 👈 執行快取預渲染
-    Particles.init();
-    renderCodex();
-    setupEventListeners();
+    
+    // 1. 立即優先處理關鍵資源：卡牌快取 (渲染遊戲必須)
+    preRenderTiles();
+    
+    // 2. 立即初始化 Firebase 監聽與事件 (保證遊戲互動性)
     setupAuthEvents();
     setupFirebaseListeners();
+    setupEventListeners();
+
+    // 3. 使用 requestIdleCallback (或 setTimeout) 推遲非關鍵、高耗能任務
+    const deferLoad = window.requestIdleCallback || ((cb) => setTimeout(cb, 100));
+    
+    deferLoad(() => {
+        console.log("🌲 萌寵森林啟動：後台載入非關鍵組件...");
+        Particles.init();
+        renderCodex();
+        resizeGameContainer();
+    });
+
     window.addEventListener('resize', () => {
         resizeGameContainer();
     });
+    
+    // 確保容器尺寸被計算
     setTimeout(resizeGameContainer, 10);
 }
 

@@ -1145,12 +1145,29 @@ let shinyCodex = [];
 let currentAvatarId = -1;
 let pendingRewards = [];
 
+// Global cache for pre-rendered tiles
+const tileCache = {};
+
+// Pre-render all tiles into canvases
+function preRenderTiles() {
+    console.log("🎨 正在預先渲染卡牌快取...");
+    TILE_TEMPLATES.forEach(template => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 48;
+        canvas.height = 48;
+        drawTileCanvas(canvas, template);
+        tileCache[template.id] = canvas;
+    });
+    console.log("✅ 卡牌快取渲染完成。");
+}
+
 // ==========================================
 // 🚀 8. 遊戲載入與生命週期管理
 // ==========================================
 function initAll() {
     console.log("🌲 萌寵森林啟動：正在初始化引擎...");
     initFirebase();
+    preRenderTiles(); // 👈 執行快取預渲染
     Particles.init();
     renderCodex();
     setupEventListeners();
@@ -2032,6 +2049,16 @@ function evaluateTileOverlaps() {
     }
 }
 
+// Optimized cached drawing
+function drawCachedTile(canvas, tileId) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const cachedCanvas = tileCache[tileId];
+    if (cachedCanvas) {
+        ctx.drawImage(cachedCanvas, 0, 0, canvas.width, canvas.height);
+    }
+}
+
 // 16. 渲染卡牌到畫面上 (絕對坐標 + translate 居中錨定)
 function renderField() {
     const container = document.getElementById('stack-container');
@@ -2066,7 +2093,7 @@ function renderField() {
         
         el.addEventListener('click', (e) => handleTileClick(tile, e));
         container.appendChild(el);
-        drawTileCanvas(canvas, tile.template);
+        drawCachedTile(canvas, tile.template.id);
     });
     
     resizeGameContainer();
@@ -2150,7 +2177,7 @@ function animateTileFly(fromRect, targetSlotIdx, tile, onComplete) {
     flyEl.appendChild(canvas);
     
     document.body.appendChild(flyEl);
-    drawTileCanvas(canvas, tile.template);
+    drawCachedTile(canvas, tile.template.id);
     
     const deltaX = targetRect.left - fromRect.left;
     const deltaY = targetRect.top - fromRect.top;
@@ -2405,7 +2432,7 @@ function renderSlots() {
             canvas.height = 44;
             canvas.className = "w-[85%] h-auto aspect-square p-0.5 pointer-events-none";
             slotEl.appendChild(canvas);
-            drawTileCanvas(canvas, tile.template);
+            drawCachedTile(canvas, tile.template.id);
         } else {
             slotEl.className = "flex-1 max-w-[50px] aspect-[5/6] h-[58px] border-2 border-dashed border-[#d5c7b3] rounded-lg bg-white/40 flex-shrink-1";
         }
@@ -2456,7 +2483,7 @@ function renderOut3Storage() {
                 await checkGameStatus();
             });
             container.appendChild(el);
-            drawTileCanvas(canvas, tile.template);
+            drawCachedTile(canvas, tile.template.id);
         });
     } else {
         section.classList.add('hidden');

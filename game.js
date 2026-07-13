@@ -2695,99 +2695,14 @@ async function loadLeaderboardData() {
                 fetchedMonthly = monthlyRes.leaderboard;
             }
         } catch (e) {
-            console.warn("載入每月排行失敗，將使用本地模擬：", e.message);
+            console.warn("載入每月排行失敗：", e.message);
         }
     }
 
-    // 處理每日排行榜
-    if (fetchedDaily && fetchedDaily.length > 0) {
-        leaderboardCache.daily = fetchedDaily;
-    } else {
-        // 本地模擬每日排行榜數據
-        const uName = currentUser ? (currentUser.displayName || "冒險者") : "離線冒險者";
-        const uAvatar = currentUser ? (currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${currentUser.uid || 'Offline'}`) : "https://api.dicebear.com/7.x/pixel-art/svg?seed=Offline";
-        
-        const todayWins = Math.min(3, dailySession.dailyLevelIndex || 0);
-        const todayLosses = Math.max(0, (dailySession.ticketsUsed || 0) - todayWins);
-        const todayGames = todayWins + todayLosses;
-        const todayRate = todayGames > 0 ? todayWins / todayGames : 0;
-
-        const list = [];
-
-        if (todayGames > 0) {
-            list.push({
-                uid: currentUser ? currentUser.uid : "local_player",
-                playerName: uName + " (您)",
-                wins: todayWins,
-                totalGames: todayGames,
-                winRate: todayRate,
-                playerAvatar: uAvatar,
-                isSelf: true
-            });
-        }
-
-        leaderboardCache.daily = list;
-    }
-
-    // 處理每週排行榜
-    if (fetchedWeekly && fetchedWeekly.length > 0) {
-        leaderboardCache.weekly = fetchedWeekly;
-    } else {
-        // 本地模擬每週排行榜數據
-        const uName = currentUser ? (currentUser.displayName || "冒險者") : "離線冒險者";
-        const uAvatar = currentUser ? (currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${currentUser.uid || 'Offline'}`) : "https://api.dicebear.com/7.x/pixel-art/svg?seed=Offline";
-        
-        const weekWins = Math.min(playerStats.wins || 0, 15);
-        const weekLosses = Math.min(playerStats.losses || 0, 10);
-        const weekGames = weekWins + weekLosses;
-        const weekRate = weekGames > 0 ? weekWins / weekGames : 0;
-
-        const list = [];
-
-        if (weekGames > 0) {
-            list.push({
-                uid: currentUser ? currentUser.uid : "local_player",
-                playerName: uName + " (您)",
-                wins: weekWins,
-                totalGames: weekGames,
-                winRate: weekRate,
-                playerAvatar: uAvatar,
-                isSelf: true
-            });
-        }
-
-        leaderboardCache.weekly = list;
-    }
-
-    // 處理每月排行榜
-    if (fetchedMonthly && fetchedMonthly.length > 0) {
-        leaderboardCache.monthly = fetchedMonthly;
-    } else {
-        // 本地模擬每月排行榜數據
-        const uName = currentUser ? (currentUser.displayName || "冒險者") : "離線冒險者";
-        const uAvatar = currentUser ? (currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${currentUser.uid || 'Offline'}`) : "https://api.dicebear.com/7.x/pixel-art/svg?seed=Offline";
-        
-        const monthWins = playerStats.wins || 0;
-        const monthLosses = playerStats.losses || 0;
-        const monthGames = monthWins + monthLosses;
-        const monthRate = monthGames > 0 ? monthWins / monthGames : 0;
-
-        const list = [];
-
-        if (monthGames > 0) {
-            list.push({
-                uid: currentUser ? currentUser.uid : "local_player",
-                playerName: uName + " (您)",
-                wins: monthWins,
-                totalGames: monthGames,
-                winRate: monthRate,
-                playerAvatar: uAvatar,
-                isSelf: true
-            });
-        }
-
-        leaderboardCache.monthly = list;
-    }
+    // 🚀 頂級優化：排行榜若無伺服器真實數據，則直接呈現乾淨、真實的空狀態 []，不再顯示多餘的本地模擬模擬數據！
+    leaderboardCache.daily = fetchedDaily || [];
+    leaderboardCache.weekly = fetchedWeekly || [];
+    leaderboardCache.monthly = fetchedMonthly || [];
 
     renderLeaderboard();
 }

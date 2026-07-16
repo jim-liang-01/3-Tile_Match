@@ -351,9 +351,9 @@ app.get('/api/load-profile', verifyFirebaseToken, async (req, res) => {
             maxLevelReached: 0
         };
         
-                let unlockedCodex = []; // 一開始無解鎖
+                let unlockedCodex = [0]; // 預設解鎖 ID=0 的圓形鑽石寶石！
         let shinyCodex = [];
-        let currentAvatarId = -1;
+        let currentAvatarId = 0; // 新玩家預設設定 ID=0 (圓形鑽石) 的頭像！
         let pendingRewards = [];
         
         if (doc.exists) {
@@ -361,10 +361,23 @@ app.get('/api/load-profile', verifyFirebaseToken, async (req, res) => {
             if (data.stats) stats = data.stats;
             if (Array.isArray(data.unlockedCodex)) unlockedCodex = data.unlockedCodex;
             if (Array.isArray(data.shinyCodex)) shinyCodex = data.shinyCodex;
-            if (data.currentAvatarId !== undefined) currentAvatarId = data.currentAvatarId;
+            if (data.currentAvatarId !== undefined) {
+                currentAvatarId = data.currentAvatarId;
+            }
             if (Array.isArray(data.pendingRewards)) pendingRewards = data.pendingRewards;
+            
+            // 確保現有玩家也預設解鎖 ID=0 的鑽石
+            if (!unlockedCodex.includes(0)) {
+                unlockedCodex.push(0);
+                await userDocRef.set({ unlockedCodex }, { merge: true });
+            }
+            // 確保現有玩家如果沒有設定過頭像（值為 -1），也預設為 0 (圓形鑽石)
+            if (currentAvatarId === -1) {
+                currentAvatarId = 0;
+                await userDocRef.set({ currentAvatarId: 0 }, { merge: true });
+            }
         } else {
-            // 雲端無檔案時，初始化全新數據
+            // 雲端無檔案時，初始化全新數據（預設解鎖 ID=0 且預設頭像 ID=0）
             await userDocRef.set({
                 stats,
                 unlockedCodex,

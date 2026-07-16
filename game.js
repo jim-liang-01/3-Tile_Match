@@ -543,9 +543,9 @@ let leaderboardCache = {
     monthly: null
 };
 
-let unlockedCodex = [];
+let unlockedCodex = [0]; // 預設解鎖 ID=0 的圓形鑽石！
 let shinyCodex = [];
-let currentAvatarId = -1;
+let currentAvatarId = 0; // 新玩家預設設定 ID=0 (圓形鑽石) 的頭像！
 let pendingRewards = [];
 
 // Global cache for pre-rendered tiles
@@ -744,9 +744,15 @@ async function loadPlayerStats() {
                     playerStats = res.stats;
                     localStorage.setItem('player_stats', JSON.stringify(playerStats));
                 }
-                if (Array.isArray(res.unlockedCodex)) unlockedCodex = res.unlockedCodex;
+                if (Array.isArray(res.unlockedCodex)) {
+                    unlockedCodex = res.unlockedCodex;
+                    if (!unlockedCodex.includes(0)) unlockedCodex.push(0);
+                }
                 if (Array.isArray(res.shinyCodex)) shinyCodex = res.shinyCodex;
-                if (res.currentAvatarId !== undefined) currentAvatarId = res.currentAvatarId;
+                if (res.currentAvatarId !== undefined) {
+                    currentAvatarId = res.currentAvatarId;
+                    if (currentAvatarId === -1) currentAvatarId = 0;
+                }
                 if (Array.isArray(res.pendingRewards)) pendingRewards = res.pendingRewards;
                 
                 // 更新頭像 UI

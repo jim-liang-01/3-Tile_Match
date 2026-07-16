@@ -87,8 +87,13 @@ body {
     background: rgba(255, 255, 255, 0.82); /* 高透光亮白磨砂基底 */
     backdrop-filter: blur(4px); /* 磨砂玻璃濾鏡 */
     -webkit-backdrop-filter: blur(4px);
-    border: none;
-    box-shadow: 0 5px 12px rgba(61, 48, 45, 0.12), inset 0 2.5px 0 rgba(255, 255, 255, 0.95); /* 柔和磨砂陰影與內部高光 */
+    /* 💎 增加一圈立體微透明的香檳鑽石金絲邊框，增強光澤感 */
+    border: 2.25px solid rgba(243, 210, 145, 0.5) !important;
+    /* 柔和磨砂陰影、內部高光與極其細微的星能金黃外擴暈圈 */
+    box-shadow: 
+        0 5px 12px rgba(61, 48, 45, 0.1), 
+        inset 0 2px 0 rgba(255, 255, 255, 0.95),
+        0 0 5px rgba(243, 210, 145, 0.22); 
     cursor: pointer;
     user-select: none;
     filter: saturate(1.12); /* 🚀 視覺優化：動態增強 12% 飽和度，使晶瑩卡牌內的萌寵顏色極致鮮豔奪目！ */
@@ -103,6 +108,7 @@ body {
 .game-tile.is-locked {
     filter: brightness(0.68) saturate(0.72) contrast(0.9); /* 鎖定時去色與調暗 */
     background: rgba(230, 230, 230, 0.4);
+    border: 2.25px solid rgba(243, 210, 145, 0.18) !important; /* 鎖定時金絲邊框變暗 */
     box-shadow: 0 3px 8px rgba(61, 48, 45, 0.08), inset 0 1.5px 0 rgba(255, 255, 255, 0.4);
     cursor: not-allowed;
 }
@@ -111,7 +117,12 @@ body {
 .game-tile:not(.is-locked):hover {
     transform: translateY(-5px);
     background: rgba(255, 255, 255, 0.95); /* 懸停時高透亮白 */
-    box-shadow: 0 10px 20px rgba(255, 143, 163, 0.25), inset 0 2.5px 0 rgba(255, 255, 255, 0.98); /* 粉色霓虹果凍發光 */
+    border: 2.25px solid rgba(243, 210, 145, 0.85) !important; /* 懸停時金絲邊框發亮 */
+    /* 粉色霓虹果凍發光與更耀眼的黃金微光疊加 */
+    box-shadow: 
+        0 10px 20px rgba(255, 143, 163, 0.22), 
+        inset 0 2px 0 rgba(255, 255, 255, 0.98),
+        0 0 10px rgba(243, 210, 145, 0.55);
     filter: brightness(1.1) saturate(1.2); /* 懸停時大幅加強亮麗感 */
 }
 
@@ -140,7 +151,6 @@ body {
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
 }
 
 .mini-tile:hover {
@@ -236,3 +246,140 @@ input[type="range"]::-webkit-slider-thumb:active {
     }
 }
 
+/* 💎 聖域晶石殿堂符合寶石風格的奢華面板與背景 */
+.gemstone-panel {
+    background: linear-gradient(135deg, rgba(255, 253, 249, 0.94) 0%, rgba(255, 245, 247, 0.94) 100%) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 4px solid #f3d291 !important; /* 晶瑩香檳金邊框 */
+    box-shadow: 
+        0 10px 30px rgba(181, 148, 16, 0.08), 
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 4px 0 #dfb364 !important; /* 立體金屬底座厚度 */
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 頂部狀態欄也進行金箔與魔法粉晶點綴 */
+.gemstone-status-bar {
+    background: linear-gradient(90deg, #fef4e8 0%, #fff0f3 100%) !important;
+    border-bottom: 4px solid #e9decb !important;
+}
+
+/* 👑 奢華珠寶/晶石盒外襯 */
+.gem-box-outer {
+    background: linear-gradient(135deg, #2b1130 0%, #15051e 100%) !important; /* 暗夜紫羅蘭絨布與黑檀木漸層 */
+    border-top: 4px solid #dfb364 !important;
+    padding: 16px;
+    width: 100%;
+    box-shadow: inset 0 6px 16px rgba(0,0,0,0.65), 0 -2px 10px rgba(0,0,0,0.15);
+}
+
+/* 珠寶盒內襯金屬凹槽 (7槽托座) */
+.gem-box-inner {
+    background: linear-gradient(180deg, #0d0315 0%, #1c072b 100%) !important; /* 皇家紫絲絨底座 */
+    border: 3px solid #dfb364 !important; /* 奢華鍍金框線 */
+    box-shadow: 
+        inset 0 8px 20px rgba(0,0,0,0.9), 
+        0 2px 6px rgba(255,255,255,0.06);
+    border-radius: 14px;
+}
+
+/* 珠寶盒中的空凹槽托座 (Compartments) */
+.gem-box-slot-empty {
+    background: radial-gradient(circle, #210d34 20%, #08010f 100%) !important; /* 絲絨內陷凹槽 */
+    border: 2px solid rgba(223, 179, 100, 0.25) !important; /* 暗金色金屬環圈 */
+    box-shadow: 
+        inset 0 6px 10px rgba(0,0,0,0.95), 
+        0 1px 1px rgba(255,255,255,0.05);
+    border-radius: 10px;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 珠寶盒中置入寶石後的托座 (Filled Compartment) */
+.gem-box-slot-filled {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 243, 246, 0.95) 100%) !important;
+    border: 2px solid #dfb364 !important; /* 奢華鍍金邊緣 */
+    box-shadow: 
+        0 8px 16px rgba(0,0,0,0.4), 
+        inset 0 2px 0 rgba(255, 255, 255, 0.95),
+        0 3px 0 #b59410 !important; /* 立體厚度托座 */
+    border-radius: 10px;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 🌌 聖域深邃流星：主遊戲區藍黑星空背景設計 */
+#game-field {
+    background-color: #060a16 !important; /* 更為深邃迷人的深藍黑色 */
+    /* 1. 星空星雲核心暈光 2. 劃過天際的黃金璨亮流星與星軌星芒 SVG */
+    background-image: 
+        radial-gradient(circle at center, rgba(138, 75, 235, 0.24) 0%, rgba(6, 10, 22, 0.15) 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 800 600'%3E%3Cdefs%3E%3ClinearGradient id='shootingStar' x1='1' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='1'/%3E%3Cstop offset='30%25' stop-color='%23ffd700' stop-opacity='0.85'/%3E%3Cstop offset='100%25' stop-color='%23ffd700' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='600' fill='%23060a16'/%3E%3Ccircle cx='300' cy='200' r='400' fill='%2310152a' fill-opacity='0.7'/%3E%3Ccircle cx='600' cy='400' r='300' fill='%23170e28' fill-opacity='0.55'/%3E%3C!-- 聖域星空座標軌道 --%3E%3Ccircle cx='400' cy='300' r='200' fill='none' stroke='%234d6199' stroke-width='0.75' stroke-opacity='0.22' stroke-dasharray='4 8'/%3E%3Ccircle cx='400' cy='300' r='120' fill='none' stroke='%234d6199' stroke-width='0.5' stroke-opacity='0.18'/%3E%3C!-- 奢華手繪星軌星座 --%3E%3Cpath d='M150 150 L200 130 L280 180 L230 250 Z' fill='none' stroke='%238a9bc4' stroke-width='0.75' stroke-opacity='0.16'/%3E%3Cpath d='M650 180 L580 140 L500 190' fill='none' stroke='%238a9bc4' stroke-width='0.75' stroke-opacity='0.16'/%3E%3Cpath d='M200 450 L300 420 L350 480' fill='none' stroke='%238a9bc4' stroke-width='0.75' stroke-opacity='0.16'/%3E%3Cpath d='M600 420 L680 460 L580 490 Z' fill='none' stroke='%238a9bc4' stroke-width='0.75' stroke-opacity='0.16'/%3E%3C!-- 💫 劃過天際的流星 (Shooting Stars) --%3E%3Cpath d='M 660,60 L 510,210' stroke='url(%23shootingStar)' stroke-width='2.5' stroke-linecap='round' stroke-opacity='0.85'/%3E%3Cpath d='M 260,40 L 160,140' stroke='url(%23shootingStar)' stroke-width='1.75' stroke-linecap='round' stroke-opacity='0.78'/%3E%3Cpath d='M 740,260 L 640,360' stroke='url(%23shootingStar)' stroke-width='1.5' stroke-linecap='round' stroke-opacity='0.75'/%3E%3C!-- 閃爍黃金四芒星 --%3E%3Cg transform='translate(200, 130) scale(0.85)'%3E%3Cpath d='M0,-12 Q0,0 12,0 Q0,0 0,12 Q0,0 -12,0 Q0,0 0,-12 Z' fill='%23ffd700' fill-opacity='0.5'/%3E%3Ccircle cx='0' cy='0' r='1.5' fill='%23fff'/%3E%3C/g%3E%3Cg transform='translate(580, 140) scale(0.75)'%3E%3Cpath d='M0,-12 Q0,0 12,0 Q0,0 0,12 Q0,0 -12,0 Q0,0 0,-12 Z' fill='%23ffd700' fill-opacity='0.5'/%3E%3Ccircle cx='0' cy='0' r='1.5' fill='%23fff'/%3E%3C/g%3E%3Cg transform='translate(400, 480) scale(0.7)'%3E%3Cpath d='M0,-12 Q0,0 12,0 Q0,0 0,12 Q0,0 -12,0 Q0,0 0,-12 Z' fill='%23ffd700' fill-opacity='0.55'/%3E%3Ccircle cx='0' cy='0' r='1' fill='%23fff'/%3E%3C/g%3E%3C!-- 星座交點星點 --%3E%3Ccircle cx='150' cy='150' r='2' fill='%23fff' fill-opacity='0.75'/%3E%3Ccircle cx='280' cy='180' r='2' fill='%23fff' fill-opacity='0.65'/%3E%3Ccircle cx='230' cy='250' r='2.5' fill='%23ffd700' fill-opacity='0.75'/%3E%3Ccircle cx='650' cy='180' r='2' fill='%23fff' fill-opacity='0.75'/%3E%3Ccircle cx='500' cy='190' r='2' fill='%23ffd700' fill-opacity='0.65'/%3E%3Ccircle cx='200' cy='450' r='2' fill='%23fff' fill-opacity='0.75'/%3E%3Ccircle cx='350' cy='480' r='2' fill='%23fff' fill-opacity='0.65'/%3E%3Ccircle cx='600' cy='420' r='2.5' fill='%23ffd700' fill-opacity='0.75'/%3E%3Ccircle cx='680' cy='460' r='1.5' fill='%23fff' fill-opacity='0.75'/%3E%3Ccircle cx='580' cy='490' r='2' fill='%23fff' fill-opacity='0.65'/%3E%3C!-- 細緻星塵砂 --%3E%3Ccircle cx='100' cy='300' r='1' fill='%23fff' fill-opacity='0.5'/%3E%3Ccircle cx='250' cy='320' r='1' fill='%23fff' fill-opacity='0.6'/%3E%3Ccircle cx='380' cy='220' r='1' fill='%23fff' fill-opacity='0.5'/%3E%3Ccircle cx='480' cy='380' r='1' fill='%23ffd700' fill-opacity='0.6'/%3E%3Ccircle cx='550' cy='280' r='1' fill='%23fff' fill-opacity='0.55'/%3E%3Ccircle cx='700' cy='340' r='1' fill='%23fff' fill-opacity='0.6'/%3E%3C/svg%3E") !important;
+    background-size: cover !important;
+    background-position: center !important;
+    /* 移除多餘的外框與邊距，使其與主面板無縫、融為一體 */
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    /* 引入柔和的向內發光微陰影與立體外陰影，營造出高透晶石視窗的空靈質感 */
+    box-shadow: 
+        inset 0 4px 15px rgba(181, 148, 16, 0.08),
+        inset 0 -2px 8px rgba(0, 0, 0, 0.05),
+        0 2px 8px rgba(0, 0, 0, 0.12) !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* 🏰 右側圖鑑與排行專屬：粉晶神殿石柱與拱門背景面板 */
+.gemstone-sidebar-panel {
+    /* 🚀 提高大理石與拱門的明亮對比度，並改用稍微溫潤高貴的香檳金沙粉晶背景（不再是死板板的純白），使大理石神柱與黃金拱門細節極致醒目！ */
+    background-image: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 320 600'%3E%3Cdefs%3E%3ClinearGradient id='gold' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23b59410' stop-opacity='0.4'/%3E%3Cstop offset='50%25' stop-color='%23f3d291' stop-opacity='0.65'/%3E%3Cstop offset='100%25' stop-color='%23b59410' stop-opacity='0.4'/%3E%3C/linearGradient%3E%3ClinearGradient id='pillar' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23f5e1cc' stop-opacity='0.95'/%3E%3Cstop offset='50%25' stop-color='%23ebd0bd' stop-opacity='0.98'/%3E%3Cstop offset='100%25' stop-color='%23ddb5ad' stop-opacity='0.95'/%3E%3C/linearGradient%3E%3C/defs%3E%3C!-- 頂部拱門 --%3E%3Cpath d='M 15,600 L 12,120 Q 160,20 308,120 L 305,600' fill='none' stroke='%23dfb364' stroke-width='2' stroke-opacity='0.45'/%3E%3Cpath d='M 22,600 L 20,130 Q 160,35 300,130 L 298,600' fill='none' stroke='%23dfb364' stroke-width='1' stroke-opacity='0.3' stroke-dasharray='8 4'/%3E%3C!-- 左神柱 --%3E%3Crect x='6' y='110' width='16' height='490' fill='url(%23pillar)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.35'/%3E%3Cline x1='11' y1='115' x2='11' y2='595' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.25'/%3E%3Cline x1='17' y1='115' x2='17' y2='595' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.25'/%3E%3Crect x='3' y='100' width='22' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.4'/%3E%3Crect x='4' y='590' width='20' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.4'/%3E%3C!-- 右神柱 --%3E%3Crect x='298' y='110' width='16' height='490' fill='url(%23pillar)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.35'/%3E%3Cline x1='303' y1='115' x2='303' y2='595' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.25'/%3E%3Cline x1='309' y1='115' x2='309' y2='595' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.25'/%3E%3Crect x='295' y='100' width='22' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.4'/%3E%3Crect x='296' y='590' width='20' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.4'/%3E%3C!-- 中央神聖晶石浮雕 --%3E%3Cg transform='translate(160, 240) scale(1.1)' opacity='0.16'%3E%3Cpolygon points='0,-30 25,0 0,30 -25,0' fill='none' stroke='%23b59410' stroke-width='1.5'/%3E%3Ccircle cx='0' cy='0' r='18' fill='none' stroke='%23b59410' stroke-width='1'/%3E%3C/g%3E%3C!-- 🏰 底部小神柱欄杆，填補下方留白，極致延伸神殿視覺細節 --%3E%3Crect x='40' y='505' width='240' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.45' rx='3'/%3E%3Crect x='45' y='500' width='230' height='5' fill='%23fff' fill-opacity='0.35' rx='1'/%3E%3Crect x='60' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='57' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='57' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='110' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='107' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='107' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='160' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='157' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='157' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='210' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='207' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='207' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='260' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='257' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='257' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='40' y='580' width='240' height='15' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.45' rx='2'/%3E%3C/svg%3E") !important,
+        linear-gradient(135deg, #f7efe2 0%, #ebdce4 100%) !important;
+    background-size: cover !important;
+    background-position: center !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 4px solid #f3d291 !important; /* 晶瑩香檳金邊框 */
+    box-shadow: 
+        0 10px 30px rgba(181, 148, 16, 0.08), 
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 4px 0 #dfb364 !important; /* 立體金屬底座厚度 */
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 💫 尊貴閃耀玩家特效 */
+@keyframes avatar-sparkle {
+    0%, 100% {
+        box-shadow: 0 0 6px rgba(251, 191, 36, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        border-color: #f59e0b;
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        border-color: #fbbf24;
+    }
+}
+
+.shiny-avatar-glow {
+    animation: avatar-sparkle 2s infinite ease-in-out;
+}
+
+/* 🏆 閃耀排行榜專屬炫金行背景 */
+.shiny-leaderboard-row {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.18) 0%, rgba(254, 243, 199, 0.25) 50%, rgba(251, 191, 36, 0.08) 100%) !important;
+    border-color: rgba(245, 158, 11, 0.38) !important;
+    box-shadow: 
+        0 4px 10px rgba(245, 158, 11, 0.08), 
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+.shiny-leaderboard-row:hover {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.25) 0%, rgba(254, 243, 199, 0.3) 50%, rgba(251, 191, 36, 0.14) 100%) !important;
+    box-shadow: 
+        0 6px 14px rgba(245, 158, 11, 0.15), 
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.9) !important;
+    transform: translateY(-2px);
+}

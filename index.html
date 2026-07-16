@@ -73,10 +73,10 @@
     <main class="w-full max-w-4xl px-2 py-4 flex-1 flex flex-col md:flex-row gap-4 items-stretch relative">
         
         <!-- Left Side: Game Board (Stack Field) -->
-        <div class="flex-1 bg-[#fffdf9] rounded-2xl border-4 border-[#e9decb] relative flex flex-col justify-between overflow-hidden shadow-lg min-h-[460px] md:min-h-[580px]">
+        <div class="flex-1 gemstone-panel relative flex flex-col justify-between overflow-hidden shadow-lg min-h-[460px] md:min-h-[580px]">
             
             <!-- Game Status / Level Info -->
-            <div class="px-3 py-2.5 bg-[#fef7ed] flex flex-wrap gap-2 justify-between items-center text-xs border-b-4 border-[#e9decb]">
+            <div class="px-3 py-2.5 gemstone-status-bar flex flex-wrap gap-2 justify-between items-center text-xs">
                 <div class="flex items-center gap-2">
                     <span id="level-badge" class="px-2.5 py-1 bg-[#ffb3c1] text-[#a11d33] font-black rounded-full shadow-sm text-[10.5px]">載入中...</span>
                     <span id="tile-ratio" class="text-gray-600 font-bold text-[11px]">剩餘: 0 / 0</span>
@@ -101,13 +101,13 @@
                 </div>
             </div>
 
-            <!-- Matching Slots Bar (7 slots) (Optimized flex slots alignment) -->
-            <div class="bg-[#fdfbf7] p-4 border-t-4 border-[#e9decb] flex flex-col items-center">
-                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2 flex justify-between w-full max-w-[450px] px-1">
-                    <span>🔮 聖域寶石槽 (最多容納 7 顆)</span>
-                    <span id="slot-count-text" class="text-pink-500 font-bold">0 / 7</span>
+            <!-- Matching Slots Bar (7 slots) (Redesigned as Luxurious Jewelry/Gemstone Box) -->
+            <div class="gem-box-outer flex flex-col items-center">
+                <div class="text-[11px] text-amber-200 font-black uppercase tracking-wider mb-2 flex justify-between w-full max-w-[450px] px-1 drop-shadow">
+                    <span>👑 聖域晶石收納盒 (最多收藏 7 顆晶石)</span>
+                    <span id="slot-count-text" class="text-amber-400 font-bold">0 / 7</span>
                 </div>
-                <div class="relative w-full max-w-[450px] min-h-[78px] h-auto bg-[#f5efe6] rounded-xl border-2 border-[#d5c7b3] flex items-center p-2 shadow-inner">
+                <div class="relative w-full max-w-[450px] min-h-[78px] h-auto gem-box-inner flex items-center p-2">
                     <div id="slots-container" class="relative z-10 w-full h-full flex flex-wrap items-center justify-center gap-1 md:gap-1.5 py-1">
                         <!-- Clicked tiles fly in here -->
                     </div>
@@ -136,7 +136,7 @@
 
         <!-- Right Side: Sidebar Panel (Contains Gemstone Codex only) -->
         <div class="w-full md:w-80 flex flex-col">
-            <div class="bg-[#fffdf9] p-4 rounded-2xl border-4 border-[#e9decb] shadow-md flex-1 flex flex-col">
+            <div class="gemstone-sidebar-panel p-4 shadow-md flex-1 flex flex-col">
                 <div class="p-3 bg-[#ffe5ec]/50 border border-[#ffccd5] rounded-xl flex flex-col gap-1.5 mb-3 shadow-inner">
                     <div class="flex justify-between text-xs font-black text-[#5c4a49]">
                         <span>🏁 每日探險關卡</span>

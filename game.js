@@ -1335,9 +1335,9 @@ function renderCodex() {
         if (isShiny) borderClass = "shiny-border";
         else if (isCurrentAvatar) borderClass = "border-green-400 shadow-sm";
         
-        itemEl.className = `flex items-start gap-2.5 p-2 bg-[#fffcf8] rounded-xl border-2 ${borderClass} transition-all text-xs ${
+        itemEl.className = `flex items-start gap-2.5 p-2 bg-[#fffcf8]/70 backdrop-blur-sm rounded-xl border-2 ${borderClass} transition-all text-xs ${
             isUnlocked 
-                ? 'cursor-pointer hover:border-pink-300 hover:bg-[#fffbf4]' 
+                ? 'cursor-pointer hover:border-pink-300 hover:bg-[#fffbf4]/90' 
                 : 'locked-grayscale'
         }`;
         
@@ -1969,7 +1969,7 @@ function renderSlots() {
         
         if (i < GameState.slots.length) {
             const tile = GameState.slots[i];
-            slotEl.className = "flex-1 max-w-[50px] aspect-[5/6] h-[58px] bg-white border-2 border-[#3d302d] rounded-lg shadow-[0_3px_0_#e9decb] flex flex-col items-center justify-center flex-shrink-1 transition-all";
+            slotEl.className = "flex-1 max-w-[50px] aspect-[5/6] h-[58px] gem-box-slot-filled flex flex-col items-center justify-center flex-shrink-1 transition-all";
             const canvas = document.createElement('canvas');
             canvas.width = 44;
             canvas.height = 44;
@@ -1977,7 +1977,7 @@ function renderSlots() {
             slotEl.appendChild(canvas);
             drawCachedTile(canvas, tile.template.id);
         } else {
-            slotEl.className = "flex-1 max-w-[50px] aspect-[5/6] h-[58px] border-2 border-dashed border-[#d5c7b3] rounded-lg bg-white/40 flex-shrink-1";
+            slotEl.className = "flex-1 max-w-[50px] aspect-[5/6] h-[58px] gem-box-slot-empty flex-shrink-1";
         }
         
         container.appendChild(slotEl);
@@ -2213,18 +2213,36 @@ function renderLeaderboard() {
             avatarSrc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'></svg>";
         }
 
+        const isShinyAvatar = player.isAvatarShiny || (isSelf && gemId !== -1 && shinyCodex.includes(Number(gemId)));
+
         const row = document.createElement('div');
-        row.className = `flex items-center gap-3 p-2.5 rounded-xl border ${
-            isSelf 
-                ? 'bg-pink-50/70 border-pink-200 shadow-sm' 
-                : 'bg-white hover:bg-gray-50 border-gray-100'
-        } transition-all text-sm`;
+        if (isShinyAvatar) {
+            row.className = `flex items-center gap-3 p-2.5 rounded-xl border shiny-leaderboard-row transition-all text-sm cursor-help`;
+            if (isSelf) row.className += " border-amber-400/70 shadow-md";
+        } else {
+            row.className = `flex items-center gap-3 p-2.5 rounded-xl border ${
+                isSelf 
+                    ? 'bg-pink-100/60 backdrop-blur-sm border-pink-200 shadow-sm' 
+                    : 'bg-white/60 backdrop-blur-sm hover:bg-white/80 border-gray-100'
+            } transition-all text-sm`;
+        }
+
+        const avatarClass = isShinyAvatar 
+            ? "w-10 h-10 rounded-full border-2 border-amber-400 bg-amber-50 flex-shrink-0 shiny-avatar-glow shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+            : "w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex-shrink-0";
+
+        const nameStyle = isShinyAvatar
+            ? `font-black text-amber-700 truncate flex items-center gap-0.5`
+            : `font-black text-gray-700 truncate ${isSelf ? 'text-pink-600 font-bold' : ''}`;
+
+        const starPrefix = isShinyAvatar ? `<span class="text-amber-500 font-bold animate-pulse mr-0.5 select-none">✨</span>` : "";
+        const shinyBadge = isShinyAvatar ? `<span class="text-[7.5px] bg-amber-400 text-white font-black px-1.5 py-0.5 rounded-full ml-1 scale-90 inline-block shadow-sm">閃耀</span>` : "";
 
         row.innerHTML = `
             ${rankBadge}
-            <img class="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex-shrink-0" src="${avatarSrc}" alt="Avatar">
+            <img class="${avatarClass}" src="${avatarSrc}" alt="Avatar">
             <div class="flex-1 min-w-0">
-                <div class="font-black text-gray-700 truncate ${isSelf ? 'text-pink-600 font-bold' : ''}">${player.playerName}</div>
+                <div class="${nameStyle}">${starPrefix}${player.playerName}${shinyBadge}</div>
                 <div class="text-xs text-gray-400 font-semibold mt-0.5">勝率: ${winRatePercent}% | 總局數: ${player.totalGames || 0}</div>
             </div>
             <div class="text-right flex-shrink-0 font-pixel">
@@ -2359,6 +2377,27 @@ function updateAvatarUI(gemId) {
     const gem = TILE_TEMPLATES.find(t => t.id === Number(gemId));
     if (gem) {
         avatarEl.src = getPixelArtDataUrl(gem.id);
+        
+        // 💫 檢查該頭像是否為解鎖的 閃耀 (isShiny) 版本！
+        const nameEl = document.getElementById('user-name');
+        const isShiny = shinyCodex.includes(gem.id);
+        if (isShiny) {
+            // 閃耀頭像樣式
+            avatarEl.className = "w-11 h-11 rounded-full border-2 border-amber-400 bg-amber-50 flex-shrink-0 shiny-avatar-glow shadow-[0_0_10px_rgba(251,191,36,0.65)]";
+            if (nameEl) {
+                const baseName = currentUser ? (currentUser.isAnonymous ? "匿名冒險者" : (currentUser.displayName || "冒險者")) : "冒險者";
+                nameEl.innerHTML = `<span class="text-amber-500 font-bold select-none mr-0.5 animate-pulse">✨</span>${baseName} <span class="text-[8px] bg-amber-400 text-white font-black px-1.5 py-0.5 rounded-full ml-1 scale-90 inline-block shadow-sm">閃耀</span>`;
+                nameEl.className = "text-sm font-black text-amber-600 truncate max-w-[130px] flex items-center";
+            }
+        } else {
+            // 一般頭像樣式
+            avatarEl.className = "w-11 h-11 rounded-full border-2 border-pink-300 bg-pink-100 flex-shrink-0";
+            if (nameEl) {
+                const baseName = currentUser ? (currentUser.isAnonymous ? "匿名冒險者" : (currentUser.displayName || "冒險者")) : "冒險者";
+                nameEl.innerHTML = baseName;
+                nameEl.className = "text-sm font-black text-gray-700 truncate max-w-[130px]";
+            }
+        }
     } else {
         avatarEl.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'></svg>";
     }

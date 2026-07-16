@@ -75,18 +75,18 @@ async function verifyFirebaseToken(req, res, next) {
 // 4. API 路由
 
 const GEMS_LIST = [
-    { id: 0, name: "圓形鑽石"},
-    { id: 1, name: "心形紅寶石"},
-    { id: 2, name: "方形藍寶石"},
-    { id: 3, name: "橢圓祖母綠"},
-    { id: 4, name: "梨形黃水晶"},
-    { id: 5, name: "三角紫水晶"},
-    { id: 6, name: "枕形黃寶石"},
-    { id: 7, name: "橢圓粉寶石"},
-    { id: 8, name: "梨形海藍寶"},
-    { id: 9, name: "馬眼紅寶石"},
-    { id: 10, name: "公主方藍寶石"},
-    { id: 11, name: "月光石"}
+    { id: 0 },
+    { id: 1 },
+    { id: 2 },
+    { id: 3 },
+    { id: 4 },
+    { id: 5 },
+    { id: 6 },
+    { id: 7 },
+    { id: 8 },
+    { id: 9 },
+    { id: 10 },
+    { id: 11 }
 ];
 
 function getTodayString() {
@@ -803,11 +803,14 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
             
             const pName = req.user.name || "冒險者";
             let curAvatarId = -1;
+            let isAvatarShiny = false;
             if (userDoc.exists) {
                 const uData = userDoc.data();
                 if (uData.currentAvatarId !== undefined) {
                     curAvatarId = uData.currentAvatarId;
                 }
+                const shinyCodex = uData.shinyCodex || [];
+                isAvatarShiny = shinyCodex.includes(curAvatarId);
             }
             
             let dailyLeaderboardData = {
@@ -815,6 +818,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 dateStr,
                 playerName: pName,
                 currentAvatarId: curAvatarId,
+                isAvatarShiny: isAvatarShiny,
                 wins: 0,
                 losses: 0,
                 totalGames: 0,
@@ -833,6 +837,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 weekStr,
                 playerName: pName,
                 currentAvatarId: curAvatarId,
+                isAvatarShiny: isAvatarShiny,
                 wins: 0,
                 losses: 0,
                 totalGames: 0,
@@ -851,6 +856,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 monthStr,
                 playerName: pName,
                 currentAvatarId: curAvatarId,
+                isAvatarShiny: isAvatarShiny,
                 wins: 0,
                 losses: 0,
                 totalGames: 0,

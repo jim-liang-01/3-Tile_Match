@@ -95,756 +95,159 @@ const PALETTE = {
     'c': '#a06a42', // 巧克力褐
     'r': '#ff4d6d', // 愛心紅
 };
+// ==========================================
+// 🖼️ 3.5 載入 gem_assets 中的 12 張真實寶石圖片素材
+// ==========================================
+const gemImages = {};
+let loadedGemsCount = 0;
+const TOTAL_GEMS = 12;
+
+for (let i = 1; i <= TOTAL_GEMS; i++) {
+    const imgId = i;
+    const imgStr = String(i).padStart(2, '0');
+    const img = new Image();
+    img.onload = () => {
+        loadedGemsCount++;
+        if (loadedGemsCount === TOTAL_GEMS) {
+            console.log('🌸 所有 12 張寶石圖片素材載入成功！重新渲染快取。');
+            preRenderTiles();
+            if (typeof updateAvatarUI === 'function') {
+                updateAvatarUI(currentAvatarId);
+            }
+            if (typeof renderField === 'function') {
+                renderField();
+            }
+            if (typeof renderCodex === 'function') {
+                renderCodex();
+            }
+            if (typeof renderLeaderboard === 'function') {
+                renderLeaderboard();
+            }
+        }
+    };
+    img.src = 'gem_assets/' + imgStr + '.png';
+    gemImages[imgId] = img;
+}
 
 const TILE_TEMPLATES = [
     {
-        id: 0,
-        name: "圓滾滾熊貓",
-        emoji: "🐼",
-        desc: "最喜歡躺在草地上啃竹子和睡懶覺，圓滾滾的身軀具有極致的治癒力！",
-        colors: ['#ffffff', '#2b1f1d', '#ffb5a7'],
-        grid: [
-            "....kk......kk..",
-            "...kkkk....kkkk.",
-            "..kkwwkk..kkwwkk",
-            "..kwwwwkkkkwwwwk",
-            ".kwwwwwwwwwwwwwwk",
-            "kwwwwwwwwwwwwwwwwk",
-            "kwwwwwwwwwwwwwwwwk",
-            "kwwkkkwwwwwwkkkwwk",
-            "kwwkkkwwwwwwkkkwwk",
-            "kwwkkkwwkkwwkkkwwk",
-            "kwwwwwwwkkwwwwwwwk",
-            "kwwrrwwwwwwwwrrwwk",
-            ".kwwwkkkkkkkkwwwk",
-            ".kwwwwwwkkwwwwwwk",
-            "..kwwwwwwwwwwwwk.",
-            "...kkkkkkkkkkkk."
+        "id": 0,
+        "name": "圓形鑽石",
+        "desc": "完美圓形明亮式切工鑽石，擁有 57 個對稱折射面，折射出極致神聖璀璨的銀白與淡藍霓光！",
+        "colors": [
+            "#ffffff",
+            "#cfd8dc",
+            "#b0bec5"
         ]
     },
     {
-        id: 1,
-        name: "萌萌無尾熊",
-        emoji: "🐨",
-        desc: "擁有大大的灰色耳朵與標誌性的黑鼻子，一整天都在抱著尤加利樹打瞌睡。",
-        colors: ['#94a3b8', '#ffffff', '#ffb5a7'],
-        grid: [
-            "...kkkk......kkkk...",
-            "..kwwggk....kggwwk..",
-            ".kwwwggk....kggwwwk.",
-            "kwwwwggkkkkkkggwwwwk",
-            "kwwwgggggggggggwwwk",
-            "kwwgggggggggggggwwk",
-            ".kggggggggggggggk.",
-            "kggggggggggggggggk",
-            "kggwkkggggggwkkggk",
-            "kggwkkgkkkkkwkkggk",
-            "kgggggkkkkkkkggggk",
-            "kggppgkkkkkkkppggk",
-            ".kgggggkkkkkggggk.",
-            "..kggggggggggggk..",
-            "...kggggggggggk...",
-            "....kkkkkkkkkk...."
+        "id": 1,
+        "name": "八角紅寶石",
+        "desc": "深紅八角切割紅寶石，散發熾熱火焰般的光澤，象徵勇氣、力量與永恆熱情。",
+        "colors": [
+            "#ff1744",
+            "#ff4d6d",
+            "#3e2723"
         ]
     },
     {
-        id: 2,
-        name: "波斯小橘貓",
-        emoji: "🐱",
-        desc: "帶著粉嫩小耳廓的橘黃色貓咪，一到下午就會躺在向日葵旁曬太陽，非常傲嬌。",
-        colors: ['#fec89a', '#ffffff', '#ff4d6d'],
-        grid: [
-            "...kk........kk.",
-            "..kock.......kock",
-            ".kooock.....koook",
-            ".koooockkkkkooook",
-            "koooooooooooooook",
-            "koooooooooooooook",
-            "kooowwkoooowwkook",
-            "kooowkkoooowkkook",
-            "kooookkoooowkkook",
-            "koooooooooooooook",
-            "kooorrokkkrroooook",
-            "koooookkkkoooooook",
-            ".kooooooooooooook",
-            "..kooookkkkooook.",
-            "...kooooooooook.",
-            "....kkkkkkkkkk.."
+        "id": 2,
+        "name": "祖母綠",
+        "desc": "經典祖母綠切工，晶瑩通透的翠綠折射令人著迷，象徵生命、自然與希望。",
+        "colors": [
+            "#0d47a1",
+            "#29b6f6",
+            "#0a1931"
         ]
     },
     {
-        id: 3,
-        name: "大臉萌柴犬",
-        emoji: "🐶",
-        desc: "亮黃色毛髮的忠誠柴柴，高興時會把眼睛瞇成一條線。戴著一條鮮艷的紅領巾！",
-        colors: ['#ffd166', '#ffffff', '#ff4d6d'],
-        grid: [
-            "....kk......kk..",
-            "...kyyk....kyyk.",
-            "..kyyyykkkkyyyyk",
-            ".kyyyyyyyyyyyyyyk",
-            "kyyyyyyyyyyyyyyyk",
-            "kyyyyyyyyyyyyyyyk",
-            "kyyywkyyyywywwyk",
-            "kyyykkyyyykkywwk",
-            "kyyyyyyyyyyyyyyyk",
-            "kyyrrwwwwwwrryyyk",
-            "kyyywwwwwwwwyyyyk",
-            ".kyyywwkkwwyyyyk.",
-            "..kyyywwwwyyyyk..",
-            "...kyyyyyyyyyy...",
-            "....krrrrrrrk...",
-            ".....kkkkkkk...."
+        "id": 3,
+        "name": "紫水晶晶簇",
+        "desc": "天然紫水晶晶簇由多支晶柱組成，閃耀高貴紫色光芒，充滿神秘與智慧氣息。",
+        "colors": [
+            "#00e676",
+            "#1b5e20",
+            "#ffffff"
         ]
     },
     {
-        id: 4,
-        name: "粉嫩小豬豬",
-        emoji: "🐷",
-        desc: "粉雕玉琢的哼哼小豬，大大的朝天鼻十分逗趣。心願是吃遍森林裡所有的野生蘋果。",
-        colors: ['#ffb5a7', '#ffd166', '#ff4d6d'],
-        grid: [
-            "...kk........kk.",
-            "..kpyk......kpyk",
-            ".kpppykkkkkkpppyk",
-            "kpppppppppppppppk",
-            "kpppppppppppppppk",
-            "kppwkkppppppwkkpk",
-            "kppwkkppppppwkkpk",
-            "kpppppppppppppppk",
-            "kpprrpppppppprrpk",
-            "kppppkkkkkkkppppk",
-            "kppppkpyyypkppppk",
-            "kppppkpykypkppppk",
-            ".kpppkkkkkkkpppk.",
-            "..kpppppppppppk..",
-            "...kpppppppppk...",
-            "....kkkkkkkkk...."
+        "id": 4,
+        "name": "黃水晶",
+        "desc": "金黃色橢圓切割黃水晶，如陽光般溫暖耀眼，被譽為招財與幸運之石。",
+        "colors": [
+            "#ffea00",
+            "#ff9100",
+            "#ffffff"
         ]
     },
     {
-        id: 5,
-        name: "呆萌大眼蛙",
-        emoji: "🐸",
-        desc: "荷葉上的歌唱家，擁有水汪汪的動漫大眼睛，每次開口都是「咕呱呱～」的交響樂。",
-        colors: ['#70e000', '#ffffff', '#ff4d6d'],
-        grid: [
-            "..kkkk......kkkk",
-            ".kclock....kclock",
-            "kcckkcckkkkcckkcck",
-            "kckkkkccGGcckkkkwk",
-            "kcckkcGGGGGGckkcck",
-            "kkkkkGGGGGGGGkkkkk",
-            "...kGGGGGGGGGGk...",
-            "..kGGGGGGGGGGGGk..",
-            ".kGGGGGGGGGGGGGGk.",
-            "kGGGGGGGGGGGGGGGGk",
-            "kGGrrGGGGGGGGrrGGk",
-            "kGGGkGGGGGGGGkGGGk",
-            ".kGGkkkkkkkkkkGGk.",
-            "..kGGGGGGGGGGGGk..",
-            "...kGGGGGGGGGGk...",
-            "....kkkkkkkkkk...."
+        "id": 5,
+        "name": "愛心粉晶",
+        "desc": "愛心造型粉晶散發柔和粉紅光暈，象徵愛情、幸福與溫暖療癒的能量。",
+        "colors": [
+            "#aa00ff",
+            "#e040fb",
+            "#1a0033"
         ]
     },
     {
-        id: 6,
-        name: "長耳小白兔",
-        emoji: "🐰",
-        desc: "耳朵超長、一驚一乍的草地精靈。最喜歡在早晨喝晶瑩剔透的露水。",
-        colors: ['#ffffff', '#ffd166', '#ff4d6d'],
-        grid: [
-            "...kkkk....kkkk.",
-            "..kyyyyk..kyyyyk",
-            "..kywwyk..kywwyk",
-            "..kywwyk..kywwyk",
-            "..kywwykkkywwyk.",
-            "..kywwywwwywwyk.",
-            "..kywwwwwwwwwyk.",
-            ".kwwwwwwwwwwwwk.",
-            "kwwwwwwwwwwwwwwk",
-            "kwwwkkwwwwkkwwwk",
-            "kwwkkkwwwwkkkwwk",
-            "kwwrrwwwwwwrrwwk",
-            "kwwwkkkkkkkkwwwk",
-            ".kwwwwwwkkwwwwk.",
-            "..kwwwwwwwwwwk..",
-            "...kkkkkkkkkk..."
+        "id": 6,
+        "name": "琥珀",
+        "desc": "晶瑩剔透的琥珀呈現金橙色光澤，彷彿封存遠古歲月的溫暖與生命記憶。",
+        "colors": [
+            "#ff9100",
+            "#ffd54f",
+            "#ffffff"
         ]
     },
     {
-        id: 7,
-        name: "澎鬆小綿羊",
-        emoji: "🐑",
-        desc: "頭頂像棉花糖一樣澎鬆，臉蛋則是溫和的米色，走起路來慢吞吞的十分優雅。",
-        colors: ['#ffffff', '#e8e0d5', '#ffb5a7'],
-        grid: [
-            "....kkkkkkkk....",
-            "...kwwwwwwwwk...",
-            "..kwwwwwwwwwwk..",
-            ".kwwbbbbbbbbwwk.",
-            "kwwbbbbbbbbbbwwk",
-            "kwbbwwbbbbwwbbwk",
-            "kbbwwkbbbbwkbbbk",
-            "kbbbbbbbbbbbbbbk",
-            "kbbppbbbbbbppbbk",
-            ".kbbykkkkkkybbk.",
-            "..kbyyyyyyyyk..",
-            "...kcyyyyyyck...",
-            "....kcccccck....",
-            ".....kkkkkk.....",
-            "................",
-            "................"
+        "id": 7,
+        "name": "黑曜石晶柱",
+        "desc": "銳利漆黑的黑曜石晶柱散發低調光澤，蘊含強大的守護、防禦與淨化力量。",
+        "colors": [
+            "#ff80ab",
+            "#f8bbd0",
+            "#ffffff"
         ]
     },
     {
-        id: 8,
-        name: "黃金小萌雞",
-        emoji: "🐥",
-        desc: "剛剛破殼而出的小雞寶寶，毛絨絨像個黃色的小雪球，走路時還會摔跤呢。",
-        colors: ['#ffd166', '#fec89a', '#ff4d6d'],
-        grid: [
-            "......kkkk......",
-            "....kkYYYYkk....",
-            "...kYYYYYYYYk...",
-            "..kYYYYYYYYYYk..",
-            ".kYYYYYYYYYYYYk.",
-            "kYYYYYYYYYYYYYYk",
-            "kYYwkkYYYYwkkYYk",
-            "kYYwkkYYYYwkkYYk",
-            "kYYYYYYYYYYYYYYk",
-            "kYYrrYkkkkYrrYYk",
-            "kYYYYYkooyYYYYYk",
-            "kYYYYYkooyYYYYYk",
-            ".kYYYYYkkYYYYYk.",
-            "..kYYYYYYYYYYk..",
-            "...kkYYYYYYkk...",
-            ".....kkkkkk....."
+        "id": 8,
+        "name": "蛋白石",
+        "desc": "乳白色蛋白石閃耀彩虹變彩效應，在不同角度映照出夢幻般的七彩光芒。",
+        "colors": [
+            "#00e5ff",
+            "#4fc3f7",
+            "#01579b"
         ]
     },
     {
-        id: 9,
-        name: "頑皮小狐狸",
-        emoji: "🦊",
-        desc: "尾巴毛茸茸、精明又調皮的深橙色小狐狸。最愛玩躲貓貓 and 聽松鼠講八卦。",
-        colors: ['#fec89a', '#ffffff', '#ff4d6d'],
-        grid: [
-            "...kk........kk.",
-            "..kock.......kock",
-            ".kooockkkkkkooook",
-            "koooooooooooooook",
-            "koooooooooooooook",
-            "kooowwkooooowwkook",
-            "koowkkooooowkkook",
-            "kooookooooowkkook",
-            "koowwwwwwwwwwwook",
-            "koowwrrwwwrrwwook",
-            ".kowwwwwwwwwwwok.",
-            "..kowwwkkkwwwok..",
-            "...kowwwwwwwok...",
-            "....koooooook....",
-            ".....koooook.....",
-            "......kkkkk......"
+        "id": 9,
+        "name": "藍水晶",
+        "desc": "冰藍色多面切割水晶，宛如凝結的寒冰，散發純淨而深邃的透明光彩。",
+        "colors": [
+            "#880e4f",
+            "#ff1744",
+            "#ffffff"
         ]
     },
     {
-        id: 10,
-        name: "機靈小松鼠",
-        emoji: "🐿️",
-        desc: "大尾巴像一把蓬鬆的傘，最喜歡在松樹間跳躍，悄悄藏起松果作為過冬的口糧。",
-        colors: ['#a06a42', '#ffffff', '#ffd166'],
-        grid: [
-            "......kk........",
-            ".....kcck.......",
-            "....kcccck......",
-            "...kcccccckk....",
-            "..kccwkckccook..",
-            "..kcckkkccooook.",
-            "...kcccccoooook.",
-            "....kccccooook..",
-            ".....kccooook...",
-            "......kooook....",
-            ".....kcoook.....",
-            "....kcccck......",
-            "...kcccccck.....",
-            "..kcccccccck....",
-            "..kckkkkkckk....",
-            "...kk...kk......"
+        "id": 10,
+        "name": "比特幣金幣",
+        "desc": "象徵去中心化金融的黃金比特幣，鏡面金屬質感搭配閃耀光芒，代表數位財富與未來價值。",
+        "colors": [
+            "#03a9f4",
+            "#81d4fa",
+            "#01579b"
         ]
     },
     {
-        id: 11,
-        name: "暖心大棕熊",
-        emoji: "🐻",
-        desc: "身材高大卻十分溫厚，最愛吃森林裡的野生蜂蜜，冬天來臨時會躲在洞穴裡呼呼大睡。",
-        colors: ['#a06a42', '#ffffff', '#ffb5a7'],
-        grid: [
-            "...kk......kk...",
-            "..kcck....kcck..",
-            ".kcccckkkkyyyyk.",
-            "kcccccccccccccck",
-            "kcccccccccccccck",
-            "kccwkccccwkcccck",
-            "kcckkcccckkcccck",
-            "kcccccccccccccck",
-            "kccppcbbbbcppcck",
-            "kccccbbbbbbcccck",
-            ".kcccbkkkkbccck.",
-            "..kccccbbcccck..",
-            "...kcccccccck...",
-            "....kcccccck....",
-            ".....kkkkkk.....",
-            "................"
-        ]
-    },
-    {
-        id: 12,
-        name: "優雅白天鵝",
-        emoji: "🦢",
-        desc: "在晶瑩剔透的森林湖泊上優雅漫步，羽毛如雪般白皙，每一次展翅都是美麗的舞蹈。",
-        colors: ['#ffffff', '#bbdefb', '#fec89a'],
-        grid: [
-            "......kkk.......",
-            ".....kwwkko.....",
-            ".....kwwkk......",
-            "......kwwk......",
-            "......kwwk......",
-            "......kwwk......",
-            ".....kwwk.......",
-            "....kwwk........",
-            "...kwwwwkkkkk...",
-            "..kwwwwwwwwwwk..",
-            ".kwwwwwwwwwwwwk.",
-            "kwwwwwwwwwwwwwwk",
-            "kwwBwwBwwBwwBwwk",
-            ".kBBBBBBBBBBBBk.",
-            "..kBBBBBBBBBBk..",
-            "...kkkkkkkkkk..."
-        ]
-    },
-    {
-        id: 13,
-        name: "溫和長頸鹿",
-        emoji: "🦒",
-        desc: "擁有全森林最高的視野，性情極其溫和，最喜歡慢條斯理地啃食高處最新鮮的嫩葉。",
-        colors: ['#ffd166', '#a06a42', '#ffffff'],
-        grid: [
-            "....kk.kk.......",
-            "....kykkky......",
-            "....kyyyyyk.....",
-            "....kykkyyk.....",
-            "....kyyyykk.....",
-            ".....kyyyyk.....",
-            ".....kyyyk......",
-            ".....kyyyk......",
-            ".....kyyyk......",
-            ".....kyccyk.....",
-            ".....kyccyk.....",
-            ".....kyyyk......",
-            ".....kyyyk......",
-            "....kycccyk.....",
-            "....kycccyk.....",
-            ".....kkkkk......"
-        ]
-    },
-    {
-        id: 14,
-        name: "調皮小猴子",
-        emoji: "🐒",
-        desc: "森林裡的攀爬高手，身手極其矯捷，總愛吊在藤蔓上盪鞦韆，並向同伴做鬼臉調皮搗蛋。",
-        colors: ['#fec89a', '#a06a42', '#ffffff'],
-        grid: [
-            "....kkkkkkkk....",
-            "...kcoooocock...",
-            "..kcoooocooock..",
-            ".kcoooocooocock.",
-            ".kcoocckkccoock.",
-            "kcoowkcoocwkcoock",
-            "kcookkcoockkcoock",
-            "kcoooooooooooock",
-            "kcooppcoooppcoock",
-            ".kcooooccccooock.",
-            "..kcooocccoocck.",
-            "...kcooocooock..",
-            "....kcoooocck...",
-            ".....kcooock....",
-            "......kcck......",
-            ".......kk......."
-        ]
-    },
-    {
-        id: 15,
-        name: "睿智小夜貓",
-        emoji: "🦉",
-        desc: "戴著一雙大大的黑框眼鏡，是森林裡公認的智者。在寂靜的夜裡守護著這片古老森林。",
-        colors: ['#e8e0d5', '#2b1f1d', '#ffe5ec'],
-        grid: [
-            "....kk......kk..",
-            "...kbbk....kbbk.",
-            "..kbbbbkkkkbbbbk",
-            ".kbbbbbbbbbbbbbbk",
-            "kbbwwkkbbbbwwkkbk",
-            "kbwwkkwkbbwwkkwkb",
-            "kbwwkkwkbbwwkkwkb",
-            "kbbwwkkbyywwkkbbk",
-            "kbbbbbbbyybbbbbbk",
-            "kbbgbbbbbbbbgbbbk",
-            ".kbggggbbbbggggk.",
-            "..kbgggggggggk..",
-            "...kbgggggggk...",
-            "....kbgggggk....",
-            ".....kbbbbbk....",
-            "......kkkkk....."
-        ]
-    },
-    {
-        id: 16,
-        name: "慢吞吞烏龜",
-        emoji: "🐢",
-        desc: "背著堅固的花紋外殼，走起路來慢吞吞的，凡事不急不躁，對生活充滿了淡定的智慧。",
-        colors: ['#94a3b8', '#70e000', '#ffffff'],
-        grid: [
-            "......kkkk......",
-            "....kkGGGGkk....",
-            "...kGGGGGGGGk...",
-            "..kGGcGGccGGck..",
-            ".kGGccGGccGGcck.",
-            ".kGGGGGGGGGGGGk.",
-            "kGGGGGGGGGGGGGGk",
-            "kGGwkGGGGGGwkGGk",
-            "kGGkkGGGGGGkkGGk",
-            "kGGGGGGGGGGGGGGk",
-            "kGGppppGGppppGGk",
-            ".kGGGGGGGGGGGGk.",
-            "..kGGGGGGGGGGk..",
-            "...kkGGGGGGkk...",
-            ".....kkkkkk.....",
-            "................"
-        ]
-    },
-    {
-        id: 17,
-        name: "害羞小刺蝟",
-        emoji: "🦔",
-        desc: "一遇到陌生人就會害羞地把自己捲成一個毛茸茸的刺球，其實內心極其溫柔善良。",
-        colors: ['#ffb5a7', '#2b1f1d', '#ffffff'],
-        grid: [
-            "......kk........",
-            ".....kckk.......",
-            "....kccckk......",
-            "...kcccccckk....",
-            "..kccccccccck...",
-            ".kccccccccccck..",
-            "kccccccccccccck.",
-            "kccwkkcccccwkkck",
-            "kccwkkgkkkkwkkgk",
-            "kccccgkkkkkgccck",
-            "kccccgkkkkkgccck",
-            "kccccpppppppccck",
-            ".kcccccccccck...",
-            "..kccccccccck...",
-            "...kcckkkcck....",
-            "....kk...kk....."
-        ]
-    },
-    {
-        id: 18,
-        name: "大角小麋鹿",
-        emoji: "🦌",
-        desc: "頭頂像樹枝般美麗的大角，在晨霧繚繞的林間輕盈跳躍，是森林中最具靈氣的仙子。",
-        colors: ['#fec89a', '#a06a42', '#ffffff'],
-        grid: [
-            "...kk......kk...",
-            "..kbbk....kbbk..",
-            ".kbbbbk..kbbbbk.",
-            "kbbbbbbkkbbbbbbk",
-            "kbbbbbbbbbbbbbbk",
-            "kbbwkkbbbbwkkbbk",
-            "kbbwkkbbbbwkkbbk",
-            "kbbbbbbbbbbbbbbk",
-            "kbbppbbbbbbppbbk",
-            ".kbbbbkkkkbbbbk.",
-            "..kbbbbbbbbbbk..",
-            "...kbbbbbbbbk...",
-            "....kbbbbbbk....",
-            ".....kbbbbk.....",
-            "......kbbk......",
-            ".......kk......."
-        ]
-    },
-    {
-        id: 19,
-        name: "條紋小斑馬",
-        emoji: "🦓",
-        desc: "身穿經典時尚的黑白條紋外衣，喜歡成群結隊在河邊奔跑，極具個性的草原精靈。",
-        colors: ['#ffffff', '#2b1f1d', '#94a3b8'],
-        grid: [
-            ".....kkkkkk.....",
-            "....kwwwkkk.....",
-            "...kwwkkwwkkk...",
-            "..kwwkkwkwwkkk..",
-            ".kwwkkwkwwkkk...",
-            ".kwwkkwkwwkkk...",
-            "kwwkkwkwwkkk....",
-            "kwwkkwwkkk......",
-            "kwwkkwkwwk......",
-            "kwwkkwkwwk......",
-            "kwwkkwkwwk......",
-            "kwwkkwwkkk......",
-            ".kwwkkwkwwk.....",
-            "..kwwkkwkwwk....",
-            "...kwwkkwwkk....",
-            "....kkkkkkkk...."
-        ]
-    },
-    {
-        id: 20,
-        name: "憨厚大河馬",
-        emoji: "🦛",
-        desc: "最喜歡把身子泡在涼爽的泥水裡，只露出大大的鼻孔，張開嘴巴時大得能塞下一顆西瓜。",
-        colors: ['#94a3b8', '#ffe5ec', '#ffffff'],
-        grid: [
-            ".....kkkkkk.....",
-            "....kggggggk....",
-            "...kggggggggk...",
-            "..kggggggggggk..",
-            ".kggggggggggggk.",
-            "kggggggggggggggk",
-            "kggwkkggggwkkggk",
-            "kggwkkggggwkkggk",
-            "kggggggggggggggk",
-            "kggppggggggppggk",
-            "kggggkkkkkkggggk",
-            "kggggkppppkggggk",
-            ".kgggkkkkkkgggk.",
-            "..kgggggggggk..",
-            "...kgggggggk...",
-            "....kkkkkkk....."
-        ]
-    },
-    {
-        id: 21,
-        name: "威武小獅子",
-        emoji: "🦁",
-        desc: "頂著一圈金黃蓬鬆的鬃毛，吼叫起來極有氣勢，其實私底下非常喜歡跟小蝴蝶一起玩耍。",
-        colors: ['#ffd166', '#fec89a', '#ff4d6d'],
-        grid: [
-            "....kkkkkkkk....",
-            "...kooooooook...",
-            "..kooyyyyyook...",
-            ".kooyyyyyyyook.",
-            ".kooywkyywyook.",
-            "kooyykkkkyyook",
-            "kooyyyyyyyyook",
-            "kooyyppooyyook",
-            "kooyyyyyyyyook",
-            ".kooyykkkkyook.",
-            "..kooyyyyook..",
-            "...koooookk....",
-            "....kooook......",
-            ".....koook......",
-            "......kok.......",
-            ".......k........"
-        ]
-    },
-    {
-        id: 22,
-        name: "神秘小黑豹",
-        emoji: "🐆",
-        desc: "擁有一身如黑曜石般閃亮的皮毛，在黑夜中無聲無息地穿梭，威風凜凜卻又極其黏人。",
-        colors: ['#2b1f1d', '#94a3b8', '#ffb5a7'],
-        grid: [
-            "...kk......kk...",
-            "..kkkk....kkkk..",
-            ".kkkkkkkkkkkkkk.",
-            "kkkkkkkkkkkkkkkk",
-            "kkkkkkkkkkkkkkkk",
-            "kkkwkkkkkkwkkkkk",
-            "kkkkkkkkkkkkkkkk",
-            "kkkppkkkkkkppkkk",
-            "kkkkkkkkkkkkkkkk",
-            ".kkkkkkkkkkkkkk.",
-            "..kkkkkkkkkkkk..",
-            "...kkkkkkkkkk...",
-            "....kkkkkkkk....",
-            ".....kkkkkk.....",
-            "......kkkk......",
-            ".......kk......."
-        ]
-    },
-    {
-        id: 23,
-        name: "可愛大黃鴨",
-        emoji: "🦆",
-        desc: "腳掌扁扁、走起路來左搖右擺的黃色鴨子，最愛在清澈的小溪裡游水捉魚，非常活潑。",
-        colors: ['#ffd166', '#fec89a', '#ffffff'],
-        grid: [
-            "......kkkk......",
-            "....kkyyyykk....",
-            "...kyyyyyyyyyk..",
-            "..kyywkkyywkkyk.",
-            "..kyykkkyykkkyk.",
-            "..kyyyyyyyyyyko.",
-            "...kyyyyyyykoo..",
-            "....kkyykkkoo...",
-            "......kkkk......",
-            "....kyyyyykk....",
-            "...kyyyyyyyyyk..",
-            "..kyyyyyyyyyyyk.",
-            "..kyyyyyyyyyyyk.",
-            "...kyyyyyyyyyk..",
-            "....kkyyyykk....",
-            "......kkkk......"
-        ]
-    },
-    {
-        id: 24,
-        name: "粉紅大嘴鳥",
-        emoji: "🦩",
-        desc: "羽毛是浪漫唯美的櫻花粉色，單腳站立在水中的姿勢優雅迷人，是森林的時尚教主。",
-        colors: ['#ffb5a7', '#ff4d6d', '#ffffff'],
-        grid: [
-            "......kkk.......",
-            ".....kpppk......",
-            "....kpppppk.....",
-            "....kpwkppk.....",
-            "....kpppkk......",
-            "....kpppk.......",
-            ".....kppk.......",
-            "......kppk......",
-            "......kppk......",
-            "......kppk......",
-            ".....kppppk.....",
-            "....kppppppk....",
-            "...kppppppppk...",
-            "...kppppppppk...",
-            "....kppppppk....",
-            ".....kkkkkk....."
-        ]
-    },
-    {
-        id: 25,
-        name: "淘氣浣熊仔",
-        emoji: "🦝",
-        desc: "戴著一裝天然的黑色眼罩，吃任何食物前都一定要仔細洗乾淨，是個充滿童趣的淘氣鬼。",
-        colors: ['#94a3b8', '#2b1f1d', '#ffffff'],
-        grid: [
-            "...kk......kk...",
-            "..kggk....kggk..",
-            ".kggggkkkkyyyyk.",
-            "kggggggggggggggk",
-            "kggkkggggggkkggk",
-            "kgkwkkgkkkgkwkkg",
-            "kgkwkkgkkkgkwkkg",
-            "kggggggggggggggk",
-            "kggppgkkkkkgppgk",
-            "kgggggkkkkkggggk",
-            ".kgggggkkkggggk.",
-            "..kggggggggggk..",
-            "...kggggggggk...",
-            "....kcccccck....",
-            ".....kkkkkk.....",
-            "................"
-        ]
-    },
-    {
-        id: 26,
-        name: "深海小海獺",
-        emoji: "🦦",
-        desc: "最喜歡躺在水面上漂浮，雙手緊緊抱著自己心愛的小貝殼，睡覺時還會手拉手防止漂走。",
-        colors: ['#fec89a', '#e8e0d5', '#ffffff'],
-        grid: [
-            "......kkkk......",
-            "....kkbbbbkk....",
-            "...kbbbbbbbbk...",
-            "..kbbwkkbbwkkbk.",
-            "..kbbkkkbbkkkbk.",
-            "..kbbbbbbbbbbk..",
-            "..kbbppbbbbppk..",
-            "...kbbbbbbbbk...",
-            "....kbbbbbbk....",
-            "....kbbbbbbk....",
-            "....kbbbbbbk....",
-            "....kbbbbbbk....",
-            "...kbbbbbbbbk...",
-            "..kbbbbbbbbbbk..",
-            "...kbbbbbbbbk...",
-            "....kkkkkkkk...."
-        ]
-    },
-    {
-        id: 27,
-        name: "軟萌草泥馬",
-        emoji: "🦙",
-        desc: "擁有像雲朵一樣柔軟蓬鬆的捲毛與一對無辜的大眼睛，天然呆的表情深受所有人喜愛。",
-        colors: ['#e8e0d5', '#ffffff', '#ffb5a7'],
-        grid: [
-            "......kkkk......",
-            "....kkwwwwkk....",
-            "...kwwwwwwwwk...",
-            "..kwwwwwwwwwwk..",
-            "..kwwkwwwwkwwk..",
-            "..kwwwwwwwwwwk..",
-            "..kwwppwwppwwk..",
-            "...kwwwwwwwwk...",
-            "....kwwwwwwk....",
-            "....kwwwwwwk....",
-            "....kwwwwwwk....",
-            "....kwwwwwwk....",
-            "....kwwwwwwk....",
-            "...kwwwwwwwwk...",
-            "..kwwwwwwwwwwk..",
-            "...kkkkkkkkkk..."
-        ]
-    },
-    {
-        id: 28,
-        name: "大口袋袋鼠",
-        emoji: "🦘",
-        desc: "肚子前方有一個溫慢的大口袋，走起路來像彈簧一樣一蹦一跳，袋子裡偶爾會冒出好奇的小腦袋。",
-        colors: ['#fec89a', '#ffffff', '#ffe5ec'],
-        grid: [
-            "...kk......kk...",
-            "..kook....kook..",
-            ".kooookooookook.",
-            "kooooooooooooook",
-            "kooooooooooooook",
-            "koowkkoooowkkook",
-            "kooookooooowkkok",
-            "kooooooooooooook",
-            "kooppooooooooook",
-            ".kooooooooooook.",
-            "..kooowwwwooook.",
-            "...koowwwoook...",
-            "....kooowoock...",
-            ".....koooock....",
-            "......kcck......",
-            ".......kk......."
-        ]
-    },
-    {
-        id: 29,
-        name: "胖乎乎海獅",
-        emoji: "🦭",
-        desc: "圓滾滾的身子光滑鋥亮，最擅長用鼻子頂球，高興時還會用雙鰭給自己啪啪啪拍手鼓掌。",
-        colors: ['#94a3b8', '#ffffff', '#ffe5ec'],
-        grid: [
-            "......kkkk......",
-            "....kkggggkk....",
-            "...kggggggggk...",
-            "..kggwkkggwkkgk.",
-            "..kggkkkggkkkgk.",
-            "..kgggggggggk..",
-            "..kggppggggppk..",
-            "...kggggggggk...",
-            "....kggggggk....",
-            "....kggggggk....",
-            "....kggggggk....",
-            "....kggggggk....",
-            "....kggggggk....",
-            "...kggggggggk...",
-            "..kggggggggggk..",
-            "...kkkkkkkkkk..."
+        "id": 11,
+        "name": "紫晶菱柱",
+        "desc": "修長菱柱切割紫晶展現高雅紫色折射，充滿魔法能量與神秘幻想氛圍。",
+        "colors": [
+            "#e0f7fa",
+            "#90caf9",
+            "#b0bec5"
         ]
     }
 ];
@@ -1063,48 +466,48 @@ const Particles = {
 const LEVELS = [
     {
         num: 1,
-        title: "第 1 關：萌新集結 🐣",
-        badge: "第 1 關：萌新集結",
+        title: "第 1 關：晶石集結 🐣",
+        badge: "第 1 關：晶石集結",
         tileCount: 36,
         typesCount: 5,
         layers: 3, 
-        desc: "大森林巴士入口處，有 5 種可愛的萌友想要上車。有些許重疊，小心規劃喔！"
+        desc: "聖殿晶石法陣入口處，有 5 種高透晶石正交錯堆疊。有些許重疊，小心引導能量喔！"
     },
     {
         num: 2,
-        title: "第 2 關：青翠草原 🌿",
-        badge: "第 2 關：青翠草原",
+        title: "第 2 關：微光微隙 🌿",
+        badge: "第 2 關：微光微隙",
         tileCount: 54,
         typesCount: 8,
         layers: 4, 
-        desc: "微風徐徐吹過，有 8 種可愛小動物正聚集在草原。種類變多，難度陡峭增加囉！"
+        desc: "晶能流轉，有 8 種斑斕晶石正聚集在法陣邊緣。難度開始增加囉！"
     },
     {
         num: 3,
-        title: "第 3 關：熱鬧林間 🐱",
-        badge: "第 3 關：熱鬧林間",
+        title: "第 3 關：繁星法陣 🐱",
+        badge: "第 3 關：繁星法陣",
         tileCount: 72,
         typesCount: 9,
         layers: 5, 
-        desc: "林間小路上熱鬧非凡，9 種萌友緊密重疊在了一起。巴士座位吃緊，請細心規劃搭車順序！"
+        desc: "聖殿主法陣中能量交織，9 種精緻晶石緊密堆疊。晶石槽空間吃緊，請細心規劃共鳴順序！"
     },
     {
         num: 4,
-        title: "第 4 關：微風山谷 🏔️",
-        badge: "第 4 關：微風山谷",
+        title: "第 4 關：聖域奧秘 🏔️",
+        badge: "第 4 關：聖域奧秘",
         tileCount: 90,
         typesCount: 10,
         layers: 6, 
-        desc: "挑戰險峻的微風山谷！全部 10 種動物層層交錯重疊達 6 層，極度考驗你的觀察極限！"
+        desc: "挑戰古老的聖域核心法陣！全部 10 種晶石層層交錯重疊達 6 層，極度考驗您的觀察極限！"
     },
     {
         num: 5,
-        title: "第 5 關：大自然派對 🐼",
-        badge: "第 5 關：大自然派對",
+        title: "第 5 關：終極共鳴 🐼",
+        badge: "第 5 關：終極共鳴",
         tileCount: 126,
         typesCount: 10,
         layers: 7, 
-        desc: "極致豪華的終極狂歡大派對！多達 126 隻萌友堆疊深達 7 層，這是考驗你大腦極限的智力迷宮！"
+        desc: "極致奢華的聖域終極大共鳴！多達 126 顆能量晶石堆疊深達 7 層，這是考驗您大腦極限的智力迷宮！"
     }
 ];
 
@@ -1165,7 +568,7 @@ function preRenderTiles() {
 // 🚀 8. 遊戲載入與生命週期管理 (分段優化版)
 // ==========================================
 function initAll() {
-    console.log("🌲 萌寵森林啟動：開始階段載入...");
+    console.log("🔮 聖域晶石殿堂啟動：開始階段載入...");
     initFirebase();
     
     // 1. 立即優先處理關鍵資源：卡牌快取 (渲染遊戲必須)
@@ -1180,7 +583,7 @@ function initAll() {
     const deferLoad = window.requestIdleCallback || ((cb) => setTimeout(cb, 100));
     
     deferLoad(() => {
-        console.log("🌲 萌寵森林啟動：後台載入非關鍵組件...");
+        console.log("🔮 聖域晶石殿堂啟動：後台載入非關鍵組件...");
         Particles.init();
         renderCodex();
         resizeGameContainer();
@@ -1347,9 +750,7 @@ async function loadPlayerStats() {
                 if (Array.isArray(res.pendingRewards)) pendingRewards = res.pendingRewards;
                 
                 // 更新頭像 UI
-                if (res.playerAvatar) {
-                    updateAvatarUI(res.playerAvatar);
-                }
+                updateAvatarUI(currentAvatarId);
                 
                 // 重新渲染圖鑑 (以便正確加載解鎖狀態)
                 renderCodex();
@@ -1594,26 +995,26 @@ async function sendSessionToCloud(dateStr, midGameState) {
     }
 }
 
-// 🏆 8.8 展示今日大滿貫通關畫面並鎖定遊戲
+// 🏆 8.8 展示今日極致共鳴通關畫面並鎖定遊戲
 function showGrandSlamOverlay() {
     // 在展示大滿貫覆蓋層時，同步更新頂部關卡指示器為最後一關的進度與徽章
     loadLevelWithoutRestart(LEVELS.length - 1);
     const badge = document.getElementById('level-badge');
     if (badge) badge.innerText = LEVELS[LEVELS.length - 1].badge;
 
-    // 🚀 UX 優化：在主遊戲盤面上，渲染一個精緻、 centered 的「大滿貫已達成」看板！
+    // 🚀 UX 優化：在主遊戲盤面上，渲染一個精緻、 centered 的「極致共鳴已達成」看板！
     const stackContainer = document.getElementById('stack-container');
     if (stackContainer) {
         stackContainer.innerHTML = `
             <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-white/80 backdrop-blur-sm rounded-2xl border-4 border-amber-300 shadow-inner select-none animate-fade-in z-50">
                 <span class="text-6xl mb-4 animate-bounce">🏆</span>
-                <h2 class="text-xl font-black text-amber-500 font-pixel mb-3">今日大滿貫已達成！</h2>
+                <h2 class="text-xl font-black text-amber-500 font-pixel mb-3">今日極致共鳴已達成！</h2>
                 <p class="text-xs text-gray-500 font-bold leading-relaxed max-w-[320px]">
-                    太棒了！您今天已經成功護送所有小萌友安全回家囉！🌸<br>
-                    明天的全新挑戰將在午夜重新開啟，期待與您明天見！🐾
+                    太棒了！您今天已經成功喚醒所有璀璨的聖域寶石囉！🌸<br>
+                    明天的全新晶石法陣將在午夜重新開啟，期待與您明天見！🔮
                 </p>
                 <div class="mt-6 p-2 bg-amber-50 border border-amber-200 rounded-lg text-[10px] text-amber-700 font-pixel">
-                    🌲 完美像素風美學 • 相同種子相同關卡 🌲
+                    🔮 完美像素風美學 • 相同能量相同法陣 🔮
                 </div>
             </div>
         `;
@@ -1629,14 +1030,14 @@ function showGrandSlamOverlay() {
     if (overlay) overlay.classList.remove('hidden');
     if (icon) icon.innerText = "🏆";
     if (title) {
-        title.innerText = "今日大滿貫通關！";
+        title.innerText = "今日極致共鳴通關！";
         title.className = "text-2xl font-black text-pink-500 mb-2 font-pixel";
     }
     if (subtitle) {
-        subtitle.innerText = "你今天已經成功護送所有小萌友安全回家囉！明天的全新關卡將在午夜重新開啟，明天見！🌸";
+        subtitle.innerText = "你今天已經成功喚醒所有璀璨 of the 聖域寶石囉！明天的全新關卡將在午夜重新開啟，明天見！🌸";
     }
     if (actionBtn) {
-        actionBtn.innerText = "今日大滿貫達成！🏆 (點此返回)";
+        actionBtn.innerText = "今日極致共鳴達成！🏆 (點此返回)";
         actionBtn.disabled = false; // 允許點擊以關閉覆蓋層查看盤面
         actionBtn.className = "w-full py-3 bg-amber-400 hover:bg-amber-300 text-white font-black text-base border-b-4 border-amber-600 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md cursor-pointer";
     }
@@ -1646,8 +1047,8 @@ function showGrandSlamOverlay() {
         const wins = playerStats.wins || 0;
         const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
         statsEl.innerHTML = `
-            <div class="font-bold text-center text-pink-500 font-pixel text-base mb-1">🎉 森林大滿貫解鎖 🎉</div>
-            <div class="text-xs text-center text-gray-500 mb-2">您在今天以最完美的智慧通關了所有每日關卡！</div>
+            <div class="font-bold text-center text-pink-500 font-pixel text-base mb-1">🎉 聖域極致共鳴解鎖 🎉</div>
+            <div class="text-xs text-center text-gray-500 mb-2">您在今天以最完美的智慧與能流解鎖了所有每日晶石法陣！</div>
             <hr class="my-2 border-dashed border-[#e9decb]">
             <div class="font-bold text-gray-500">🏆 生涯戰績: <strong class="text-pink-500">${wins}勝 / ${playerStats.losses}敗 (${winRate}%)</strong></div>
             <div class="font-bold text-gray-500">🌟 最高解鎖: <strong class="text-indigo-500">第 ${playerStats.maxLevelReached + 1} 關</strong></div>
@@ -1664,10 +1065,10 @@ async function syncDailyTickets() {
     if (stackContainer) {
         stackContainer.innerHTML = `
             <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-[#fffdf9] rounded-2xl select-none animate-fade-in z-50">
-                <span class="text-6xl mb-4 animate-bounce">🌲</span>
-                <h2 class="text-base font-black text-[#ff8fa3] font-pixel mb-3">正在載入森林日誌...</h2>
+                <span class="text-6xl mb-4 animate-bounce">🔮</span>
+                <h2 class="text-base font-black text-[#ff8fa3] font-pixel mb-3">正在共鳴聖域晶石...</h2>
                 <p class="text-xs text-gray-400 font-bold leading-relaxed max-w-[320px]">
-                    正在搭乘小巴，同步今天乘車券、通關進度與雲端同步數據... 🚍
+                    正在引導法陣，同步今天啟動券、通關進度與雲端同步數據... 🔮
                 </p>
             </div>
         `;
@@ -1819,9 +1220,9 @@ function loadLevelWithoutRestart(levelIdx, suppressDepletionUI = false) {
             stackContainer.innerHTML = `
                 <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-[#fffdf9] rounded-2xl select-none animate-fade-in z-50">
                     <span class="text-6xl mb-4">🖤</span>
-                    <h2 class="text-lg font-black text-gray-500 font-pixel mb-3">今日乘車券已用盡</h2>
+                    <h2 class="text-lg font-black text-gray-500 font-pixel mb-3">今日啟動券已耗盡</h2>
                     <p class="text-xs text-gray-400 font-bold leading-relaxed">
-                        明天的乘車券將在午夜重新發放，請明天再來挑戰吧！🐾
+                        明天的全新晶石法陣將在午夜重新開啟，請明天再來挑戰共鳴吧！🔮
                     </p>
                 </div>
             `;
@@ -1834,18 +1235,88 @@ function loadLevelWithoutRestart(levelIdx, suppressDepletionUI = false) {
 function drawTileCanvas(canvas, template) {
     const ctx = canvas.getContext('2d');
     const size = canvas.width;
-    const pixelSize = size / 16;
     ctx.clearRect(0, 0, size, size);
     
-    for (let r = 0; r < 16; r++) {
-        for (let c = 0; c < 16; c++) {
-            const char = template.grid[r][c];
-            if (char !== '.' && PALETTE[char]) {
-                ctx.fillStyle = PALETTE[char];
-                ctx.fillRect(c * pixelSize, r * pixelSize, pixelSize, pixelSize);
-            }
+    // 1. 🪟 繪製毛玻璃基底（Glassmorphism Backing）
+    ctx.save();
+    
+    const radius = size * 0.12;
+    ctx.beginPath();
+    ctx.moveTo(radius, 0);
+    ctx.lineTo(size - radius, 0);
+    ctx.quadraticCurveTo(size, 0, size, radius);
+    ctx.lineTo(size, size - radius);
+    ctx.quadraticCurveTo(size, size, size - radius, size);
+    ctx.lineTo(radius, size);
+    ctx.quadraticCurveTo(0, size, 0, size - radius);
+    ctx.lineTo(0, radius);
+    ctx.quadraticCurveTo(0, 0, radius, 0);
+    ctx.closePath();
+    ctx.clip();
+    
+    // A. 毛玻璃底色（高透晶瑩明亮白，亮度大幅提升！）
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.fillRect(0, 0, size, size);
+    
+    // B. 內部縱向立體漸層，增加玻璃邊緣折射厚度（高亮度透光版）
+    const glassGrad = ctx.createLinearGradient(0, 0, 0, size);
+    glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+    glassGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.3)');
+    glassGrad.addColorStop(1, 'rgba(0, 0, 0, 0.03)');
+    ctx.fillStyle = glassGrad;
+    ctx.fillRect(0, 0, size, size);
+    
+    // 2. 💎 繪製真實載入的寶石圖片素材 (等比例縮放且縮減空白邊緣使其更大)
+    const imgId = template.id + 1;
+    const gemImg = gemImages[imgId];
+    if (gemImg && gemImg.complete) {
+        const padding = size * 0.04;
+        const destSize = size - padding * 2;
+        
+        const imgW = gemImg.naturalWidth || gemImg.width;
+        const imgH = gemImg.naturalHeight || gemImg.height;
+        const ratio = imgW / imgH;
+        
+        let dWidth = destSize;
+        let dHeight = destSize;
+        
+        if (ratio > 1) {
+            dHeight = destSize / ratio;
+        } else {
+            dWidth = destSize * ratio;
         }
+        
+        // 放大 1.25 倍（25% 縮放），利用 clip 自動裁切圖片四周多餘的透明空白
+        const zoom = 1.25;
+        const zWidth = dWidth * zoom;
+        const zHeight = dHeight * zoom;
+        
+        const dx = padding + (destSize - zWidth) / 2;
+        const dy = padding + (destSize - zHeight) / 2;
+        
+        ctx.drawImage(gemImg, dx, dy, zWidth, zHeight);
+    } else {
+        // Fallback placeholder while loading
+        ctx.fillStyle = 'rgba(255, 143, 163, 0.5)';
+        ctx.beginPath();
+        ctx.arc(size/2, size/2, size * 0.3, 0, Math.PI * 2);
+        ctx.fill();
     }
+    
+    // 3. ☄️ 繪製斜角玻璃反光線 (Diagonal Glass Reflection Sweep)
+    const sweepGrad = ctx.createLinearGradient(0, 0, size, size);
+    sweepGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    sweepGrad.addColorStop(0.35, 'rgba(255, 255, 255, 0)');
+    sweepGrad.addColorStop(0.4, 'rgba(255, 255, 255, 0.2)');
+    sweepGrad.addColorStop(0.45, 'rgba(255, 255, 255, 0.5)');
+    sweepGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
+    sweepGrad.addColorStop(0.55, 'rgba(255, 255, 255, 0)');
+    sweepGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    
+    ctx.fillStyle = sweepGrad;
+    ctx.fillRect(0, 0, size, size);
+    
+    ctx.restore();
 }
 
 function renderCodex() {
@@ -1886,8 +1357,8 @@ function renderCodex() {
         
         const avatarBadge = isCurrentAvatar ? `<span class="text-[8px] bg-green-500 text-white font-black px-1.5 py-0.5 rounded-full ml-1 select-none">使用中</span>` : "";
         const shinyText = isShiny ? `<span class="text-[8.5px] text-amber-500 font-bold ml-1">★閃耀</span>` : "";
-        const nameText = isUnlocked ? `${item.emoji} ${item.name}` : `🔒 未知小動物`;
-        const descText = isUnlocked ? item.desc : "達到每週或每月排行榜前 50 名，即可解鎖並與此森林小動物相遇！";
+        const nameText = isUnlocked ? `${item.name}` : `🔒 未知晶石`;
+        const descText = isUnlocked ? item.desc : "達到每週或每月排行榜前 50 名，即可解鎖並收藏此精緻晶石！";
         
         info.innerHTML = `
             <div class="flex justify-between items-center mb-0.5">
@@ -1999,7 +1470,7 @@ function setupEventListeners() {
                 // 🚀 極致優化：進入下一關時，直接傳送後端結算時伴隨下發的全新關卡佈局，0 網路開銷！
                 startGame(true, dailySession.tiles);
             } else {
-                alert("🎉 恭喜你達成了通關大滿貫！現在回到第一關重新開始探索，將消耗 1 張乘車券！");
+                alert("🎉 恭喜您達成了極致共鳴大滿貫！現在回到第一關重新開始探索，將消耗 1 張啟動券！");
                 GameState.currentLevelIndex = 0;
                 loadLevelWithoutRestart(0);
                 startGame(false);
@@ -2160,11 +1631,7 @@ function renderField() {
         const canvas = el.appendChild(document.createElement('canvas'));
         canvas.width = 48;
         canvas.height = 48;
-        canvas.className = "w-full h-auto aspect-square p-1 pointer-events-none";
-        
-        const nameText = el.appendChild(document.createElement('span'));
-        nameText.className = "text-[9px] text-[#5c4a49] font-black tracking-tighter leading-none pointer-events-none select-none mt-0.5";
-        nameText.innerText = tile.template.name.substring(3);
+        canvas.className = "w-full h-auto aspect-square pointer-events-none";
         
         el.addEventListener('click', (e) => handleTileClick(tile, e));
         container.appendChild(el);
@@ -2215,7 +1682,7 @@ async function handleTileClick(tile, event) {
     }
     
     // BUG FIX: 徹底刪除會自動排序的 .splice + .sort，
-    // 改用最單純、最可靠的 push，保證卡牌 100% 依照點擊順序飛入巴士尾部，不再亂跳！
+    // 改用最單純、最可靠的 push，保證卡牌 100% 依照點擊順序飛入晶石槽末尾，不再亂跳！
     GameState.slots.push(tile);
     
     // 動畫飛入邏輯保持不變，它會自動尋找最後一個空格
@@ -2240,8 +1707,7 @@ function animateTileFly(fromRect, targetSlotIdx, tile, onComplete) {
     flyEl.style.top = `${fromRect.top}px`;
     flyEl.style.width = `${fromRect.width}px`;
     flyEl.style.height = `${fromRect.height}px`;
-    flyEl.style.borderWidth = '2px';
-    flyEl.style.borderColor = '#2b1f1d';
+    flyEl.style.border = 'none';
     flyEl.style.boxShadow = '0 3px 0 #e9decb';
     flyEl.style.transform = 'translate3d(0, 0, 0)';
     flyEl.style.transformOrigin = 'top left';
@@ -2322,22 +1788,22 @@ async function endGame(result) {
     if (overlay) overlay.classList.remove('hidden');
     if (icon) icon.innerText = result === "victory" ? "🎉" : "🥺";
     if (title) {
-        title.innerText = result === "victory" ? "森林派對大成功！" : "巴士客滿了！";
+        title.innerText = result === "victory" ? "法陣共鳴大成功！" : "晶石槽客滿了！";
         title.className = `text-2xl font-black mb-2 font-pixel ${result === "victory" ? "text-pink-500" : "text-blue-500"}`;
     }
     if (subtitle) {
-        subtitle.innerText = "正在同步森林雲端數據，並進行安全防作弊重播驗證...";
+        subtitle.innerText = "正在同步聖域晶石雲端數據，並進行安全防作弊重播驗證...";
     }
     if (actionBtn) {
-        actionBtn.innerText = "正在認證戰績... 🌲";
+        actionBtn.innerText = "正在共鳴晶能... 🔮";
         actionBtn.disabled = true;
         actionBtn.className = "w-full py-3 bg-gray-300 text-gray-500 border-b-4 border-gray-400 font-pixel text-base rounded-xl transition-all cursor-not-allowed";
     }
     if (statsEl) {
         statsEl.innerHTML = `
             <div class="flex flex-col items-center justify-center py-6 text-gray-500 font-pixel text-[10px]">
-                <span class="animate-spin text-xl mb-1">🌲</span>
-                <span>正在進行安全防作弊重播驗證...</span>
+                <span class="animate-spin text-xl mb-1">🔮</span>
+                <span>正在引導法陣重播驗證...</span>
             </div>
         `;
     }
@@ -2384,8 +1850,8 @@ async function endGame(result) {
         const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
         statsEl.innerHTML = `
             <div class="font-bold">🏞️ 關卡名稱: <strong class="text-pink-500 font-pixel text-[11px]">${curLevel.title}</strong></div>
-            <div class="font-bold">✨ 動物夥伴: <strong class="text-gray-700">${curLevel.tileCount} 隻</strong></div>
-            <div class="font-bold">🧩 動物種類: <strong class="text-gray-700">${curLevel.typesCount} 種</strong></div>
+            <div class="font-bold">✨ 晶石總數: <strong class="text-gray-700">${curLevel.tileCount} 顆</strong></div>
+            <div class="font-bold">🧩 晶石種類: <strong class="text-gray-700">${curLevel.typesCount} 種</strong></div>
             <div class="font-bold">🌿 堆疊深度: <strong class="text-blue-500">${curLevel.layers} 層</strong></div>
             <hr class="my-2 border-dashed border-[#e9decb]">
             <div class="font-bold text-gray-500">🏆 生涯戰績: <strong class="text-pink-500">${wins}勝 / ${playerStats.losses}敗 (${winRate}%)</strong></div>
@@ -2395,27 +1861,27 @@ async function endGame(result) {
     
     if (result === "victory") {
         Sound.playWin();
-        if (subtitle) subtitle.innerText = "太厲害了！你成功將所有可愛的萌友安全送上小巴返家！";
+        if (subtitle) subtitle.innerText = "太厲害了！您成功將法陣中所有璀璨晶石完美共鳴！";
         if (actionBtn) {
             actionBtn.disabled = false;
             if (GameState.currentLevelIndex < LEVELS.length - 1) {
-                actionBtn.innerText = "前往下一關 🐾";
+                actionBtn.innerText = "共鳴下一關 🔮";
                 actionBtn.className = "w-full py-3 bg-pink-400 hover:bg-pink-300 text-white font-black text-base border-b-4 border-pink-600 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md";
             } else {
-                actionBtn.innerText = "今日大滿貫達成！🏆 (點此返回)";
+                actionBtn.innerText = "今日極致共鳴達成！🏆 (點此返回)";
                 actionBtn.className = "w-full py-3 bg-amber-400 hover:bg-amber-300 text-white font-black text-base border-b-4 border-amber-600 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md cursor-pointer";
                 if (subtitle) {
-                    subtitle.innerText = "🏆 太震撼了！您已順利通關今日所有關卡，達成大滿貫！明天的全新森林派對將在午夜開啟，明天見！🐾";
+                    subtitle.innerText = "🏆 太震撼了！您已順利通關今日所有晶石法陣，達成極致共鳴！明天的全新晶石法陣將在午夜開啟，明天見！🔮";
                 }
             }
         }
     } else {
         Sound.playLose();
         if (subtitle) subtitle.innerText = dailyTicketsLeft > 0 
-            ? "好遺憾！小巴座位已塞滿。重試將扣除 1 張今日乘車券（剩餘 " + dailyTicketsLeft + " 張）"
-            : "好遺憾！小巴座位已塞滿，且今日乘車券已耗盡。";
+            ? "好遺憾！晶石槽已客滿。重試將扣除 1 張今日啟動券（剩餘 " + dailyTicketsLeft + " 張）"
+            : "好遺憾！晶石槽已客滿，且今日啟動券已耗盡。";
         if (actionBtn) {
-            actionBtn.innerText = dailyTicketsLeft > 0 ? "重新挑戰 🔄" : "知道了 (返回) 🐾";
+            actionBtn.innerText = dailyTicketsLeft > 0 ? "重新挑戰 🔄" : "知道了 (返回) 🔮";
             actionBtn.disabled = false; // 永遠允許返回主畫面，不管有沒有票
             actionBtn.className = "w-full py-3 bg-blue-400 hover:bg-blue-300 text-white font-black text-base border-b-4 border-blue-600 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md";
         }
@@ -2507,7 +1973,7 @@ function renderSlots() {
             const canvas = document.createElement('canvas');
             canvas.width = 44;
             canvas.height = 44;
-            canvas.className = "w-[85%] h-auto aspect-square p-0.5 pointer-events-none";
+            canvas.className = "w-full h-auto aspect-square pointer-events-none";
             slotEl.appendChild(canvas);
             drawCachedTile(canvas, tile.template.id);
         } else {
@@ -2533,7 +1999,7 @@ function renderOut3Storage() {
         GameState.out3Storage.forEach(tile => {
             const el = document.createElement('div');
             el.className = "mini-tile bg-white cursor-pointer hover:border-pink-300 relative group shadow-sm";
-            el.title = "點擊小夥伴送回巴士";
+            el.title = "點擊將晶石放回消除槽";
             const canvas = document.createElement('canvas');
             canvas.width = 44;
             canvas.height = 44;
@@ -2541,7 +2007,7 @@ function renderOut3Storage() {
             
             el.addEventListener('click', async () => {
                 if (GameState.slots.length >= 7) {
-                    alert("小巴座位已滿，請先空出位置喔！");
+                    alert("晶石槽已滿，請先消除晶石空出位置喔！");
                     return;
                 }
                 Sound.playClick();
@@ -2551,7 +2017,7 @@ function renderOut3Storage() {
                 
                 GameState.out3Storage = GameState.out3Storage.filter(t => t.id !== tile.id);
                 
-                // 動態直接加入巴士末尾，不重排
+                // 動態直接加入晶石槽末尾，不重排
                 GameState.slots.push(tile);
                 const rect = el.getBoundingClientRect();
                 checkMatchThree(tile.typeId, rect.left + rect.width/2, rect.top + rect.height/2);
@@ -2656,8 +2122,8 @@ async function loadLeaderboardData() {
     if (container) {
         container.innerHTML = `
             <div class="flex flex-col items-center justify-center py-8 text-gray-400 font-pixel text-[10px]">
-                <span class="animate-spin text-xl mb-1">🌲</span>
-                <span>正在探尋森林英雄榜...</span>
+                <span class="animate-spin text-xl mb-1">🔮</span>
+                <span>正在共鳴聖域英雄榜...</span>
             </div>
         `;
     }
@@ -2717,8 +2183,8 @@ function renderLeaderboard() {
     if (list.length === 0) {
         container.innerHTML = `
             <div class="flex flex-col items-center justify-center py-12 text-gray-400 text-xs">
-                <span>🌲 森林裡目前空空如也 🌲</span>
-                <span class="text-[10px] text-gray-400 mt-1">快去挑戰並成為第一個榮登榜單的冒險者吧！</span>
+                <span>🔮 聖殿裡目前空空如也 🔮</span>
+                <span class="text-[10px] text-gray-400 mt-1">快去引導法陣，成為第一個留下共鳴烙印的冒險者吧！</span>
             </div>
         `;
         return;
@@ -2735,29 +2201,35 @@ function renderLeaderboard() {
 
         const winRatePercent = player.totalGames > 0 ? Math.round(player.winRate * 100) : 0;
 
-        let avatarSrc = player.playerAvatar || 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Animal';
-        if (avatarSrc.startsWith('emoji:')) {
-            const emoji = avatarSrc.substring(6);
-            avatarSrc = getPixelArtDataUrlFromEmoji(emoji);
+        let avatarSrc = "";
+        const gemId = player.currentAvatarId;
+        if (gemId !== undefined && gemId !== null && gemId !== -1 && gemId !== "undefined" && gemId !== "") {
+            const gem = TILE_TEMPLATES.find(t => t.id === Number(gemId));
+            if (gem) {
+                avatarSrc = getPixelArtDataUrl(gem.id);
+            }
+        }
+        if (!avatarSrc) {
+            avatarSrc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'></svg>";
         }
 
         const row = document.createElement('div');
-        row.className = `flex items-center gap-2 p-2 rounded-xl border ${
+        row.className = `flex items-center gap-3 p-2.5 rounded-xl border ${
             isSelf 
                 ? 'bg-pink-50/70 border-pink-200 shadow-sm' 
                 : 'bg-white hover:bg-gray-50 border-gray-100'
-        } transition-all text-xs`;
+        } transition-all text-sm`;
 
         row.innerHTML = `
             ${rankBadge}
-            <img class="w-7 h-7 rounded-full border border-gray-200 bg-gray-50 flex-shrink-0" src="${avatarSrc}" alt="Avatar">
+            <img class="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex-shrink-0" src="${avatarSrc}" alt="Avatar">
             <div class="flex-1 min-w-0">
                 <div class="font-black text-gray-700 truncate ${isSelf ? 'text-pink-600 font-bold' : ''}">${player.playerName}</div>
-                <div class="text-[9px] text-gray-400 font-semibold mt-0.5">勝率: ${winRatePercent}% | 總局數: ${player.totalGames || 0}</div>
+                <div class="text-xs text-gray-400 font-semibold mt-0.5">勝率: ${winRatePercent}% | 總局數: ${player.totalGames || 0}</div>
             </div>
             <div class="text-right flex-shrink-0 font-pixel">
-                <span class="text-[#ff8fa3] font-black text-sm">${player.wins || 0}</span>
-                <span class="text-[9px] text-gray-400 font-bold ml-0.5">勝</span>
+                <span class="text-[#ff8fa3] font-black text-base">${player.wins || 0}</span>
+                <span class="text-[11px] text-gray-400 font-bold ml-0.5">勝</span>
             </div>
         `;
 
@@ -2765,27 +2237,41 @@ function renderLeaderboard() {
     });
 }
 
-async function changeAvatar(animalId) {
-    if (currentAvatarId === animalId) return;
+async function changeAvatar(gemId) {
+    if (currentAvatarId === gemId) return;
     Sound.playClick();
     
-    const animal = TILE_TEMPLATES.find(a => a.id === animalId);
-    if (!animal) return;
+    const gem = TILE_TEMPLATES.find(a => a.id === gemId);
+    if (!gem) return;
     
-    const confirmSet = confirm(`要將「${animal.emoji} ${animal.name}」設定為您的個人頭像嗎？設定後將在全球排行榜中公開展示！🐾`);
+    const confirmSet = confirm(`要將「${gem.name}」設定為您的個人頭像嗎？設定後將在全球排行榜中公開展示！🔮`);
     if (!confirmSet) return;
     
     try {
         const res = await fetchWithAuth('/api/set-avatar', {
             method: 'POST',
-            body: JSON.stringify({ animalId })
+            body: JSON.stringify({ gemId })
         });
         
         if (res && res.success) {
-            currentAvatarId = animalId;
-            updateAvatarUI(res.playerAvatar);
+            currentAvatarId = gemId;
+            updateAvatarUI(currentAvatarId);
             renderCodex();
-            console.log(`👤 個人頭像已更新為: ${animal.name}`);
+            
+            // 🚀 超強體驗優化：即時更新排行榜快取中玩家自己的頭像，免刷新直接呈現！
+            if (currentUser) {
+                ['daily', 'weekly', 'monthly'].forEach(type => {
+                    const list = leaderboardCache[type];
+                    if (Array.isArray(list)) {
+                        const selfEntry = list.find(p => p.uid === currentUser.uid);
+                        if (selfEntry) {
+                            selfEntry.currentAvatarId = gemId;
+                        }
+                    }
+                });
+                renderLeaderboard();
+            }
+            console.log(`👤 個人頭像已更新為: ${gem.name}`);
         }
     } catch (e) {
         console.error("更新頭像失敗:", e);
@@ -2801,61 +2287,80 @@ function getEmojiSvgDataUrl(emoji) {
     return `data:image/svg+xml;base64,${base64}`;
 }
 
-function getPixelArtDataUrlFromEmoji(emoji) {
-    const animal = TILE_TEMPLATES.find(t => t.emoji === emoji);
-    if (!animal) {
-        // 如果沒找到對應的像素模板，降級使用高清 Emoji 向量圖
-        return getEmojiSvgDataUrl(emoji);
+function getPixelArtDataUrl(gemId) {
+    const gem = TILE_TEMPLATES.find(t => t.id === Number(gemId));
+    if (!gem) {
+        return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'></svg>";
     }
     
-    // 1. 建立一個 16x16 像素的迷你畫布，用來精準繪製 1-to-1 原始像素
-    const pixelCanvas = document.createElement('canvas');
-    pixelCanvas.width = 16;
-    pixelCanvas.height = 16;
-    const pCtx = pixelCanvas.getContext('2d');
-    
-    for (let r = 0; r < 16; r++) {
-        for (let c = 0; c < 16; c++) {
-            const char = animal.grid[r][c];
-            if (char !== '.' && PALETTE[char]) {
-                pCtx.fillStyle = PALETTE[char];
-                pCtx.fillRect(c, r, 1, 1);
-            }
-        }
-    }
-    
-    // 2. 建立 128x128 高解析度頭像畫布，繪製粉色圓形底色
     const mainCanvas = document.createElement('canvas');
     mainCanvas.width = 128;
     mainCanvas.height = 128;
     const ctx = mainCanvas.getContext('2d');
     
+    ctx.save();
+    
+    // 建立一個粉色圓形底盤
     ctx.fillStyle = '#fff5f7';
     ctx.beginPath();
-    ctx.arc(64, 64, 64, 0, Math.PI * 2); // 圓形底
+    ctx.arc(64, 64, 64, 0, Math.PI * 2);
     ctx.fill();
+    ctx.clip(); // 採用剪裁路徑，確保超大縮放的圖片不溢出圓盤
     
-    // 3. 🛡️ 關閉平滑縮放（Nearest-Neighbor Scaling），保證 16x16 像素無失真、鋸齒分明、銳利呈現！
-    ctx.imageSmoothingEnabled = false;
-    ctx.msImageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
+    const imgId = gem.id + 1;
+    const gemImg = gemImages[imgId];
+    if (gemImg && gemImg.complete) {
+        const destSize = 108; // 增加基礎尺寸（原為 96），使圖片佔比更大
+        const imgW = gemImg.naturalWidth || gemImg.width;
+        const imgH = gemImg.naturalHeight || gemImg.height;
+        const ratio = imgW / imgH;
+        
+        let dWidth = destSize;
+        let dHeight = destSize;
+        
+        if (ratio > 1) {
+            dHeight = destSize / ratio;
+        } else {
+            dWidth = destSize * ratio;
+        }
+        
+        const zoom = 1.45; // 提高縮放比例（原為 1.25），去除多餘空白
+        const zWidth = dWidth * zoom;
+        const zHeight = dHeight * zoom;
+        
+        const dx = 10 + (destSize - zWidth) / 2; // 10 為 (128 - 108) / 2
+        const dy = 10 + (destSize - zHeight) / 2;
+        
+        ctx.drawImage(gemImg, dx, dy, zWidth, zHeight);
+    }
     
-    // 留下 16px 邊界，將 16x16 放大至 96x96 像素
-    ctx.drawImage(pixelCanvas, 0, 0, 16, 16, 16, 16, 96, 96);
+    ctx.restore();
     
     return mainCanvas.toDataURL('image/png');
 }
 
-function updateAvatarUI(avatarStr) {
+function getPixelArtDataUrlFromEmoji(emoji) {
+    const gem = TILE_TEMPLATES.find(t => t.emoji === emoji || t.name === emoji);
+    if (gem) {
+        return getPixelArtDataUrl(gem.id);
+    }
+    return getEmojiSvgDataUrl(emoji);
+}
+
+function updateAvatarUI(gemId) {
     const avatarEl = document.getElementById('user-avatar');
     if (!avatarEl) return;
     
-    if (avatarStr.startsWith('emoji:')) {
-        const emoji = avatarStr.substring(6);
-        // 🚀 頂級視覺更新：直接渲染為手繪像素風頭像！
-        avatarEl.src = getPixelArtDataUrlFromEmoji(emoji);
+    if (gemId === undefined || gemId === null || gemId === -1 || gemId === "undefined" || gemId === "") {
+        avatarEl.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'></svg>";
+        return;
+    }
+    
+    const gem = TILE_TEMPLATES.find(t => t.id === Number(gemId));
+    if (gem) {
+        avatarEl.src = getPixelArtDataUrl(gem.id);
     } else {
-        avatarEl.src = avatarStr;
+        avatarEl.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'></svg>";
     }
 }
 
@@ -2863,8 +2368,9 @@ async function checkPendingRewards() {
     const unclaimed = pendingRewards.find(r => !r.claimed);
     if (!unclaimed) return;
     
-    const animal = TILE_TEMPLATES.find(a => a.id === unclaimed.animalId);
-    if (!animal) return;
+    const gemIdToClaim = (unclaimed.gemId !== undefined) ? unclaimed.gemId : unclaimed.animalId;
+    const gem = TILE_TEMPLATES.find(a => a.id === gemIdToClaim);
+    if (!gem) return;
     
     // 播放慶祝音效
     Sound.playWin();
@@ -2882,16 +2388,16 @@ async function checkPendingRewards() {
             <h2 class="text-lg font-black text-pink-500 font-pixel mb-1">${titleText}</h2>
             <p class="text-xs text-gray-500 font-bold mb-4">恭喜您榮獲第 ${unclaimed.rank} 名！系統特別為您派發專屬獎勵！</p>
             
-            <div class="w-24 h-24 rounded-2xl border-4 ${unclaimed.isShiny ? 'shiny-border' : 'border-pink-100'} bg-pink-50/50 flex items-center justify-center text-5xl mb-4 shadow-inner relative">
-                ${animal.emoji}
+            <div class="w-24 h-24 rounded-2xl border-4 ${unclaimed.isShiny ? 'shiny-border' : 'border-pink-100'} bg-pink-50/50 flex items-center justify-center mb-4 shadow-inner relative">
+                <img src="${getPixelArtDataUrl(gem.id)}" class="w-16 h-16 object-contain pointer-events-none select-none">
                 ${unclaimed.isShiny ? '<span class="absolute -top-2 -right-2 bg-amber-400 text-white text-[8px] px-1.5 py-0.5 rounded-full font-black shadow border border-white">★閃耀</span>' : ''}
             </div>
             
-            <h3 class="text-base font-black text-gray-700 font-sans mb-1">${shinyText}${animal.emoji} ${animal.name}</h3>
-            <p class="text-[10px] text-gray-400 font-medium leading-relaxed mb-6">${animal.desc}</p>
+            <h3 class="text-base font-black text-gray-700 font-sans mb-1">${shinyText}${gem.name}</h3>
+            <p class="text-[10px] text-gray-400 font-medium leading-relaxed mb-6">${gem.desc}</p>
             
             <button id="btn-claim-reward" class="w-full py-2.5 bg-pink-400 hover:bg-pink-300 text-white font-black text-xs border-b-4 border-pink-600 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md cursor-pointer">
-                開心收入圖鑑 🐾
+                開心放入圖鑑 🔮
             </button>
         </div>
     `;
@@ -2912,11 +2418,11 @@ async function checkPendingRewards() {
             if (res && res.success) {
                 // 更新本機狀態
                 unclaimed.claimed = true;
-                if (!unlockedCodex.includes(unclaimed.animalId)) {
-                    unlockedCodex.push(unclaimed.animalId);
+                if (!unlockedCodex.includes(gemIdToClaim)) {
+                    unlockedCodex.push(gemIdToClaim);
                 }
-                if (unclaimed.isShiny && !shinyCodex.includes(unclaimed.animalId)) {
-                    shinyCodex.push(unclaimed.animalId);
+                if (unclaimed.isShiny && !shinyCodex.includes(gemIdToClaim)) {
+                    shinyCodex.push(gemIdToClaim);
                 }
                 
                 // 移除 overlay

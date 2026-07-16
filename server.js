@@ -74,37 +74,19 @@ async function verifyFirebaseToken(req, res, next) {
 
 // 4. API 路由
 
-const ANIMALS_LIST = [
-    { id: 0, name: "圓滾滾熊貓", emoji: "🐼" },
-    { id: 1, name: "萌萌無尾熊", emoji: "🐨" },
-    { id: 2, name: "波斯小橘貓", emoji: "🐱" },
-    { id: 3, name: "大臉萌柴犬", emoji: "🐶" },
-    { id: 4, name: "粉嫩小豬豬", emoji: "🐷" },
-    { id: 5, name: "呆萌大眼蛙", emoji: "🐸" },
-    { id: 6, name: "長耳小白兔", emoji: "🐰" },
-    { id: 7, name: "澎鬆小綿羊", emoji: "🐑" },
-    { id: 8, name: "黃金小萌雞", emoji: "🐥" },
-    { id: 9, name: "頑皮小狐狸", emoji: "🦊" },
-    { id: 10, name: "機靈小松鼠", emoji: "🐿️" },
-    { id: 11, name: "暖心大棕熊", emoji: "🐻" },
-    { id: 12, name: "優雅白天鵝", emoji: "🦢" },
-    { id: 13, name: "溫和長頸鹿", emoji: "🦒" },
-    { id: 14, name: "調皮小猴子", emoji: "🐒" },
-    { id: 15, name: "睿智小夜貓", emoji: "🦉" },
-    { id: 16, name: "慢吞吞烏龜", emoji: "🐢" },
-    { id: 17, name: "害羞小刺蝟", emoji: "🦔" },
-    { id: 18, name: "大角小麋鹿", emoji: "🦌" },
-    { id: 19, name: "條紋小斑馬", emoji: "🦓" },
-    { id: 20, name: "憨厚大河馬", emoji: "🦛" },
-    { id: 21, name: "威武小獅子", emoji: "🦁" },
-    { id: 22, name: "神秘小黑豹", emoji: "🐆" },
-    { id: 23, name: "可愛大黃鴨", emoji: "🦆" },
-    { id: 24, name: "粉紅大嘴鳥", emoji: "🦩" },
-    { id: 25, name: "淘氣浣熊仔", emoji: "🦝" },
-    { id: 26, name: "深海小海獺", emoji: "🦦" },
-    { id: 27, name: "軟萌草泥馬", emoji: "🦙" },
-    { id: 28, name: "大口袋袋鼠", emoji: "🦘" },
-    { id: 29, name: "胖乎乎海獅", emoji: "🦭" }
+const GEMS_LIST = [
+    { id: 0, name: "圓形鑽石"},
+    { id: 1, name: "心形紅寶石"},
+    { id: 2, name: "方形藍寶石"},
+    { id: 3, name: "橢圓祖母綠"},
+    { id: 4, name: "梨形黃水晶"},
+    { id: 5, name: "三角紫水晶"},
+    { id: 6, name: "枕形黃寶石"},
+    { id: 7, name: "橢圓粉寶石"},
+    { id: 8, name: "梨形海藍寶"},
+    { id: 9, name: "馬眼紅寶石"},
+    { id: 10, name: "公主方藍寶石"},
+    { id: 11, name: "月光石"}
 ];
 
 function getTodayString() {
@@ -243,20 +225,20 @@ async function performWeeklySettlement(targetWeek) {
                 if (Array.isArray(pData.pendingRewards)) pendingRewards = pData.pendingRewards;
             }
             
-            // 找出未解鎖動物
+            // 找出未解鎖晶石
             let lockedIds = [];
-            for (let id = 0; id < 30; id++) {
+            for (let id = 0; id < GEMS_LIST.length; id++) {
                 if (!unlockedCodex.includes(id)) {
                     lockedIds.push(id);
                 }
             }
             
-            let animalIdToUnlock = 0;
+            let gemIdToUnlock = 0;
             if (lockedIds.length > 0) {
                 const randIdx = Math.floor(Math.random() * lockedIds.length);
-                animalIdToUnlock = lockedIds[randIdx];
+                gemIdToUnlock = lockedIds[randIdx];
             } else {
-                animalIdToUnlock = Math.floor(Math.random() * 30);
+                gemIdToUnlock = Math.floor(Math.random() * GEMS_LIST.length);
             }
             
             const isShiny = rank <= 3;
@@ -265,7 +247,7 @@ async function performWeeklySettlement(targetWeek) {
                 rewardId: `weekly_${targetWeek}`,
                 type: "weekly",
                 rank: rank,
-                animalId: animalIdToUnlock,
+                gemId: gemIdToUnlock,
                 isShiny: isShiny,
                 claimed: false
             });
@@ -314,20 +296,20 @@ async function performMonthlySettlement(targetMonth) {
                 if (Array.isArray(pData.pendingRewards)) pendingRewards = pData.pendingRewards;
             }
             
-            // 找出未解鎖動物
+            // 找出未解鎖晶石
             let lockedIds = [];
-            for (let id = 0; id < 30; id++) {
+            for (let id = 0; id < GEMS_LIST.length; id++) {
                 if (!unlockedCodex.includes(id)) {
                     lockedIds.push(id);
                 }
             }
             
-            let animalIdToUnlock = 0;
+            let gemIdToUnlock = 0;
             if (lockedIds.length > 0) {
                 const randIdx = Math.floor(Math.random() * lockedIds.length);
-                animalIdToUnlock = lockedIds[randIdx];
+                gemIdToUnlock = lockedIds[randIdx];
             } else {
-                animalIdToUnlock = Math.floor(Math.random() * 30);
+                gemIdToUnlock = Math.floor(Math.random() * GEMS_LIST.length);
             }
             
             const isShiny = rank <= 3;
@@ -336,7 +318,7 @@ async function performMonthlySettlement(targetMonth) {
                 rewardId: `monthly_${targetMonth}`,
                 type: "monthly",
                 rank: rank,
-                animalId: animalIdToUnlock,
+                gemId: gemIdToUnlock,
                 isShiny: isShiny,
                 claimed: false
             });
@@ -369,11 +351,10 @@ app.get('/api/load-profile', verifyFirebaseToken, async (req, res) => {
             maxLevelReached: 0
         };
         
-        let unlockedCodex = []; // 一開始無解鎖
+                let unlockedCodex = []; // 一開始無解鎖
         let shinyCodex = [];
         let currentAvatarId = -1;
         let pendingRewards = [];
-        let playerAvatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${uid}`;
         
         if (doc.exists) {
             const data = doc.data();
@@ -382,7 +363,6 @@ app.get('/api/load-profile', verifyFirebaseToken, async (req, res) => {
             if (Array.isArray(data.shinyCodex)) shinyCodex = data.shinyCodex;
             if (data.currentAvatarId !== undefined) currentAvatarId = data.currentAvatarId;
             if (Array.isArray(data.pendingRewards)) pendingRewards = data.pendingRewards;
-            if (data.playerAvatar) playerAvatar = data.playerAvatar;
         } else {
             // 雲端無檔案時，初始化全新數據
             await userDocRef.set({
@@ -391,7 +371,6 @@ app.get('/api/load-profile', verifyFirebaseToken, async (req, res) => {
                 shinyCodex,
                 currentAvatarId,
                 pendingRewards,
-                playerAvatar,
                 created: admin.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
         }
@@ -402,8 +381,7 @@ app.get('/api/load-profile', verifyFirebaseToken, async (req, res) => {
             unlockedCodex, 
             shinyCodex, 
             currentAvatarId, 
-            pendingRewards,
-            playerAvatar
+            pendingRewards
         });
     } catch (e) {
         console.error("API /api/load-profile 錯誤: ", e);
@@ -412,14 +390,14 @@ app.get('/api/load-profile', verifyFirebaseToken, async (req, res) => {
 });
 
 /**
- * 👤 API J: 設定玩家個人頭像 (僅限已解鎖的圖鑑動物)
+ * 👤 API J: 設定玩家個人頭像 (僅限已解鎖的圖鑑晶石)
  */
 app.post('/api/set-avatar', verifyFirebaseToken, async (req, res) => {
     const uid = req.user.uid;
-    const { animalId } = req.body;
+    const { gemId } = req.body;
     
-    if (animalId === undefined) {
-        return res.status(400).json({ error: "缺少 animalId 參數" });
+    if (gemId === undefined) {
+        return res.status(400).json({ error: "缺少 gemId 參數" });
     }
     
     try {
@@ -433,23 +411,20 @@ app.post('/api/set-avatar', verifyFirebaseToken, async (req, res) => {
         const data = doc.data();
         const unlocked = data.unlockedCodex || [];
         
-        if (!unlocked.includes(animalId)) {
-            return res.status(403).json({ error: "該小動物尚未解鎖，無法設定為頭像！" });
+        if (!unlocked.includes(gemId)) {
+            return res.status(403).json({ error: "該精緻晶石尚未解鎖，無法設定為頭像！" });
         }
         
-        const targetAnimal = ANIMALS_LIST.find(a => a.id === animalId);
-        if (!targetAnimal) {
-            return res.status(400).json({ error: "無效的動物 ID" });
+        const targetGem = GEMS_LIST.find(d => d.id === gemId);
+        if (!targetGem) {
+            return res.status(400).json({ error: "無效的晶石 ID" });
         }
-        
-        const emojiAvatar = `emoji:${targetAnimal.emoji}`;
         
         await userDocRef.set({
-            currentAvatarId: animalId,
-            playerAvatar: emojiAvatar
+            currentAvatarId: gemId
         }, { merge: true });
         
-        return res.json({ success: true, currentAvatarId: animalId, playerAvatar: emojiAvatar });
+        return res.json({ success: true, currentAvatarId: gemId });
     } catch (e) {
         console.error("set-avatar error:", e);
         return res.status(500).json({ error: "設定頭像失敗" });
@@ -493,12 +468,15 @@ app.post('/api/claim-reward', verifyFirebaseToken, async (req, res) => {
             
             reward.claimed = true;
             
-            if (!unlockedCodex.includes(reward.animalId)) {
-                unlockedCodex.push(reward.animalId);
-            }
-            
-            if (reward.isShiny && !shinyCodex.includes(reward.animalId)) {
-                shinyCodex.push(reward.animalId);
+            const gemIdToClaim = (reward.gemId !== undefined) ? reward.gemId : reward.animalId;
+            if (gemIdToClaim !== undefined) {
+                if (!unlockedCodex.includes(gemIdToClaim)) {
+                    unlockedCodex.push(gemIdToClaim);
+                }
+                
+                if (reward.isShiny && !shinyCodex.includes(gemIdToClaim)) {
+                    shinyCodex.push(gemIdToClaim);
+                }
             }
             
             transaction.update(userDocRef, {
@@ -824,16 +802,19 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
             }
             
             const pName = req.user.name || "冒險者";
-            let pAvatar = req.user.picture || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${uid}`;
-            if (userDoc.exists && userDoc.data().playerAvatar) {
-                pAvatar = userDoc.data().playerAvatar;
+            let curAvatarId = -1;
+            if (userDoc.exists) {
+                const uData = userDoc.data();
+                if (uData.currentAvatarId !== undefined) {
+                    curAvatarId = uData.currentAvatarId;
+                }
             }
             
             let dailyLeaderboardData = {
                 uid,
                 dateStr,
                 playerName: pName,
-                playerAvatar: pAvatar,
+                currentAvatarId: curAvatarId,
                 wins: 0,
                 losses: 0,
                 totalGames: 0,
@@ -851,7 +832,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 uid,
                 weekStr,
                 playerName: pName,
-                playerAvatar: pAvatar,
+                currentAvatarId: curAvatarId,
                 wins: 0,
                 losses: 0,
                 totalGames: 0,
@@ -869,7 +850,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 uid,
                 monthStr,
                 playerName: pName,
-                playerAvatar: pAvatar,
+                currentAvatarId: curAvatarId,
                 wins: 0,
                 losses: 0,
                 totalGames: 0,
@@ -1426,6 +1407,6 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
 
 // 6. 啟動伺服器
 app.listen(PORT, () => {
-    console.log(`🚀 可愛動物森林安全後端已在 Port ${PORT} 啟動！`);
+    console.log(`🚀 聖域晶石殿堂安全後端已在 Port ${PORT} 啟動！`);
     console.log(`🌍 API 連線入口：http://localhost:${PORT}`);
 });

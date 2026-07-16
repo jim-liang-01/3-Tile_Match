@@ -1,7 +1,7 @@
 {
   "name": "tile-match-backend",
   "version": "1.0.0",
-  "description": "Secure Backend Server for Cute Animal Tile Match",
+  "description": "Secure Backend Server for Gemstone Sanctum Tile Match",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

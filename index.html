@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>可愛動物森林：每日限定堆疊消 (Cute Animal Forest)</title>
+    <title>聖域晶石殿堂：每日限定晶石共鳴 (Gemstone Sanctum)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts for Pixel-style and custom fonts -->
@@ -26,13 +26,13 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-[#fcf8f2] text-[#4a3e3d] min-h-screen flex flex-col items-center justify-between font-sans selection:bg-pink-300 selection:text-pink-900 overflow-x-hidden">
+<body class="text-[#4a3e3d] min-h-screen flex flex-col items-center justify-between font-sans selection:bg-pink-300 selection:text-pink-900 overflow-x-hidden">
 
     <!-- 🌲 Instant-Render Retro Loading Splash Screen (z-[300] to cover everything instantly on slow networks) -->
     <div id="app-splash" style="position: fixed; inset: 0; background-color: #fcf8f2; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; transition: opacity 0.4s ease;">
-        <div style="font-size: 70px; margin-bottom: 20px; animation: bounce-splash 1.2s infinite; select-none: none;">🐼</div>
-        <div style="font-size: 16px; font-weight: 900; color: #ff8fa3; margin-bottom: 8px; letter-spacing: 1px;">正在進入萌寵森林...</div>
-        <div style="font-size: 10px; color: #94a3b8; font-weight: bold; animation: pulse-splash 1.5s infinite;">正在同步森林魔法組態，請稍候 🚍</div>
+        <div style="font-size: 70px; margin-bottom: 20px; animation: bounce-splash 1.2s infinite; select-none: none;">🔮</div>
+        <div style="font-size: 16px; font-weight: 900; color: #ff8fa3; margin-bottom: 8px; letter-spacing: 1px;">正在進入聖域晶石殿堂...</div>
+        <div style="font-size: 10px; color: #94a3b8; font-weight: bold; animation: pulse-splash 1.5s infinite;">正在引導聖殿晶能法陣，請稍候 🚍</div>
         <style>
             @keyframes bounce-splash {
                 0%, 100% { transform: translateY(0); }
@@ -48,20 +48,20 @@
     <!-- Header Section (Restart button removed) -->
     <header class="w-full max-w-4xl px-4 py-3 flex justify-between items-center border-b-4 border-[#e9decb] bg-[#fffbf4] mt-2 rounded-t-2xl shadow-md">
         <div class="flex items-center gap-3">
-            <span class="text-3xl animate-bounce">🐼</span>
+            <span class="text-3xl animate-bounce">🔮</span>
             <div>
-                <h1 class="text-xl md:text-2xl font-black text-[#ff8fa3] tracking-wider font-pixel shadow-sm">可愛動物森林</h1>
-                <p class="text-xs text-gray-500 font-bold" id="header-subtitle">每日限定挑戰 • 像素堆疊消</p>
+                <h1 class="text-xl md:text-2xl font-black text-[#ff8fa3] tracking-wider font-pixel shadow-sm">聖域晶石殿堂</h1>
+                <p class="text-xs text-gray-500 font-bold" id="header-subtitle">每日限定挑戰 • 像素晶石共鳴</p>
             </div>
         </div>
         
         <!-- User Authentication Area -->
-        <div id="user-profile" class="hidden items-center gap-2">
+        <div id="user-profile" class="hidden items-center gap-2.5">
             <div class="flex flex-col items-end leading-none">
-                <span id="user-name" class="text-xs font-black text-gray-700 truncate max-w-[100px]">遊客</span>
-                <span id="user-stats" class="text-[9px] text-pink-400 font-bold mt-0.5 cursor-help" title="正在載入戰績...">🏆 0勝/0敗 (0%)</span>
+                <span id="user-name" class="text-sm font-black text-gray-700 truncate max-w-[130px]">遊客</span>
+                <span id="user-stats" class="text-[11px] text-pink-400 font-bold mt-1 cursor-help" title="正在載入戰績...">🏆 0勝/0敗 (0%)</span>
             </div>
-            <img id="user-avatar" class="w-8 h-8 rounded-full border-2 border-pink-300 bg-pink-100" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Panda" alt="Avatar">
+            <img id="user-avatar" class="w-11 h-11 rounded-full border-2 border-pink-300 bg-pink-100 flex-shrink-0" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Panda" alt="Avatar">
             <button id="btn-logout" class="flex items-center gap-1 px-2 py-1 hover:bg-red-50 hover:text-red-500 hover:border-red-200 text-gray-500 rounded-lg text-[10px] font-black tracking-tight transition-all border border-gray-200 active:scale-95" title="登出">
                 <span>🚪</span>
                 <span>登出</span>
@@ -104,7 +104,7 @@
             <!-- Matching Slots Bar (7 slots) (Optimized flex slots alignment) -->
             <div class="bg-[#fdfbf7] p-4 border-t-4 border-[#e9decb] flex flex-col items-center">
                 <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2 flex justify-between w-full max-w-[450px] px-1">
-                    <span>🐾 小動物巴士 (最多乘坐 7 隻)</span>
+                    <span>🔮 聖域寶石槽 (最多容納 7 顆)</span>
                     <span id="slot-count-text" class="text-pink-500 font-bold">0 / 7</span>
                 </div>
                 <div class="relative w-full max-w-[450px] min-h-[78px] h-auto bg-[#f5efe6] rounded-xl border-2 border-[#d5c7b3] flex items-center p-2 shadow-inner">
@@ -123,18 +123,18 @@
                 </button>
                 <button id="skill-out3" class="flex-1 max-w-[120px] py-1.5 px-2 bg-[#e8f5e9] hover:bg-[#c8e6c9] border-b-4 border-[#81c784] active:border-b-0 active:mt-1 rounded-xl flex flex-col items-center transition-all disabled:opacity-40 disabled:pointer-events-none relative group text-green-700">
                     <span class="text-xl">📤</span>
-                    <span class="text-[10px] font-black">移出巴士</span>
+                    <span class="text-[10px] font-black">移出寶石</span>
                     <span id="count-out3" class="absolute -top-1.5 -right-1.5 bg-[#4caf50] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow">1</span>
                 </button>
                 <button id="skill-shuffle" class="flex-1 max-w-[120px] py-1.5 px-2 bg-[#e3f2fd] hover:bg-[#bbdefb] border-[#64b5f6] border-b-4 active:border-b-0 active:mt-1 rounded-xl flex flex-col items-center transition-all disabled:opacity-40 disabled:pointer-events-none relative group text-blue-700">
                     <span class="text-xl">🔀</span>
-                    <span class="text-[10px] font-black">森林派對</span>
+                    <span class="text-[10px] font-black">寶石派對</span>
                     <span id="count-shuffle" class="absolute -top-1.5 -right-1.5 bg-[#2196f3] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow">1</span>
                 </button>
             </div>
         </div>
 
-        <!-- Right Side: Sidebar Panel (Contains Animal Codex only) -->
+        <!-- Right Side: Sidebar Panel (Contains Gemstone Codex only) -->
         <div class="w-full md:w-80 flex flex-col">
             <div class="bg-[#fffdf9] p-4 rounded-2xl border-4 border-[#e9decb] shadow-md flex-1 flex flex-col">
                 <div class="p-3 bg-[#ffe5ec]/50 border border-[#ffccd5] rounded-xl flex flex-col gap-1.5 mb-3 shadow-inner">
@@ -150,10 +150,10 @@
                 <!-- Sidebar Tabs: Codex vs Leaderboard -->
                 <div class="flex border-b-2 border-[#f5efe6] pb-1 gap-1 select-none">
                     <button id="tab-codex" class="flex-1 pb-1.5 text-xs font-black text-[#ff8fa3] border-b-2 border-[#ff8fa3] tracking-wider transition-all focus:outline-none">
-                        📖 萌友圖鑑
+                        📖 寶石圖鑑
                     </button>
                     <button id="tab-leaderboard" class="flex-1 pb-1.5 text-xs font-black text-gray-400 border-b-2 border-transparent tracking-wider hover:text-pink-400 transition-all focus:outline-none">
-                        🏆 森林英雄榜
+                        🏆 聖域英雄榜
                     </button>
                 </div>
 
@@ -184,7 +184,7 @@
     <!-- Out-of-slot storage -->
     <div id="out3-storage" class="w-full max-w-4xl px-4 py-2 bg-[#fffdf9] border-2 border-dashed border-[#ffb3c1] rounded-2xl mb-4 hidden animate-fade-in flex-col items-center">
         <div class="text-[10px] text-gray-500 font-bold mb-1 flex justify-between w-full max-w-[300px]">
-            <span>🌿 臨時草地圍欄 (點選小動物可返回巴士)</span>
+            <span>🔮 臨時緩存法陣 (點選晶石可返回下方晶石槽)</span>
             <span class="text-pink-500 font-bold" id="out3-count-text">0 / 3</span>
         </div>
         <div class="flex gap-2 p-2 bg-[#f4fbf4] rounded-xl border border-green-200 min-h-[70px] min-w-[200px] justify-center items-center" id="out3-container"></div>
@@ -196,9 +196,9 @@
     <div id="login-overlay" class="fixed inset-0 bg-[#fcf8f2]/95 backdrop-blur-md z-[100] flex flex-col items-center justify-start md:justify-center overflow-y-auto p-4 py-10 md:p-6 text-center animate-fade-in">
         <div class="bg-white p-8 rounded-2xl border-4 border-[#ffb3c1] max-w-sm w-full shadow-2xl relative overflow-hidden my-auto">
             <div class="absolute top-0 inset-x-0 h-3 bg-[#ffb3c1]"></div>
-            <span class="text-6xl mb-4 block animate-bounce">🏕️</span>
-            <h2 class="text-xl font-black text-gray-700 font-pixel mb-1 text-[#ff8fa3]">歡迎光臨萌寵森林</h2>
-            <p class="text-xs text-gray-500 mb-6 font-bold leading-relaxed">這是一個每日限定挑戰！所有玩家每天都將面對相同的獨刻關卡，請登入以扣除每日乘車券並統計您的戰績！</p>
+            <span class="text-6xl mb-4 block animate-bounce">🔮</span>
+            <h2 class="text-xl font-black text-gray-700 font-pixel mb-1 text-[#ff8fa3]">歡迎光臨聖域晶石殿堂</h2>
+            <p class="text-xs text-gray-500 mb-6 font-bold leading-relaxed">這是一個每日限定挑戰！所有玩家每天都將面對相同的獨特關卡，請登入以扣除每日晶能啟動券並統計您的共鳴戰績！</p>
             
             <div class="space-y-2.5">
                 <button id="btn-login-google" class="w-full py-2.5 bg-[#4285f4] hover:bg-[#357ae8] text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 border-b-4 border-[#1a56cc] active:border-b-0 active:mt-1 transition-all shadow-md">
@@ -211,19 +211,19 @@
     <!-- Game No-More-Tickets Overlay (z-[100]) -->
     <div id="ticket-overlay" class="fixed inset-0 bg-[#fcf8f2]/95 backdrop-blur-md z-[100] flex flex-col items-center justify-start md:justify-center overflow-y-auto p-4 py-10 md:p-6 text-center animate-fade-in hidden">
         <div class="bg-white p-8 rounded-2xl border-4 border-[#ffb3c1] max-w-sm w-full shadow-2xl relative my-auto">
-            <span class="text-6xl mb-4 block animate-bounce">🚌</span>
-            <h2 class="text-xl font-black text-gray-700 font-pixel mb-1 text-[#ff8fa3]">今天乘車券已用完</h2>
+            <span class="text-6xl mb-4 block animate-bounce">🔮</span>
+            <h2 class="text-xl font-black text-gray-700 font-pixel mb-1 text-[#ff8fa3]">今日晶能已用盡</h2>
             <p class="text-xs text-gray-500 mb-6 font-bold leading-relaxed">
-                真遺憾！今天巴士的所有座位都滿載囉！每位玩家每天限定玩 <strong class="text-pink-500">3</strong> 局，明天的全新森林派對將在午夜重新開啟！
+                真遺憾！今天法陣的所有共鳴能量都已耗盡囉！每位玩家每天限定啟動 <strong class="text-pink-500">3</strong> 局，明天的全新晶石法陣將在午夜重新開啟！
             </p>
             <div class="p-3 bg-[#fef7ed] border border-[#e9decb] rounded-xl text-[10px] text-left text-gray-500 font-bold space-y-1 mb-4">
                 <div>📅 今天的日期: <span id="info-ticket-date" class="text-pink-500">2026-06-26</span></div>
-                <div>🎫 剩餘乘車券: <span class="text-red-500">0 / 3 張</span></div>
+                <div>🎫 剩餘啟動券: <span class="text-red-500">0 / 3 張</span></div>
             </div>
-            <p class="text-[10px] text-gray-400 font-bold">💡 明天會更換全新配置的所有 3 大關卡哦！</p>
+            <p class="text-[10px] text-gray-400 font-bold">💡 明天會更換全新配置的所有 5 大關卡哦！</p>
             
             <button id="btn-close-ticket" class="mt-4 w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-xs rounded-xl border-b-4 border-gray-300 active:border-b-0 active:mt-1 transition-all shadow-sm">
-                留在森林隨意逛逛 🌲
+                留在聖殿隨意逛逛 🔮
             </button>
         </div>
     </div>
@@ -234,15 +234,15 @@
             <div class="absolute top-0 inset-x-0 h-3 bg-[#ffb3c1]"></div>
             
             <div id="overlay-icon" class="text-6xl mb-4 animate-bounce">🎉</div>
-            <h2 id="overlay-title" class="text-2xl font-black text-[#ff8fa3] mb-2 font-pixel">森林派對大成功！</h2>
-            <p id="overlay-subtitle" class="text-gray-600 mb-6 text-sm font-bold">你成功送所有小動物回家啦！</p>
+            <h2 id="overlay-title" class="text-2xl font-black text-[#ff8fa3] mb-2 font-pixel">寶石共鳴大成功！</h2>
+            <p id="overlay-subtitle" class="text-gray-600 mb-6 text-sm font-bold">您成功集齊了所有璀璨的聖域寶石！</p>
             
             <!-- Overlay Level Stats -->
             <div id="overlay-stats" class="bg-[#fef7ed] p-4 rounded-xl mb-6 text-xs text-left space-y-2 border-2 border-[#e9decb] text-[#5c4a49]"></div>
 
             <div class="flex flex-col gap-2">
                 <button id="btn-overlay-action" class="w-full py-3 bg-[#ff8fa3] hover:bg-[#ffb3c1] text-white font-black text-base border-b-4 border-[#ff4d6d] active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md">
-                    進入下一關 🐾
+                    進入下一關 💎
                 </button>
             </div>
         </div>
@@ -250,8 +250,8 @@
 
     <!-- Footer -->
     <footer class="w-full py-4 bg-[#fffbf4] text-center text-[10px] text-gray-400 border-t-4 border-[#e9decb] mt-auto shadow-inner relative z-[110]">
-        <p class="font-pixel">🐾 可愛動物森林 © 2026 | 完美像素風美學</p>
-        <p class="mt-1 font-semibold text-gray-400">極致治癒的每日限定堆疊消 • 相同種子相同關卡</p>
+        <p class="font-pixel">🔮 聖域寶石殿堂 © 2026 | 完美像素風美學</p>
+        <p class="mt-1 font-semibold text-gray-400">極致奢華的每日限定晶石消 • 相同種子相同關卡</p>
     </footer>
 
     <!-- Audio and Particle rendering system -->

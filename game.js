@@ -468,46 +468,46 @@ const LEVELS = [
         num: 1,
         title: "第 1 關：晶石集結 🐣",
         badge: "第 1 關：晶石集結",
-        tileCount: 36,
-        typesCount: 5,
+        tileCount: 45,
+        typesCount: 6,
         layers: 3, 
-        desc: "聖殿晶石法陣入口處，有 5 種高透晶石正交錯堆疊。有些許重疊，小心引導能量喔！"
+        desc: "聖殿晶石法陣入口處，有 6 種高透晶石正交錯堆疊。難度適中，助您初步凝聚靈能！"
     },
     {
         num: 2,
-        title: "第 2 關：微光微隙 🌿",
-        badge: "第 2 關：微光微隙",
-        tileCount: 54,
-        typesCount: 8,
+        title: "第 2 關：微光漸亮 🌿",
+        badge: "第 2 關：微光漸亮",
+        tileCount: 72,
+        typesCount: 9,
         layers: 4, 
-        desc: "晶能流轉，有 8 種斑斕晶石正聚集在法陣邊緣。難度開始增加囉！"
+        desc: "9 種璀璨晶石在法陣邊緣匯聚，重疊加深，極度考驗靈感共鳴！"
     },
     {
         num: 3,
-        title: "第 3 關：繁星法陣 🐱",
-        badge: "第 3 關：繁星法陣",
-        tileCount: 72,
-        typesCount: 9,
+        title: "第 3 關：繁星晶格 🐱",
+        badge: "第 3 關：繁星晶格",
+        tileCount: 108,
+        typesCount: 11,
         layers: 5, 
-        desc: "聖殿主法陣中能量交織，9 種精緻晶石緊密堆疊。晶石槽空間吃緊，請細心規劃共鳴順序！"
+        desc: "聖殿主法陣中 11 種晶石緊密堆疊，收納空間吃緊，需要極致細心的策略！"
     },
     {
         num: 4,
         title: "第 4 關：聖域奧秘 🏔️",
         badge: "第 4 關：聖域奧秘",
-        tileCount: 90,
-        typesCount: 10,
+        tileCount: 144,
+        typesCount: 12,
         layers: 6, 
-        desc: "挑戰古老的聖域核心法陣！全部 10 種晶石層層交錯重疊達 6 層，極度考驗您的觀察極限！"
+        desc: "全部 12 種稀世晶石（包含比特幣金幣！）全面覺醒！重疊高達 6 層，這是一場硬仗！"
     },
     {
         num: 5,
         title: "第 5 關：終極共鳴 🐼",
         badge: "第 5 關：終極共鳴",
-        tileCount: 126,
-        typesCount: 10,
+        tileCount: 189,
+        typesCount: 12,
         layers: 7, 
-        desc: "極致奢華的聖域終極大共鳴！多達 126 顆能量晶石堆疊深達 7 層，這是考驗您大腦極限的智力迷宮！"
+        desc: "聖域終極大共鳴！189 顆能量晶石堆疊深達 7 層，只有最強大腦才能通關的傳奇智力迷宮！"
     }
 ];
 

@@ -1140,11 +1140,11 @@ function getInitialMidGameState(dateStr, lIdx) {
 // ==========================================
 
 const LEVELS = [
-    { tileCount: 45, typesCount: 6, layers: 3 }, // 第 1 關：晶石集結 🐣
-    { tileCount: 72, typesCount: 9, layers: 4 }, // 第 2 關：微光漸亮 🌿
-    { tileCount: 108, typesCount: 11, layers: 5 }, // 第 3 關：繁星晶格 🐱
-    { tileCount: 144, typesCount: 12, layers: 6 }, // 第 4 關：聖域奧秘 🏔️
-    { tileCount: 189, typesCount: 12, layers: 7 } // 第 5 關：終極共鳴 🐼
+    { tileCount: 36, typesCount: 6, layers: 4 }, // 第 1 關：晶石集結 🐣
+    { tileCount: 54, typesCount: 9, layers: 5 }, // 第 2 關：微光漸亮 🌿
+    { tileCount: 72, typesCount: 11, layers: 6 }, // 第 3 關：繁星晶格 🐱
+    { tileCount: 162, typesCount: 12, layers: 9 }, // 第 4 關：聖域奧秘 🏔️
+    { tileCount: 252, typesCount: 12, layers: 13 } // 第 5 關：終極共鳴 🐼
 ];
 
 function mulberry32(a) {

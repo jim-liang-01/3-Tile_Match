@@ -468,46 +468,46 @@ const LEVELS = [
         num: 1,
         title: "第 1 關：晶石集結 🐣",
         badge: "第 1 關：晶石集結",
-        tileCount: 45,
+        tileCount: 36,
         typesCount: 6,
-        layers: 3, 
-        desc: "聖殿晶石法陣入口處，有 6 種高透晶石正交錯堆疊。難度適中，助您初步凝聚靈能！"
+        layers: 4, 
+        desc: "聖殿晶石法陣入口處，有 6 種高透晶石正交錯堆疊。重疊加深至 4 層，考驗您的初步引導！"
     },
     {
         num: 2,
         title: "第 2 關：微光漸亮 🌿",
         badge: "第 2 關：微光漸亮",
-        tileCount: 72,
+        tileCount: 54,
         typesCount: 9,
-        layers: 4, 
-        desc: "9 種璀璨晶石在法陣邊緣匯聚，重疊加深，極度考驗靈感共鳴！"
+        layers: 5, 
+        desc: "9 種璀璨晶石在法陣邊緣匯聚，重疊加深至 5 層，極度考驗靈感共鳴！"
     },
     {
         num: 3,
         title: "第 3 關：繁星晶格 🐱",
         badge: "第 3 關：繁星晶格",
-        tileCount: 108,
+        tileCount: 72,
         typesCount: 11,
-        layers: 5, 
-        desc: "聖殿主法陣中 11 種晶石緊密堆疊，收納空間吃緊，需要極致細心的策略！"
+        layers: 6, 
+        desc: "聖殿主法陣中 11 種晶石緊密堆疊 6 層之深。收納盒空間吃緊，需要極致細心的策略！"
     },
     {
         num: 4,
         title: "第 4 關：聖域奧秘 🏔️",
         badge: "第 4 關：聖域奧秘",
-        tileCount: 144,
+        tileCount: 162,
         typesCount: 12,
-        layers: 6, 
-        desc: "全部 12 種稀世晶石（包含比特幣金幣！）全面覺醒！重疊高達 6 層，這是一場硬仗！"
+        layers: 9, 
+        desc: "全部 12 種稀世晶石全面覺醒！高達 162 顆晶石堆疊成 9 層高峰，深海級超高密度，這是一場硬仗！"
     },
     {
         num: 5,
         title: "第 5 關：終極共鳴 🐼",
         badge: "第 5 關：終極共鳴",
-        tileCount: 189,
+        tileCount: 252,
         typesCount: 12,
-        layers: 7, 
-        desc: "聖域終極大共鳴！189 顆能量晶石堆疊深達 7 層，只有最強大腦才能通關的傳奇智力迷宮！"
+        layers: 13, 
+        desc: "聖域終極大共鳴！252 顆能量晶石如高山般疊加深達 13 層，挑戰地獄級通關率，僅有傳奇大師能通過的終極迷宮！"
     }
 ];
 

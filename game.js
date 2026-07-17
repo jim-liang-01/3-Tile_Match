@@ -1533,6 +1533,17 @@ function setupEventListeners() {
 }
 
 function setupAuthEvents() {
+    // 🌟 核心 UX 優化：偵測是否在 LINE 內置瀏覽器中
+    const isLineBrowser = /Line/i.test(navigator.userAgent);
+    if (isLineBrowser) {
+        // LINE 內置 Webview 因安全政策常會阻擋 Google 登入（disallowed_useragent），
+        // 且玩家此時本就在 LINE App 中，故我們智慧化隱藏 Google 登入，僅保留體驗最流暢的 LINE 登入！
+        const googleBtn = document.getElementById('btn-login-google');
+        if (googleBtn) {
+            googleBtn.classList.add('hidden');
+        }
+    }
+
     document.getElementById('btn-login-google').addEventListener('click', async () => {
         Sound.playClick();
         if (isFirebaseActive && auth) {

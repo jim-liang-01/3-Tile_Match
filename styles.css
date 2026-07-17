@@ -269,8 +269,9 @@ input[type="range"]::-webkit-slider-thumb:active {
 
 /* 頂部狀態欄也進行金箔與魔法粉晶點綴 */
 .gemstone-status-bar {
-    background: linear-gradient(90deg, #fef4e8 0%, #fff0f3 100%) !important;
-    border-bottom: 4px solid #e9decb !important;
+    background: linear-gradient(135deg, #fdfaf5 0%, #fff0f3 100%) !important; /* 溫潤大理石粉晶色 */
+    border-bottom: 3px solid #dfb364 !important; /* 奢華香檳金邊框線 */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* 👑 奢華珠寶/晶石盒外襯 */
@@ -515,4 +516,21 @@ input[type="range"]::-webkit-slider-thumb:active {
 /* 當滑鼠懸停在道具按鈕上時，數量氣泡微幅放大呼吸 */
 .group:hover .skill-badge {
     transform: scale(1.15);
+}
+
+/* 🌟 頂部計數器與狀態指標呼吸/脈動動畫 */
+@keyframes pulse-slow {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.04);
+        opacity: 0.9;
+    }
+}
+
+.animate-pulse-slow {
+    animation: pulse-slow 2.5s infinite ease-in-out;
+    display: inline-block;
 }

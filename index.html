@@ -57,13 +57,13 @@
         
         <!-- User Authentication Area -->
         <div id="user-profile" class="hidden items-center gap-2.5">
-            <div class="flex flex-col items-end leading-none">
+            <img id="user-avatar" class="w-11 h-11 rounded-full border-2 border-pink-300 bg-pink-100 flex-shrink-0" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Panda" alt="Avatar">
+            <div class="flex flex-col items-start leading-none">
                 <span id="user-name" class="text-sm font-black text-gray-700 truncate max-w-[130px]">遊客</span>
                 <span id="user-stats" class="text-[11px] text-pink-400 font-bold mt-1 cursor-help" title="正在載入戰績...">🏆 0勝/0敗 (0%)</span>
             </div>
-            <img id="user-avatar" class="w-11 h-11 rounded-full border-2 border-pink-300 bg-pink-100 flex-shrink-0" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Panda" alt="Avatar">
-            <button id="btn-logout" class="flex items-center gap-1 px-2 py-1 hover:bg-red-50 hover:text-red-500 hover:border-red-200 text-gray-500 rounded-lg text-[10px] font-black tracking-tight transition-all border border-gray-200 active:scale-95" title="登出">
-                <span>🚪</span>
+            <button id="btn-logout" class="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-red-50 to-[#ffe5ec] hover:from-red-100 hover:to-[#ffd0d6] text-red-600 hover:text-red-700 border border-red-200 hover:border-[#ffb3c1] rounded-xl text-xs font-black tracking-wider transition-all shadow-sm hover:scale-[1.03] active:scale-95 cursor-pointer" title="登出">
+                <span class="text-xs">🚪</span>
                 <span>登出</span>
             </button>
         </div>
@@ -76,21 +76,18 @@
         <div class="flex-1 gemstone-panel relative flex flex-col justify-between overflow-hidden shadow-lg min-h-[460px] md:min-h-[580px]">
             
             <!-- Game Status / Level Info -->
-            <div class="px-3 py-2.5 gemstone-status-bar flex flex-wrap gap-2 justify-between items-center text-xs">
-                <div class="flex items-center gap-2">
-                    <span id="level-badge" class="px-2.5 py-1 bg-[#ffb3c1] text-[#a11d33] font-black rounded-full shadow-sm text-[10.5px]">載入中...</span>
-                    <span id="tile-ratio" class="text-gray-600 font-bold text-[11px]">剩餘: 0 / 0</span>
+            <div class="px-4 py-3 gemstone-status-bar flex justify-between items-center text-xs md:text-sm shadow-sm">
+                <!-- Left: Level Badge & Remaining count -->
+                <div class="flex items-center gap-3">
+                    <span id="level-badge" class="px-3.5 py-1.5 bg-gradient-to-r from-[#a11d33] to-[#ff4d6d] text-white font-black rounded-full border-2 border-[#dfb364] shadow-md text-xs md:text-[13px] tracking-wide animate-pulse-slow">載入中...</span>
+                    <span id="tile-ratio" class="text-gray-700 font-black text-xs md:text-sm bg-[#fff8eb] px-3 py-1.5 rounded-full border border-[#f5efe6] shadow-inner">🔮 剩餘: 0 / 0</span>
                 </div>
                 
-                <!-- Ticket & Hearts Gauge in Top Status Bar -->
-                <div class="flex items-center gap-2 bg-white px-2.5 py-1 rounded-full border border-[#e9decb] shadow-sm">
-                    <span class="text-[10px] text-gray-500 font-black" id="lbl-tickets-left">🎫 x3</span>
-                    <span id="ticket-visual-hearts" class="text-xs select-none">❤️ ❤️ ❤️</span>
-                </div>
-                
-                <div class="flex gap-2 text-gray-500 font-bold text-[11px]">
-                    <span>種類: <strong id="info-types" class="text-pink-500">?</strong></span>
-                    <span>層數: <strong id="info-layers" class="text-blue-400">?</strong></span>
+                <!-- Right: Ticket & Hearts Gauge in Top Status Bar -->
+                <div class="flex items-center gap-2.5 bg-gradient-to-r from-[#fdfbf7] to-[#f5efe6] px-4 py-1.5 rounded-full border-2 border-[#dfb364] shadow-md">
+                    <span class="text-xs md:text-sm text-amber-800 font-black flex items-center gap-1" id="lbl-tickets-left">🎫 <span class="text-amber-500 font-black text-sm md:text-base">x3</span></span>
+                    <div class="w-px h-4 bg-[#dfb364]/40 mx-1"></div>
+                    <span id="ticket-visual-hearts" class="text-sm md:text-base select-none tracking-wider text-red-500 animate-pulse-slow drop-shadow-sm">❤️ ❤️ ❤️</span>
                 </div>
             </div>
 
@@ -201,8 +198,9 @@
             <p class="text-xs text-gray-500 mb-6 font-bold leading-relaxed">這是一個每日限定挑戰！所有玩家每天都將面對相同的獨特關卡，請登入以扣除每日晶能啟動券並統計您的共鳴戰績！</p>
             
             <div class="space-y-2.5">
-                <button id="btn-login-google" class="w-full py-2.5 bg-[#4285f4] hover:bg-[#357ae8] text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 border-b-4 border-[#1a56cc] active:border-b-0 active:mt-1 transition-all shadow-md">
-                    <span class="text-base">🌐</span> 使用 Google 快速登入
+                <button id="btn-login-google" class="w-full py-3.5 px-4 bg-[#4285f4] hover:bg-[#357ae8] text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 border-b-4 border-[#215cbd] active:border-b-0 active:mt-1 hover:scale-[1.02] transition-all shadow-lg tracking-wide">
+                    <span class="text-base bg-white p-1 rounded-lg flex items-center justify-center shadow-inner">🌐</span> 
+                    <span>使用 Google 快速登入</span>
                 </button>
             </div>
         </div>

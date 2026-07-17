@@ -401,7 +401,11 @@ const Particles = {
         }
     },
     spawn(x, y, colors, count = 20) {
-        for (let i = 0; i < count; i++) {
+        // 🚀 行動裝置效能優化：限制粒子數量
+        const isMobile = window.innerWidth <= 768;
+        const particleCount = isMobile ? Math.ceil(count / 2) : count;
+        
+        for (let i = 0; i < particleCount; i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 1.5 + Math.random() * 4.5;
             this.list.push({
@@ -410,9 +414,10 @@ const Particles = {
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed - (1 + Math.random() * 1.5),
                 color: colors[Math.floor(Math.random() * colors.length)] || '#ffb5a7',
-                size: 4 + Math.random() * 6,
+                // 減少粒子體積以減少繪製成本
+                size: (isMobile ? 3 : 4) + Math.random() * (isMobile ? 3 : 6),
                 alpha: 1,
-                decay: 0.012 + Math.random() * 0.015,
+                decay: (0.012 + Math.random() * 0.015) * (isMobile ? 1.5 : 1), // 行動裝置粒子消失更快
                 spin: Math.random() * 0.15 - 0.075,
                 angle: Math.random() * Math.PI,
                 gravity: 0.1,
@@ -2075,30 +2080,34 @@ function updateUI() {
 function renderSlots() {
     const container = document.getElementById('slots-container');
     if (!container) return;
-    container.innerHTML = "";
     
-    for (let i = 0; i < 7; i++) {
-        const slotEl = document.createElement('div');
+    // 🚀 使用 requestAnimationFrame 進行渲染，確保與螢幕刷新率同步，解決行動裝置過度重繪卡頓
+    requestAnimationFrame(() => {
+        container.innerHTML = "";
         
-        if (i < GameState.slots.length) {
-            const tile = GameState.slots[i];
-            const bounceClass = GameState.shouldBounceSlots ? " gem-slot-slide-bounce" : "";
-            slotEl.className = `flex-1 max-w-[50px] aspect-[5/6] h-[58px] gem-box-slot-filled flex flex-col items-center justify-center flex-shrink-1 transition-all${bounceClass}`;
-            const canvas = document.createElement('canvas');
-            canvas.width = 44;
-            canvas.height = 44;
-            canvas.className = "w-full h-auto aspect-square pointer-events-none";
-            slotEl.appendChild(canvas);
-            drawCachedTile(canvas, tile.template.id);
-        } else {
-            slotEl.className = "flex-1 max-w-[50px] aspect-[5/6] h-[58px] gem-box-slot-empty flex-shrink-1";
+        for (let i = 0; i < 7; i++) {
+            const slotEl = document.createElement('div');
+            
+            if (i < GameState.slots.length) {
+                const tile = GameState.slots[i];
+                const bounceClass = GameState.shouldBounceSlots ? " gem-slot-slide-bounce" : "";
+                slotEl.className = `flex-1 max-w-[50px] aspect-[5/6] h-[58px] gem-box-slot-filled flex flex-col items-center justify-center flex-shrink-1 transition-all${bounceClass}`;
+                const canvas = document.createElement('canvas');
+                canvas.width = 44;
+                canvas.height = 44;
+                canvas.className = "w-full h-auto aspect-square pointer-events-none";
+                slotEl.appendChild(canvas);
+                drawCachedTile(canvas, tile.template.id);
+            } else {
+                slotEl.className = "flex-1 max-w-[50px] aspect-[5/6] h-[58px] gem-box-slot-empty flex-shrink-1";
+            }
+            
+            container.appendChild(slotEl);
         }
         
-        container.appendChild(slotEl);
-    }
-    
-    // 渲染完後將彈性靠攏標記清除，確保一般的卡牌放入不會觸發
-    GameState.shouldBounceSlots = false;
+        // 渲染完後將彈性靠攏標記清除，確保一般的卡牌放入不會觸發
+        GameState.shouldBounceSlots = false;
+    });
 }
 
 function renderOut3Storage() {
@@ -2107,55 +2116,58 @@ function renderOut3Storage() {
     const countText = document.getElementById('out3-count-text');
     if (!section || !container) return;
     
-    if (GameState.out3Storage.length > 0) {
-        section.classList.remove('hidden');
-        section.classList.add('flex');
-        if (countText) countText.innerText = `${GameState.out3Storage.length} / 3`;
-        container.innerHTML = "";
-        
-        GameState.out3Storage.forEach(tile => {
-            const el = document.createElement('div');
-            el.className = "mini-tile bg-white cursor-pointer hover:border-pink-300 relative group shadow-sm";
-            el.title = "點擊將晶石放回消除槽";
-            const canvas = document.createElement('canvas');
-            canvas.width = 44;
-            canvas.height = 44;
-            el.appendChild(canvas);
+    // 🚀 使用 requestAnimationFrame 進行渲染
+    requestAnimationFrame(() => {
+        if (GameState.out3Storage.length > 0) {
+            section.classList.remove('hidden');
+            section.classList.add('flex');
+            if (countText) countText.innerText = `${GameState.out3Storage.length} / 3`;
+            container.innerHTML = "";
             
-            el.addEventListener('click', async () => {
-                if (GameState.slots.length >= 7) {
-                    alert("晶石槽已滿，請先消除晶石空出位置喔！");
-                    return;
-                }
-                if (GameState.isAnimatingMatch || GameState.flyingCount > 0) return; // 🌟 消除動畫中或有卡牌飛入中禁用
-                Sound.playClick();
+            GameState.out3Storage.forEach(tile => {
+                const el = document.createElement('div');
+                el.className = "mini-tile bg-white cursor-pointer hover:border-pink-300 relative group shadow-sm";
+                el.title = "點擊將晶石放回消除槽";
+                const canvas = document.createElement('canvas');
+                canvas.width = 44;
+                canvas.height = 44;
+                el.appendChild(canvas);
                 
-                // 記錄玩家將移出區卡牌點擊送回的動作
-                GameState.movesLog.push({ a: 'out3_click', id: tile.id });
-                
-                GameState.out3Storage = GameState.out3Storage.filter(t => t.id !== tile.id);
-                
-                // 動態直接加入晶石槽末尾，不重排
-                GameState.slots.push(tile);
-                
-                // 先更新 UI，讓晶石顯示在槽中
-                updateUI();
-                
-                const rect = el.getBoundingClientRect();
-                await checkMatchThree(tile.typeId, rect.left + rect.width/2, rect.top + rect.height/2);
-                
-                // 消除完後再次更新 UI，讓剩餘晶石靠攏
-                updateUI();
-                await checkGameStatus();
-                await saveCurrentGameSession(false);
+                el.addEventListener('click', async () => {
+                    if (GameState.slots.length >= 7) {
+                        alert("晶石槽已滿，請先消除晶石空出位置喔！");
+                        return;
+                    }
+                    if (GameState.isAnimatingMatch || GameState.flyingCount > 0) return; // 🌟 消除動畫中或有卡牌飛入中禁用
+                    Sound.playClick();
+                    
+                    // 記錄玩家將移出區卡牌點擊送回的動作
+                    GameState.movesLog.push({ a: 'out3_click', id: tile.id });
+                    
+                    GameState.out3Storage = GameState.out3Storage.filter(t => t.id !== tile.id);
+                    
+                    // 動態直接加入晶石槽末尾，不重排
+                    GameState.slots.push(tile);
+                    
+                    // 先更新 UI，讓晶石顯示在槽中
+                    updateUI();
+                    
+                    const rect = el.getBoundingClientRect();
+                    await checkMatchThree(tile.typeId, rect.left + rect.width/2, rect.top + rect.height/2);
+                    
+                    // 消除完後再次更新 UI，讓剩餘晶石靠攏
+                    updateUI();
+                    await checkGameStatus();
+                    await saveCurrentGameSession(false);
+                });
+                container.appendChild(el);
+                drawCachedTile(canvas, tile.template.id);
             });
-            container.appendChild(el);
-            drawCachedTile(canvas, tile.template.id);
-        });
-    } else {
-        section.classList.add('hidden');
-        section.classList.remove('flex');
-    }
+        } else {
+            section.classList.add('hidden');
+            section.classList.remove('flex');
+        }
+    });
 }
 
 // 22. 歷史狀態記錄

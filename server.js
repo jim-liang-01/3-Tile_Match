@@ -22,6 +22,9 @@ if (fs.existsSync(envPath)) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 🌟 0.5. 信任反向代理 (解決 HTTPS 部署在 Nginx / Cloudflare / Heroku 後 req.protocol 被識成 http 的問題)
+app.enable('trust proxy');
+
 // 1. 啟用 CORS 跨來源資源共享與 JSON 解析
 app.use(cors());
 app.use(express.json());

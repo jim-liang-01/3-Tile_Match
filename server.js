@@ -190,6 +190,19 @@ async function checkAndSettleRankings() {
 }
 
 /**
+ * 🛠️ 輔助函式：將 Firestore Timestamp、Date、字串或數值安全轉換為毫秒數
+ */
+function getMillis(timestamp) {
+    if (!timestamp) return 0;
+    if (typeof timestamp.toMillis === 'function') return timestamp.toMillis();
+    if (timestamp.seconds !== undefined) return timestamp.seconds * 1000 + Math.floor((timestamp.nanoseconds || 0) / 1000000);
+    if (timestamp instanceof Date) return timestamp.getTime();
+    if (typeof timestamp === 'number') return timestamp;
+    if (typeof timestamp === 'string') return new Date(timestamp).getTime();
+    return 0;
+}
+
+/**
  * 🏆 沉重發獎背景線程：每週排行發獎
  */
 async function performWeeklySettlement(targetWeek) {
@@ -203,10 +216,17 @@ async function performWeeklySettlement(targetWeek) {
             players.push(doc.data());
         });
         
-        // 依 Wins 降序 > WinRate 降序排序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
-            if (b.wins !== a.wins) return b.wins - a.wins;
-            return (b.winRate || 0) - (a.winRate || 0);
+            if (b.wins !== a.wins) {
+                return b.wins - a.wins;
+            }
+            const winRateA = a.winRate || 0;
+            const winRateB = b.winRate || 0;
+            if (winRateB !== winRateA) {
+                return winRateB - winRateA;
+            }
+            return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
         
         const top50 = players.slice(0, 50);
@@ -274,10 +294,17 @@ async function performMonthlySettlement(targetMonth) {
             players.push(doc.data());
         });
         
-        // 依 Wins 降序 > WinRate 降序排序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
-            if (b.wins !== a.wins) return b.wins - a.wins;
-            return (b.winRate || 0) - (a.winRate || 0);
+            if (b.wins !== a.wins) {
+                return b.wins - a.wins;
+            }
+            const winRateA = a.winRate || 0;
+            const winRateB = b.winRate || 0;
+            if (winRateB !== winRateA) {
+                return winRateB - winRateA;
+            }
+            return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
         
         const top50 = players.slice(0, 50);
@@ -935,7 +962,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
 });
 
 /**
- * 🏆 API F: 獲取每日排行榜 (依勝場遞減，再依勝率遞減排序)
+ * 🏆 API F: 獲取每日排行榜 (依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序)
  */
 app.get('/api/leaderboard/daily/:dateStr', verifyFirebaseToken, async (req, res) => {
     if (!db) {
@@ -952,12 +979,17 @@ app.get('/api/leaderboard/daily/:dateStr', verifyFirebaseToken, async (req, res)
             players.push(doc.data());
         });
         
-        // 記憶體排序：先比 wins (勝場) 降序，再比 winRate (勝率) 降序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
             }
-            return (b.winRate || 0) - (a.winRate || 0);
+            const winRateA = a.winRate || 0;
+            const winRateB = b.winRate || 0;
+            if (winRateB !== winRateA) {
+                return winRateB - winRateA;
+            }
+            return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
         
         return res.json({ success: true, leaderboard: players.slice(0, 50) });
@@ -968,7 +1000,7 @@ app.get('/api/leaderboard/daily/:dateStr', verifyFirebaseToken, async (req, res)
 });
 
 /**
- * 🏆 API I: 獲取每週排行榜 (依勝場遞減，再依勝率遞減排序)
+ * 🏆 API I: 獲取每週排行榜 (依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序)
  */
 app.get('/api/leaderboard/weekly/:weekStr', verifyFirebaseToken, async (req, res) => {
     if (!db) {
@@ -985,12 +1017,17 @@ app.get('/api/leaderboard/weekly/:weekStr', verifyFirebaseToken, async (req, res
             players.push(doc.data());
         });
         
-        // 記憶體排序：先比 wins (勝場) 降序，再比 winRate (勝率) 降序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
             }
-            return (b.winRate || 0) - (a.winRate || 0);
+            const winRateA = a.winRate || 0;
+            const winRateB = b.winRate || 0;
+            if (winRateB !== winRateA) {
+                return winRateB - winRateA;
+            }
+            return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
         
         return res.json({ success: true, leaderboard: players.slice(0, 50) });
@@ -1001,7 +1038,7 @@ app.get('/api/leaderboard/weekly/:weekStr', verifyFirebaseToken, async (req, res
 });
 
 /**
- * 🏆 API G: 獲取每月排行榜 (依勝場遞減，再依勝率遞減排序)
+ * 🏆 API G: 獲取每月排行榜 (依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序)
  */
 app.get('/api/leaderboard/monthly/:monthStr', verifyFirebaseToken, async (req, res) => {
     if (!db) {
@@ -1018,12 +1055,17 @@ app.get('/api/leaderboard/monthly/:monthStr', verifyFirebaseToken, async (req, r
             players.push(doc.data());
         });
         
-        // 記憶體排序：先比 wins (勝場) 降序，再比 winRate (勝率) 降序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
             }
-            return (b.winRate || 0) - (a.winRate || 0);
+            const winRateA = a.winRate || 0;
+            const winRateB = b.winRate || 0;
+            if (winRateB !== winRateA) {
+                return winRateB - winRateA;
+            }
+            return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
         
         return res.json({ success: true, leaderboard: players.slice(0, 50) });

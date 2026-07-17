@@ -129,6 +129,15 @@
                     <span id="count-shuffle" class="skill-badge badge-shuffle">1</span>
                 </button>
             </div>
+
+            <!-- Out-of-slot storage -->
+            <div id="out3-storage" class="w-full px-4 py-2 bg-[#fffdf9] border-2 border-dashed border-[#ffb3c1] rounded-2xl mb-4 hidden animate-fade-in flex-col items-center">
+                <div class="text-[10px] text-gray-500 font-bold mb-1 flex justify-between w-full max-w-[300px]">
+                    <span>🔮 臨時緩存法陣 (點選晶石可返回下方晶石槽)</span>
+                    <span class="text-pink-500 font-bold" id="out3-count-text">0 / 3</span>
+                </div>
+                <div class="flex gap-2 p-2 bg-[#f4fbf4] rounded-xl border border-green-200 min-h-[70px] min-w-[200px] justify-center items-center" id="out3-container"></div>
+            </div>
         </div>
 
         <!-- Right Side: Sidebar Panel (Contains Gemstone Codex only) -->
@@ -177,15 +186,6 @@
             </div>
         </div>
     </main>
-
-    <!-- Out-of-slot storage -->
-    <div id="out3-storage" class="w-full max-w-4xl px-4 py-2 bg-[#fffdf9] border-2 border-dashed border-[#ffb3c1] rounded-2xl mb-4 hidden animate-fade-in flex-col items-center">
-        <div class="text-[10px] text-gray-500 font-bold mb-1 flex justify-between w-full max-w-[300px]">
-            <span>🔮 臨時緩存法陣 (點選晶石可返回下方晶石槽)</span>
-            <span class="text-pink-500 font-bold" id="out3-count-text">0 / 3</span>
-        </div>
-        <div class="flex gap-2 p-2 bg-[#f4fbf4] rounded-xl border border-green-200 min-h-[70px] min-w-[200px] justify-center items-center" id="out3-container"></div>
-    </div>
 
     <!-- MODAL OVERLAYS (Direct children of body, positioned FIXED at z-[100] to cover everything) -->
 

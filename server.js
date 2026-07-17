@@ -1076,6 +1076,61 @@ app.get('/api/leaderboard/monthly/:monthStr', verifyFirebaseToken, async (req, r
 });
 
 /**
+ * 🏆 API H: 獲取一體化排行榜 (每日、每週、每月平行載入與優化)
+ */
+app.get('/api/leaderboard/all', verifyFirebaseToken, async (req, res) => {
+    if (!db) {
+        return res.status(500).json({ error: "Firebase Admin SDK 尚未正確初始化金鑰，伺服器無法連接資料庫。" });
+    }
+    const { dateStr, weekStr, monthStr } = req.query;
+    if (!dateStr || !weekStr || !monthStr) {
+        return res.status(400).json({ error: "缺少必要的日期、週或月份參數。" });
+    }
+    
+    try {
+        const [dailySnapshot, weeklySnapshot, monthlySnapshot] = await Promise.all([
+            db.collection('dailyLeaderboard').where('dateStr', '==', dateStr).get(),
+            db.collection('weeklyLeaderboard').where('weekStr', '==', weekStr).get(),
+            db.collection('monthlyLeaderboard').where('monthStr', '==', monthStr).get()
+        ]);
+        
+        const sortFn = (a, b) => {
+            if (b.wins !== a.wins) {
+                return b.wins - a.wins;
+            }
+            const winRateA = a.winRate || 0;
+            const winRateB = b.winRate || 0;
+            if (winRateB !== winRateA) {
+                return winRateB - winRateA;
+            }
+            return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
+        };
+        
+        let dailyPlayers = [];
+        dailySnapshot.forEach(doc => dailyPlayers.push(doc.data()));
+        dailyPlayers.sort(sortFn);
+        
+        let weeklyPlayers = [];
+        weeklySnapshot.forEach(doc => weeklyPlayers.push(doc.data()));
+        weeklyPlayers.sort(sortFn);
+        
+        let monthlyPlayers = [];
+        monthlySnapshot.forEach(doc => monthlyPlayers.push(doc.data()));
+        monthlyPlayers.sort(sortFn);
+        
+        return res.json({
+            success: true,
+            daily: dailyPlayers.slice(0, 50),
+            weekly: weeklyPlayers.slice(0, 50),
+            monthly: monthlyPlayers.slice(0, 50)
+        });
+    } catch (e) {
+        console.error("GET all leaderboards error:", e);
+        return res.status(500).json({ error: "無法載入完整排行榜" });
+    }
+});
+
+/**
  * 🗺️ Helper: 確定性隨機產生關卡佈局 (伺服器端計算，前端零負載)
  */
 function generateLevelLayout(dateStr, levelIndex) {

@@ -2144,30 +2144,14 @@ async function loadLeaderboardData() {
 
     if (isFirebaseActive && currentUser && !currentUser.isAnonymous) {
         try {
-            const dailyRes = await fetchWithAuth(`/api/leaderboard/daily/${dateStr}`);
-            if (dailyRes && dailyRes.success) {
-                fetchedDaily = dailyRes.leaderboard;
+            const allRes = await fetchWithAuth(`/api/leaderboard/all?dateStr=${dateStr}&weekStr=${weekStr}&monthStr=${monthStr}`);
+            if (allRes && allRes.success) {
+                fetchedDaily = allRes.daily;
+                fetchedWeekly = allRes.weekly;
+                fetchedMonthly = allRes.monthly;
             }
         } catch (e) {
-            console.warn("載入每日排行失敗，將使用本地模擬：", e.message);
-        }
-
-        try {
-            const weeklyRes = await fetchWithAuth(`/api/leaderboard/weekly/${weekStr}`);
-            if (weeklyRes && weeklyRes.success) {
-                fetchedWeekly = weeklyRes.leaderboard;
-            }
-        } catch (e) {
-            console.warn("載入每週排行失敗，將使用本地模擬：", e.message);
-        }
-
-        try {
-            const monthlyRes = await fetchWithAuth(`/api/leaderboard/monthly/${monthStr}`);
-            if (monthlyRes && monthlyRes.success) {
-                fetchedMonthly = monthlyRes.leaderboard;
-            }
-        } catch (e) {
-            console.warn("載入每月排行失敗：", e.message);
+            console.warn("載入一體化排行榜失敗：", e.message);
         }
     }
 

@@ -524,7 +524,9 @@ const GameState = {
     status: "playing",
     nextTileId: 0,
     prng: null,
-    movesLog: []
+    movesLog: [],
+    isAnimatingMatch: false,
+    shouldBounceSlots: false
 };
 
 let currentUser = null;
@@ -1665,6 +1667,7 @@ function updateFieldLockStates() {
 // 17. 點擊卡牌處理
 async function handleTileClick(tile, event) {
     if (GameState.status !== "playing") return;
+    if (GameState.isAnimatingMatch) return; // 🌟 正在執行三消亮起與消失動畫時，暫時停用點擊
     if (tile.isLocked) return;
     
     // 檢查卡牌是否仍在場上，避免快速雙擊產生重複點擊
@@ -1693,8 +1696,14 @@ async function handleTileClick(tile, event) {
     
     // 動畫飛入邏輯保持不變，它會自動尋找最後一個空格
     animateTileFly(rect, GameState.slots.length - 1, tile, async () => {
-        checkMatchThree(tile.typeId, particleX, particleY);
+        // 先渲染 UI 與鎖定狀態，讓剛飛入的晶石顯示在槽中
+        updateUI();
         updateFieldLockStates(); // 🚀 高性能增量更新：不銷毀 DOM、不重繪 Canvas，0ms 瞬間完成！
+        
+        // 執行亮起並消除的動畫
+        await checkMatchThree(tile.typeId, particleX, particleY);
+        
+        // 消除完後再次更新 UI，讓剩餘晶石靠攏
         updateUI();
         await saveCurrentGameSession(false);
         await checkGameStatus();
@@ -1741,11 +1750,66 @@ function animateTileFly(fromRect, targetSlotIdx, tile, onComplete) {
     });
 }
 
-// 19. 三消消除邏輯
-function checkMatchThree(typeId, particleX, particleY) {
-    const count = GameState.slots.filter(t => t.typeId === typeId).length;
-    if (count >= 3) {
+// 19. 三消消除邏輯 (已修改為在下方集齊三顆時，該三顆寶石在槽中亮起並消失的極致特效)
+async function checkMatchThree(typeId, particleX, particleY) {
+    const matchedIndices = [];
+    for (let i = 0; i < GameState.slots.length; i++) {
+        if (GameState.slots[i].typeId === typeId) {
+            matchedIndices.push(i);
+            if (matchedIndices.length === 3) break;
+        }
+    }
+
+    if (matchedIndices.length >= 3) {
+        GameState.isAnimatingMatch = true;
         Sound.playMatch();
+        
+        const container = document.getElementById('slots-container');
+        if (container) {
+            // 1. 取得這三個 Slot 的 DOM 元素並加上亮起 (Glow) 動畫類別
+            matchedIndices.forEach(idx => {
+                const slotEl = container.children[idx];
+                if (slotEl) {
+                    slotEl.classList.add('gem-slot-glowing');
+                    
+                    // 從每個 Slot 中心點觸發亮眼粒子效果
+                    const rect = slotEl.getBoundingClientRect();
+                    const slotX = rect.left + rect.width / 2;
+                    const slotY = rect.top + rect.height / 2;
+                    
+                    const matchedTmpl = TILE_TEMPLATES.find(t => t.id === typeId);
+                    const pColors = matchedTmpl ? matchedTmpl.colors : ['#ffb5a7'];
+                    
+                    // 噴灑更集中的亮晶晶魔法粒子
+                    Particles.spawn(slotX, slotY, [...pColors, '#ffffff', '#ffd700', '#ffd166'], 15);
+                }
+            });
+        }
+        
+        // 2. 等待亮起動畫的第一階段完成 (400ms)
+        await new Promise(resolve => setTimeout(resolve, 400));
+        
+        if (container) {
+            // 3. 換成消失 (Disappear) 動畫類別
+            matchedIndices.forEach(idx => {
+                const slotEl = container.children[idx];
+                if (slotEl) {
+                    slotEl.classList.remove('gem-slot-glowing');
+                    slotEl.classList.add('gem-slot-disappearing');
+                    
+                    // 消失瞬間，噴灑最後一波耀眼的光芒微粒
+                    const rect = slotEl.getBoundingClientRect();
+                    const slotX = rect.left + rect.width / 2;
+                    const slotY = rect.top + rect.height / 2;
+                    Particles.spawn(slotX, slotY, ['#ffffff', '#ffd700', '#f1c0e8'], 10);
+                }
+            });
+        }
+        
+        // 4. 等待消失動畫的第二階段完成 (300ms)
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // 5. 真正從資料狀態中移除這 3 顆寶石
         let removedCount = 0;
         GameState.slots = GameState.slots.filter(t => {
             if (t.typeId === typeId && removedCount < 3) {
@@ -1754,9 +1818,11 @@ function checkMatchThree(typeId, particleX, particleY) {
             }
             return true;
         });
-        const matchedTmpl = TILE_TEMPLATES.find(t => t.id === typeId);
-        const pColors = matchedTmpl ? matchedTmpl.colors : ['#ffb5a7'];
-        Particles.spawn(particleX, particleY, [...pColors, '#ffffff', '#ffd166', '#f1c0e8']);
+        
+        // 🌟 標記需要為剩餘晶石加上彈性靠攏動畫
+        GameState.shouldBounceSlots = true;
+        
+        GameState.isAnimatingMatch = false;
     }
 }
 
@@ -1953,13 +2019,13 @@ function updateUI() {
     if (countShuffleEl) countShuffleEl.innerText = GameState.skills.shuffle;
     
     const skillUndoBtn = document.getElementById('skill-undo');
-    if (skillUndoBtn) skillUndoBtn.disabled = (GameState.skills.undo <= 0 || GameState.history.length === 0);
+    if (skillUndoBtn) skillUndoBtn.disabled = (GameState.skills.undo <= 0 || GameState.history.length === 0 || GameState.isAnimatingMatch);
     
     const skillOut3Btn = document.getElementById('skill-out3');
-    if (skillOut3Btn) skillOut3Btn.disabled = (GameState.skills.out3 <= 0 || GameState.slots.length < 3);
+    if (skillOut3Btn) skillOut3Btn.disabled = (GameState.skills.out3 <= 0 || GameState.slots.length < 3 || GameState.isAnimatingMatch);
     
     const skillShuffleBtn = document.getElementById('skill-shuffle');
-    if (skillShuffleBtn) skillShuffleBtn.disabled = (GameState.skills.shuffle <= 0 || GameState.tiles.length === 0);
+    if (skillShuffleBtn) skillShuffleBtn.disabled = (GameState.skills.shuffle <= 0 || GameState.tiles.length === 0 || GameState.isAnimatingMatch);
 
     renderSlots();
     renderOut3Storage();
@@ -1975,7 +2041,8 @@ function renderSlots() {
         
         if (i < GameState.slots.length) {
             const tile = GameState.slots[i];
-            slotEl.className = "flex-1 max-w-[50px] aspect-[5/6] h-[58px] gem-box-slot-filled flex flex-col items-center justify-center flex-shrink-1 transition-all";
+            const bounceClass = GameState.shouldBounceSlots ? " gem-slot-slide-bounce" : "";
+            slotEl.className = `flex-1 max-w-[50px] aspect-[5/6] h-[58px] gem-box-slot-filled flex flex-col items-center justify-center flex-shrink-1 transition-all${bounceClass}`;
             const canvas = document.createElement('canvas');
             canvas.width = 44;
             canvas.height = 44;
@@ -1988,6 +2055,9 @@ function renderSlots() {
         
         container.appendChild(slotEl);
     }
+    
+    // 渲染完後將彈性靠攏標記清除，確保一般的卡牌放入不會觸發
+    GameState.shouldBounceSlots = false;
 }
 
 function renderOut3Storage() {
@@ -2016,6 +2086,7 @@ function renderOut3Storage() {
                     alert("晶石槽已滿，請先消除晶石空出位置喔！");
                     return;
                 }
+                if (GameState.isAnimatingMatch) return; // 🌟 消除動畫中禁用
                 Sound.playClick();
                 
                 // 記錄玩家將移出區卡牌點擊送回的動作
@@ -2025,8 +2096,14 @@ function renderOut3Storage() {
                 
                 // 動態直接加入晶石槽末尾，不重排
                 GameState.slots.push(tile);
+                
+                // 先更新 UI，讓晶石顯示在槽中
+                updateUI();
+                
                 const rect = el.getBoundingClientRect();
-                checkMatchThree(tile.typeId, rect.left + rect.width/2, rect.top + rect.height/2);
+                await checkMatchThree(tile.typeId, rect.left + rect.width/2, rect.top + rect.height/2);
+                
+                // 消除完後再次更新 UI，讓剩餘晶石靠攏
                 updateUI();
                 await saveCurrentGameSession(false);
                 await checkGameStatus();
@@ -2055,6 +2132,7 @@ function saveHistoryState() {
 
 // 23. 道具功能實現
 async function useSkillUndo() {
+    if (GameState.isAnimatingMatch) return; // 🌟 正在執行三消亮起與消失動畫時，暫時停用道具
     if (GameState.skills.undo <= 0 || GameState.history.length === 0) return;
     Sound.playClick();
     
@@ -2072,6 +2150,7 @@ async function useSkillUndo() {
 }
 
 async function useSkillOut3() {
+    if (GameState.isAnimatingMatch) return; // 🌟 正在執行三消亮起與消失動畫時，暫時停用道具
     if (GameState.skills.out3 <= 0 || GameState.slots.length < 3) return;
     Sound.playClick();
     
@@ -2088,6 +2167,7 @@ async function useSkillOut3() {
 }
 
 async function useSkillShuffle() {
+    if (GameState.isAnimatingMatch) return; // 🌟 正在執行三消亮起與消失動畫時，暫時停用道具
     if (GameState.skills.shuffle <= 0 || GameState.tiles.length === 0) return;
     Sound.playShuffle();
     

@@ -84,19 +84,20 @@ body {
     width: 58px;
     height: 70px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.82); /* 高透光亮白磨砂基底 */
+    background: rgba(255, 255, 255, 0.94); /* 高透光亮白磨砂基底 - 增加白淨對比度 */
     backdrop-filter: blur(4px); /* 磨砂玻璃濾鏡 */
     -webkit-backdrop-filter: blur(4px);
-    /* 💎 增加一圈立體微透明的香檳鑽石金絲邊框，增強光澤感 */
-    border: 2.25px solid rgba(243, 210, 145, 0.5) !important;
-    /* 柔和磨砂陰影、內部高光與極其細微的星能金黃外擴暈圈 */
+    /* 💎 奢華 3D 壓克力黃金邊框設計，增強立體層次與高度感 */
+    border: 2.5px solid #dfb364 !important;
+    border-bottom: 5.5px solid #a07a1c !important; /* 立體底座金色厚度，一眼看出懸浮感！ */
+    /* 深邃立體陰影、內部高光與極其細微的星能金黃外擴暈圈 */
     box-shadow: 
-        0 5px 12px rgba(61, 48, 45, 0.1), 
+        0 9px 18px rgba(0, 0, 0, 0.48), 
         inset 0 2px 0 rgba(255, 255, 255, 0.95),
-        0 0 5px rgba(243, 210, 145, 0.22); 
+        0 0 6px rgba(243, 210, 145, 0.35); 
     cursor: pointer;
     user-select: none;
-    filter: saturate(1.12); /* 🚀 視覺優化：動態增強 12% 飽和度，使晶瑩卡牌內的萌寵顏色極致鮮豔奪目！ */
+    filter: saturate(1.15); /* 🚀 視覺優化：動態增強 15% 飽和度，使晶瑩卡牌內的萌寵顏色極致鮮豔奪目！ */
     transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.15s ease, filter 0.2s ease, background 0.2s ease, border-color 0.2s ease;
     display: flex;
     flex-direction: column;
@@ -106,31 +107,36 @@ body {
 
 /* Overlapping Tile - Softly Darkened Frosted Glass State */
 .game-tile.is-locked {
-    filter: brightness(0.68) saturate(0.72) contrast(0.9); /* 鎖定時去色與調暗 */
-    background: rgba(230, 230, 230, 0.4);
-    border: 2.25px solid rgba(243, 210, 145, 0.18) !important; /* 鎖定時金絲邊框變暗 */
-    box-shadow: 0 3px 8px rgba(61, 48, 45, 0.08), inset 0 1.5px 0 rgba(255, 255, 255, 0.4);
+    filter: brightness(0.48) saturate(0.55) contrast(0.85); /* 鎖定時去色與深度調暗，呈現完美置底層次 */
+    background: rgba(15, 6, 26, 0.72); /* 深紫色遮罩，一眼看出被壓在下方 */
+    border: 2.5px solid rgba(223, 179, 100, 0.22) !important; /* 鎖定時邊框極致黯淡 */
+    border-bottom: 5.5px solid rgba(160, 122, 28, 0.18) !important;
+    box-shadow: 
+        0 2px 5px rgba(0, 0, 0, 0.25), 
+        inset 0 1px 0 rgba(255, 255, 255, 0.15); /* 扁平化置底陰影 */
     cursor: not-allowed;
 }
 
 /* Normal Hover state (when not locked) */
 .game-tile:not(.is-locked):hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.95); /* 懸停時高透亮白 */
-    border: 2.25px solid rgba(243, 210, 145, 0.85) !important; /* 懸停時金絲邊框發亮 */
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 1.0); /* 懸停時高透亮白 */
+    border: 2.5px solid #ffd700 !important; /* 懸停時金絲邊框發亮 */
+    border-bottom: 5.5px solid #dfb364 !important;
     /* 粉色霓虹果凍發光與更耀眼的黃金微光疊加 */
     box-shadow: 
-        0 10px 20px rgba(255, 143, 163, 0.22), 
+        0 14px 28px rgba(255, 143, 163, 0.28), 
         inset 0 2px 0 rgba(255, 255, 255, 0.98),
-        0 0 10px rgba(243, 210, 145, 0.55);
-    filter: brightness(1.1) saturate(1.2); /* 懸停時大幅加強亮麗感 */
+        0 0 12px rgba(243, 210, 145, 0.65);
+    filter: brightness(1.12) saturate(1.22); /* 懸停時大幅加強亮麗感 */
 }
 
 /* Active pressed state */
 .game-tile:not(.is-locked):active {
     transform: translateY(2px);
-    background: rgba(255, 255, 255, 0.75);
-    box-shadow: 0 3px 6px rgba(61, 48, 45, 0.15), inset 0 1.5px 0 rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.85);
+    border-bottom: 2.5px solid #a07a1c !important; /* 按下時 3D 底座壓扁 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1.5px 0 rgba(255, 255, 255, 0.6);
     filter: brightness(0.95) saturate(1.05);
 }
 
@@ -382,4 +388,83 @@ input[type="range"]::-webkit-slider-thumb:active {
         0 6px 14px rgba(245, 158, 11, 0.15), 
         inset 0 1.5px 0 rgba(255, 255, 255, 0.9) !important;
     transform: translateY(-2px);
+}
+
+/* ==========================================
+   ✨ 寶石收集滿三顆時的「亮起並消失」極致特效
+   ========================================== */
+@keyframes gem-glow-up {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.18);
+        box-shadow: 
+            0 0 25px #ffd700, 
+            0 0 50px rgba(255, 215, 0, 0.85),
+            inset 0 0 15px #ffffff;
+        filter: brightness(1.6) contrast(1.25);
+    }
+    100% {
+        transform: scale(1.12);
+        box-shadow: 
+            0 0 20px #ffd700, 
+            0 0 40px rgba(255, 215, 0, 0.7),
+            inset 0 0 10px #ffffff;
+        filter: brightness(1.4) contrast(1.15);
+    }
+}
+
+@keyframes gem-fade-out-light {
+    0% {
+        transform: scale(1.12) rotate(0deg);
+        opacity: 1;
+        filter: brightness(1.4) contrast(1.15);
+    }
+    100% {
+        transform: scale(0) rotate(15deg);
+        opacity: 0;
+        filter: brightness(3.5) blur(3px);
+    }
+}
+
+.gem-slot-glowing {
+    animation: gem-glow-up 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+    z-index: 50 !important;
+    position: relative !important;
+    pointer-events: none !important;
+}
+
+.gem-slot-disappearing {
+    animation: gem-fade-out-light 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards !important;
+    z-index: 50 !important;
+    position: relative !important;
+    pointer-events: none !important;
+}
+
+/* 剩餘晶石靠攏時的彈性果凍緩衝特效 */
+@keyframes gem-elastic-slide {
+    0% {
+        transform: scale(0.8) translateY(0);
+        opacity: 0.8;
+    }
+    40% {
+        transform: scale(1.15) scaleY(0.8) scaleX(1.2) translateY(2px); /* 壓扁向兩側與下方擠壓 */
+        opacity: 1;
+    }
+    70% {
+        transform: scale(0.92) scaleY(1.15) scaleX(0.85) translateY(-4px); /* 回彈拉伸上升 */
+    }
+    90% {
+        transform: scale(1.03) scaleY(0.95) scaleX(1.05) translateY(1px); /* 微幅二次擠壓 */
+    }
+    100% {
+        transform: scale(1) scaleY(1) scaleX(1) translateY(0); /* 歸位 */
+    }
+}
+
+.gem-slot-slide-bounce {
+    animation: gem-elastic-slide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
 }

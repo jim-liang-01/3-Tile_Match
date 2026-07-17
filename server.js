@@ -583,11 +583,6 @@ app.get('/api/sync-daily-session/:dateStr', verifyFirebaseToken, async (req, res
                 created: admin.firestore.FieldValue.serverTimestamp()
             });
         }
-        
-        // 🚀 高效優化：如果雲端的 midGameState 為空，直接由後端主動進行初始化，回傳完整的初始殘局快照！
-        // if (!dailySession.midGameState && dailySession.dailyLevelIndex < LEVELS.length) {
-        //     dailySession.midGameState = getInitialMidGameState(dateStr, dailySession.dailyLevelIndex);
-        // }
 
         let outOfTickets = false;
 
@@ -605,12 +600,6 @@ app.get('/api/sync-daily-session/:dateStr', verifyFirebaseToken, async (req, res
         if (!outOfTickets) {
             dailySession.tiles = generateLevelLayout(dateStr, dailySession.dailyLevelIndex);
         }
-        
-        // 🛡️ [安全防護] 若票券已耗盡且沒有進行中的牌局，則強制銷毀回傳內容，徹底杜絕無票恢復！
-        // if (dailySession.ticketsUsed >= 3 && !dailySession.midGameState) {
-        //     dailySession.tiles = [];
-        //     console.log(`🛡️ [安全防護] 玩家 ${uid} 票券已耗盡且無進行中牌局，已強制銷毀後端回傳內容。`);
-        // }
         
         return res.json({ success: true, dailySession });
     } catch (e) {
@@ -636,18 +625,13 @@ app.post('/api/save-session', verifyFirebaseToken, async (req, res) => {
     }
     
     try {
-        const userDocRef = db.collection('players').doc(uid);
         const dailyDocRef = db.collection('players').doc(uid).collection('dailyStats').doc(dateStr);
+
+        const [dailyDoc] = await Promise.all([
+            dailyDocRef.get()
+        ]);
         
-        // 🔒 1. 載入並校驗玩家帳號的最大解鎖關卡，防止利用中途存檔跳過未解鎖關卡！
-        const userDoc = await userDocRef.get();
-        let maxLevelReached = 0;
-        if (userDoc.exists && userDoc.data().stats) {
-            maxLevelReached = userDoc.data().stats.maxLevelReached || 0;
-        }
-        
-        // 🔒 2. 載入現有的每日數據，用作「防回溯/防 Save-Scum 步驟嚴格遞增校驗」與「大滿貫鎖定檢驗」
-        const dailyDoc = await dailyDocRef.get();
+        // 🔒 2. 用作「防回溯/防 Save-Scum 步驟嚴格遞增校驗」與「大滿貫鎖定檢驗」
         if (dailyDoc.exists && dailyDoc.data().dailyLevelIndex >= LEVELS.length) {
             return res.status(400).json({ error: "防作弊檢測：您今天已經通關所有每日關卡，無法再儲存中途存檔！" });
         }
@@ -664,14 +648,10 @@ app.post('/api/save-session', verifyFirebaseToken, async (req, res) => {
         }
         
         if (midGameState && midGameState.currentLevelIndex !== undefined) {
-            // 防作弊安全檢驗：存檔的關卡不能大於生涯解鎖最大值
-            if (midGameState.currentLevelIndex > maxLevelReached) {
-                return res.status(400).json({ error: "防作弊檢測：嘗試儲存未解鎖關卡之存檔！" });
-            }
-            
-            // 🔒 2.5 關卡倒退覆蓋攔截：不允許低關卡的過期存檔覆蓋或降級已通關、更高關卡的資料庫狀態！
-            if (midGameState.currentLevelIndex < existingDailyLevel) {
-                return res.status(400).json({ error: "防作弊檢測：不允許以低關卡的存檔降級或覆蓋更高關卡的進度！" });
+            // 🔒 2.5 關卡一致性驗證：中途存盤的關卡必須與資料庫中今日進展關卡 (existingDailyLevel) 100% 相同！
+            // 這不僅能防止關卡倒退（Save-Scum），還能徹底杜絕玩家透過發送更高關卡 ID 直接跳關的漏洞！
+            if (midGameState.currentLevelIndex !== existingDailyLevel) {
+                return res.status(400).json({ error: "防作弊檢測：存盤關卡與今日進度關卡不一致，拒絕儲存！" });
             }
             dailyLevelIndex = midGameState.currentLevelIndex;
         }
@@ -703,11 +683,6 @@ app.post('/api/save-session', verifyFirebaseToken, async (req, res) => {
             midGameState: midGameState !== undefined ? midGameState : null,
             lastUpdated: admin.firestore.FieldValue.serverTimestamp()
         };
-        
-        // 🔒 自動與卡牌存檔的 currentLevelIndex 保持完美同步，解決 dailyLevelIndex 與牌局不對應的 bug
-        // if (midGameState && midGameState.currentLevelIndex !== undefined) {
-        //     updateData.dailyLevelIndex = dailyLevelIndex;
-        // }
         
         await dailyDocRef.set(updateData, { merge: true });
         

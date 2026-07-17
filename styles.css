@@ -540,3 +540,160 @@ input[type="range"]::-webkit-slider-thumb:active {
     animation: pulse-slow 2.5s infinite ease-in-out;
     display: inline-block;
 }
+
+/* ==========================================
+   ✨ Sidebar Tab Buttons (Codex/Leaderboard)
+   ========================================== */
+.sidebar-tab {
+    flex: 1;
+    padding: 10px 5px;
+    font-size: 14px;
+    font-weight: 900; /* font-black */
+    color: #8a6c6a;
+    background: linear-gradient(135deg, #fdfaf5, #f5efe6);
+    border: 2px solid #e9decb;
+    border-bottom-width: 5px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease-out;
+    text-shadow: 0 1px 1px #fff;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05), inset 0 1px 0 #fff;
+    outline: none;
+}
+
+.sidebar-tab:hover:not(.active) {
+    background: linear-gradient(135deg, #ffffff, #f9f5f0);
+    color: #6d5654;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 10px rgba(0,0,0,0.07), inset 0 1px 0 #fff;
+}
+
+.sidebar-tab.active {
+    background: linear-gradient(135deg, #fffbf4, #fbeee0);
+    color: #ff8fa3;
+    border-color: #ffb3c1;
+    border-bottom-width: 2px;
+    margin-top: 3px; /* Compensate for border-bottom-width change */
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.08);
+    text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+    cursor: default;
+}
+
+.sidebar-tab:active:not(.active) {
+    transform: translateY(1px);
+    border-bottom-width: 2px;
+    margin-top: 3px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+/* ==========================================
+   ✨ Skill Buttons (道具按鈕) Redesign
+   ========================================== */
+.skill-button {
+    flex: 1;
+    position: relative;
+    padding: 8px 4px;
+    border-radius: 14px;
+    background: #f0f0f0; /* Fallback */
+    border: none;
+    border-bottom-width: 5px;
+    border-bottom-style: solid;
+    cursor: pointer;
+    transition: all 0.1s ease-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900; /* font-black */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.7);
+}
+
+.skill-button__icon {
+    font-size: 22px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.skill-button__text {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+.skill-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.8);
+    filter: brightness(1.05);
+}
+
+.skill-button:active:not(:disabled) {
+    transform: translateY(1px);
+    border-bottom-width: 2px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+    filter: brightness(0.95);
+}
+
+.skill-button:disabled {
+    opacity: 0.45;
+    filter: grayscale(60%);
+    cursor: not-allowed;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.5);
+}
+
+/* Undo Button - Pink */
+.skill-button--undo {
+    background: linear-gradient(145deg, #ffe5ec, #ffcdd8);
+    border-color: #ff8fa3;
+    color: #c53051;
+    text-shadow: 0 1px 1px #fff5f7;
+}
+
+/* Out3 Button - Green */
+.skill-button--out3 {
+    background: linear-gradient(145deg, #e8f5e9, #c8e6c9);
+    border-color: #81c784;
+    color: #2e7d32;
+    text-shadow: 0 1px 1px #f8fcf8;
+}
+
+/* Shuffle Button - Blue */
+.skill-button--shuffle {
+    background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+    border-color: #64b5f6;
+    color: #1565c0;
+    text-shadow: 0 1px 1px #f7fbff;
+}
+
+/* ==========================================
+   🏆 Leaderboard Rank Badges
+   ========================================== */
+.rank-badge {
+    width: 2.5rem; /* w-10 */
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rank-badge--1, .rank-badge--2, .rank-badge--3 {
+    font-size: 2em; /* Larger Trophies */
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+}
+
+.rank-badge--1 {
+    color: #ffbf00; /* Gold */
+}
+
+.rank-badge--2 {
+    color: #c0c0c0; /* Silver */
+}
+
+.rank-badge--3 {
+    color: #cd7f32; /* Bronze */
+}
+
+.rank-badge--other {
+    font-family: 'Press Start 2P', 'Noto Sans TC', cursive, sans-serif;
+    font-size: 11px;
+    font-weight: 900;
+    color: #9ca3af; /* gray-400 */
+}

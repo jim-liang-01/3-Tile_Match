@@ -1422,22 +1422,25 @@ function setupEventListeners() {
     if (tabCodex && tabLeaderboard && panelCodex && panelLeaderboard) {
         tabCodex.addEventListener('click', () => {
             Sound.playClick();
-            tabCodex.classList.add('text-[#ff8fa3]', 'border-[#ff8fa3]');
-            tabCodex.classList.remove('text-gray-400', 'border-transparent');
-            tabLeaderboard.classList.add('text-gray-400', 'border-transparent');
-            tabLeaderboard.classList.remove('text-[#ff8fa3]', 'border-[#ff8fa3]');
+            if (tabCodex.classList.contains('active')) return;
+
+            tabCodex.classList.add('active');
+            tabLeaderboard.classList.remove('active');
+
             panelCodex.classList.remove('hidden');
             panelLeaderboard.classList.add('hidden');
         });
 
         tabLeaderboard.addEventListener('click', () => {
             Sound.playClick();
-            tabLeaderboard.classList.add('text-[#ff8fa3]', 'border-[#ff8fa3]');
-            tabLeaderboard.classList.remove('text-gray-400', 'border-transparent');
-            tabCodex.classList.add('text-gray-400', 'border-transparent');
-            tabCodex.classList.remove('text-[#ff8fa3]', 'border-[#ff8fa3]');
-            panelCodex.classList.add('hidden');
+            if (tabLeaderboard.classList.contains('active')) return;
+
+            tabLeaderboard.classList.add('active');
+            tabCodex.classList.remove('active');
+
             panelLeaderboard.classList.remove('hidden');
+            panelCodex.classList.add('hidden');
+            
             loadLeaderboardData();
         });
     }
@@ -2317,10 +2320,10 @@ function renderLeaderboard() {
         const rank = index + 1;
         const isSelf = player.isSelf || (currentUser && player.uid === currentUser.uid);
         
-        let rankBadge = `<span class="font-pixel text-[11px] font-black text-gray-400 w-5 text-center">${rank}</span>`;
-        if (rank === 1) rankBadge = `<span class="text-lg w-5 text-center">🥇</span>`;
-        else if (rank === 2) rankBadge = `<span class="text-lg w-5 text-center">🥈</span>`;
-        else if (rank === 3) rankBadge = `<span class="text-lg w-5 text-center">🥉</span>`;
+        let rankBadge = `<span class="rank-badge rank-badge--other">${rank}</span>`;
+        if (rank === 1) rankBadge = `<div class="rank-badge rank-badge--1">🥇</div>`;
+        else if (rank === 2) rankBadge = `<div class="rank-badge rank-badge--2">🥈</div>`;
+        else if (rank === 3) rankBadge = `<div class="rank-badge rank-badge--3">🥉</div>`;
 
         const winRatePercent = player.totalGames > 0 ? Math.round(player.winRate * 100) : 0;
 

@@ -112,20 +112,20 @@
             </div>
             
             <!-- Skill Items Bar -->
-            <div class="px-4 py-3 bg-[#fefdfa] border-t-2 border-[#e9decb] flex justify-center gap-3 md:gap-4 select-none">
-                <button id="skill-undo" class="flex-1 max-w-[120px] py-1.5 px-2 bg-[#ffe5ec] hover:bg-[#ffccd5] border-b-4 border-[#ff8fa3] active:border-b-0 active:mt-1 rounded-xl flex flex-col items-center transition-all disabled:opacity-40 disabled:pointer-events-none relative group text-pink-700">
-                    <span class="text-xl">↩️</span>
-                    <span class="text-[10px] font-black">時光倒流</span>
+            <div class="px-3 py-3 bg-[#fefdfa] border-t-2 border-[#e9decb] flex justify-center gap-3 select-none">
+                <button id="skill-undo" class="skill-button skill-button--undo">
+                    <div class="skill-button__icon">↩️</div>
+                    <div class="skill-button__text">時光倒流</div>
                     <span id="count-undo" class="skill-badge badge-undo">1</span>
                 </button>
-                <button id="skill-out3" class="flex-1 max-w-[120px] py-1.5 px-2 bg-[#e8f5e9] hover:bg-[#c8e6c9] border-b-4 border-[#81c784] active:border-b-0 active:mt-1 rounded-xl flex flex-col items-center transition-all disabled:opacity-40 disabled:pointer-events-none relative group text-green-700">
-                    <span class="text-xl">📤</span>
-                    <span class="text-[10px] font-black">移出寶石</span>
+                <button id="skill-out3" class="skill-button skill-button--out3">
+                    <div class="skill-button__icon">📤</div>
+                    <div class="skill-button__text">移出寶石</div>
                     <span id="count-out3" class="skill-badge badge-out3">1</span>
                 </button>
-                <button id="skill-shuffle" class="flex-1 max-w-[120px] py-1.5 px-2 bg-[#e3f2fd] hover:bg-[#bbdefb] border-[#64b5f6] border-b-4 active:border-b-0 active:mt-1 rounded-xl flex flex-col items-center transition-all disabled:opacity-40 disabled:pointer-events-none relative group text-blue-700">
-                    <span class="text-xl">🔀</span>
-                    <span class="text-[10px] font-black">寶石派對</span>
+                <button id="skill-shuffle" class="skill-button skill-button--shuffle">
+                    <div class="skill-button__icon">🔀</div>
+                    <div class="skill-button__text">寶石派對</div>
                     <span id="count-shuffle" class="skill-badge badge-shuffle">1</span>
                 </button>
             </div>
@@ -154,11 +154,11 @@
                 </div>
 
                 <!-- Sidebar Tabs: Codex vs Leaderboard -->
-                <div class="flex border-b-2 border-[#f5efe6] pb-1 gap-1 select-none">
-                    <button id="tab-codex" class="flex-1 pb-1.5 text-xs font-black text-[#ff8fa3] border-b-2 border-[#ff8fa3] tracking-wider transition-all focus:outline-none">
+                <div class="flex justify-center border-b-2 border-[#f5efe6] pb-1 gap-2 select-none mb-2">
+                    <button id="tab-codex" class="sidebar-tab active">
                         📖 寶石圖鑑
                     </button>
-                    <button id="tab-leaderboard" class="flex-1 pb-1.5 text-xs font-black text-gray-400 border-b-2 border-transparent tracking-wider hover:text-pink-400 transition-all focus:outline-none">
+                    <button id="tab-leaderboard" class="sidebar-tab">
                         🏆 聖域英雄榜
                     </button>
                 </div>

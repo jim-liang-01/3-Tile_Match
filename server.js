@@ -4,6 +4,21 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
+// 🌟 0. 載入本地 .env 檔案 (零依賴原生解析，極致輕量化與部署安全)
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+    const envConfig = fs.readFileSync(envPath, 'utf8');
+    envConfig.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+            const parts = trimmed.split('=');
+            const key = parts[0].trim();
+            const val = parts.slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
+            if (key) process.env[key] = val;
+        }
+    });
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -378,7 +393,7 @@ app.get('/api/load-profile', verifyFirebaseToken, async (req, res) => {
             maxLevelReached: 0
         };
         
-                let unlockedCodex = [0]; // 預設解鎖 ID=0 的圓形鑽石寶石！
+        let unlockedCodex = [0]; // 預設解鎖 ID=0 的圓形鑽石寶石！
         let shinyCodex = [];
         let currentAvatarId = 0; // 新玩家預設設定 ID=0 (圓形鑽石) 的頭像！
         let pendingRewards = [];
@@ -1133,6 +1148,128 @@ app.get('/api/leaderboard/all', verifyFirebaseToken, async (req, res) => {
     } catch (e) {
         console.error("GET all leaderboards error:", e);
         return res.status(500).json({ error: "無法載入完整排行榜" });
+    }
+});
+
+/**
+ * 🟢 API I: LINE 登入引導 (將玩家重新導向至 LINE 授權頁面)
+ */
+app.get('/api/login-line', (req, res) => {
+    const origin = req.query.origin || `${req.protocol}://${req.get('host')}`;
+    const clientId = process.env.LINE_CHANNEL_ID;
+    if (!clientId) {
+        console.error("❌ 後端錯誤：未設定 LINE_CHANNEL_ID 環境變數！");
+        return res.status(500).send("伺服器設定錯誤：未設定 LINE_CHANNEL_ID！");
+    }
+    
+    // 產生隨機數結合前端來源網址作為 state，防止 CSRF 並保持動態重定向
+    const randomStr = Math.random().toString(36).substring(2);
+    const state = `${randomStr}_${Buffer.from(origin).toString('base64')}`;
+    
+    const redirectUri = `${req.protocol}://${req.get('host')}/api/line-callback`;
+    const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=profile%20openid`;
+    
+    return res.redirect(lineAuthUrl);
+});
+
+/**
+ * 🟢 API J: LINE 登入安全回調 (接收 code，驗證並核發 Firebase Custom Token)
+ */
+app.get('/api/line-callback', async (req, res) => {
+    const { code, state } = req.query;
+    const channelId = process.env.LINE_CHANNEL_ID;
+    const channelSecret = process.env.LINE_CHANNEL_SECRET;
+    const redirectUri = `${req.protocol}://${req.get('host')}/api/line-callback`;
+    
+    let targetOrigin = `${req.protocol}://${req.get('host')}`;
+    if (state && state.includes('_')) {
+        try {
+            const b64Origin = state.split('_')[1];
+            if (b64Origin) {
+                targetOrigin = Buffer.from(b64Origin, 'base64').toString('utf8');
+            }
+        } catch (e) {
+            console.error("解析 state 中的 origin 失敗: ", e.message);
+        }
+    }
+    
+    if (!code) {
+        console.error("❌ LINE 登入失敗：未接收到授權碼 code。");
+        return res.redirect(`${targetOrigin}/?error=line_auth_failed`);
+    }
+    
+    if (!channelId || !channelSecret) {
+        console.error("❌ 後端錯誤：未正確設定 LINE_CHANNEL_ID 或 LINE_CHANNEL_SECRET！");
+        return res.redirect(`${targetOrigin}/?error=line_config_missing`);
+    }
+    
+    try {
+        // 1. 向 LINE 換取 Access Token
+        const tokenResponse = await fetch('https://api.line.me/oauth2/v2.1/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                redirect_uri: redirectUri,
+                client_id: channelId,
+                client_secret: channelSecret
+            })
+        });
+        
+        if (!tokenResponse.ok) {
+            const errText = await tokenResponse.text();
+            throw new Error(`LINE token exchange failed: ${errText}`);
+        }
+        
+        const tokenData = await tokenResponse.json();
+        const accessToken = tokenData.access_token;
+        
+        // 2. 獲取 LINE 玩家個人檔案
+        const profileResponse = await fetch('https://api.line.me/v2/profile', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        
+        if (!profileResponse.ok) {
+            const errText = await profileResponse.text();
+            throw new Error(`LINE profile fetch failed: ${errText}`);
+        }
+        
+        const lineProfile = await profileResponse.json();
+        const lineUid = `line:${lineProfile.userId}`; // 格式化為 Firebase 唯一的 UID
+        
+        // 2.5 🔒 關鍵修復：在 Firebase Auth 中建立或同步更新玩家的標準個人檔案（displayName 與 photoURL）
+        // 這樣前端 signInWithCustomToken 登入後，user.displayName / photoURL 才能立即被完美讀取，不再顯示為預設的「冒險者」！
+        try {
+            await admin.auth().updateUser(lineUid, {
+                displayName: lineProfile.displayName,
+                photoURL: lineProfile.pictureUrl
+            });
+        } catch (e) {
+            if (e.code === 'auth/user-not-found') {
+                // 如果是新玩家，則直接在 Firebase Auth 中註冊創立該使用者
+                await admin.auth().createUser({
+                    uid: lineUid,
+                    displayName: lineProfile.displayName,
+                    photoURL: lineProfile.pictureUrl
+                });
+            } else {
+                throw e;
+            }
+        }
+        
+        // 3. 使用 Firebase Admin SDK 產生安全自定義 Custom Token
+        const customToken = await admin.auth().createCustomToken(lineUid, {
+            provider: 'line',
+            name: lineProfile.displayName,
+            picture: lineProfile.pictureUrl
+        });
+        
+        // 4. 安全導回原前端網址，並攜帶 Custom Token 供登入
+        return res.redirect(`${targetOrigin}/?customToken=${customToken}`);
+    } catch (error) {
+        console.error("❌ LINE 登入回調處理發生錯誤：", error.message);
+        return res.redirect(`${targetOrigin}/?error=line_server_error`);
     }
 });
 

@@ -606,8 +606,23 @@ if (document.readyState === 'interactive' || document.readyState === 'complete')
     window.addEventListener('DOMContentLoaded', initAll);
 }
 
-function setupFirebaseListeners() {
+async function setupFirebaseListeners() {
     if (isFirebaseActive && auth) {
+        // 🌟 檢查是否有 LINE 回傳的 Custom Token
+        const urlParams = new URLSearchParams(window.location.search);
+        const customToken = urlParams.get('customToken');
+        if (customToken) {
+            try {
+                console.log("⚡ 偵測到 LINE 登入自定義 Token，正在向 Firebase 驗證...");
+                await auth.signInWithCustomToken(customToken);
+                // 登入成功後，清除 URL 參數保持網址美觀
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } catch (e) {
+                console.error("Custom token sign in failed: ", e.message);
+                alert("LINE 授權登入失敗，請重試！");
+            }
+        }
+
         auth.onAuthStateChanged(user => {
             handleUserAuthChange(user);
         });
@@ -1530,6 +1545,17 @@ function setupAuthEvents() {
             }
         } else {
             alert("⚠️ 雲端服務尚未啟用，無法使用 Google 登入！");
+        }
+    });
+
+    document.getElementById('btn-login-line')?.addEventListener('click', () => {
+        Sound.playClick();
+        if (isFirebaseActive && auth) {
+            const originUrl = window.location.origin;
+            // 導向後端，並將目前前端網址作為 origin 傳過去，方便登入後導回
+            window.location.href = `${BACKEND_URL}/api/login-line?origin=${encodeURIComponent(originUrl)}`;
+        } else {
+            alert("⚠️ 雲端服務尚未啟用，無法使用 LINE 登入！");
         }
     });
 

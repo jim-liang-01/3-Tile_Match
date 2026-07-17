@@ -526,7 +526,8 @@ const GameState = {
     prng: null,
     movesLog: [],
     isAnimatingMatch: false,
-    shouldBounceSlots: false
+    shouldBounceSlots: false,
+    flyingCount: 0
 };
 
 let currentUser = null;
@@ -853,7 +854,8 @@ async function restoreMidGameState(state, preloadedTiles = null) {
     const curLevel = LEVELS[GameState.currentLevelIndex];
     const dailySeed = getDailySeed();
     const levelSeed = dailySeed + GameState.currentLevelIndex;
-    GameState.prng = mulberry32(levelSeed);
+    // 🌟 核心防護：使用獨立於地圖生成步驟的專用種子 (levelSeed + 10000)，保證客戶端與後端重播時洗牌結果 100% 同步！
+    GameState.prng = mulberry32(levelSeed + 10000);
 
     if (!state) {
         // 🚀 如果沒有雲端中途存檔，說明是開始全新一局，直接由後端原始佈局生成卡牌
@@ -1705,13 +1707,15 @@ async function handleTileClick(tile, event) {
         
         // 消除完後再次更新 UI，讓剩餘晶石靠攏
         updateUI();
-        await saveCurrentGameSession(false);
         await checkGameStatus();
+        await saveCurrentGameSession(false);
     });
 }
 
 // 18. 卡牌飛入動畫 (採用 CSS translate3d + scale 進行 GPU 硬體加速，徹底解決手機端卡頓 Reflow 痛點！)
 function animateTileFly(fromRect, targetSlotIdx, tile, onComplete) {
+    GameState.flyingCount++; // 🚀 飛入動畫開始時遞增飛入計數
+    
     const slotsContainer = document.getElementById('slots-container');
     const targetSlotEl = slotsContainer.children[targetSlotIdx];
     const targetRect = targetSlotEl.getBoundingClientRect();
@@ -1746,6 +1750,7 @@ function animateTileFly(fromRect, targetSlotIdx, tile, onComplete) {
     
     flyEl.addEventListener('transitionend', () => {
         flyEl.remove();
+        GameState.flyingCount = Math.max(0, GameState.flyingCount - 1); // 🚀 飛入動畫結束時遞減飛入計數
         onComplete();
     });
 }
@@ -1888,7 +1893,6 @@ async function endGame(result) {
             const res = await fetchWithAuth('/api/end-game', {
                 method: 'POST',
                 body: JSON.stringify({
-                    result,
                     currentLevelIndex: GameState.currentLevelIndex,
                     dateStr,
                     movesLog: GameState.movesLog
@@ -2019,13 +2023,13 @@ function updateUI() {
     if (countShuffleEl) countShuffleEl.innerText = GameState.skills.shuffle;
     
     const skillUndoBtn = document.getElementById('skill-undo');
-    if (skillUndoBtn) skillUndoBtn.disabled = (GameState.skills.undo <= 0 || GameState.history.length === 0 || GameState.isAnimatingMatch);
+    if (skillUndoBtn) skillUndoBtn.disabled = (GameState.skills.undo <= 0 || GameState.history.length === 0 || GameState.isAnimatingMatch || GameState.flyingCount > 0);
     
     const skillOut3Btn = document.getElementById('skill-out3');
-    if (skillOut3Btn) skillOut3Btn.disabled = (GameState.skills.out3 <= 0 || GameState.slots.length < 3 || GameState.isAnimatingMatch);
+    if (skillOut3Btn) skillOut3Btn.disabled = (GameState.skills.out3 <= 0 || GameState.slots.length < 3 || GameState.isAnimatingMatch || GameState.flyingCount > 0);
     
     const skillShuffleBtn = document.getElementById('skill-shuffle');
-    if (skillShuffleBtn) skillShuffleBtn.disabled = (GameState.skills.shuffle <= 0 || GameState.tiles.length === 0 || GameState.isAnimatingMatch);
+    if (skillShuffleBtn) skillShuffleBtn.disabled = (GameState.skills.shuffle <= 0 || GameState.tiles.length === 0 || GameState.isAnimatingMatch || GameState.flyingCount > 0);
 
     renderSlots();
     renderOut3Storage();
@@ -2086,7 +2090,7 @@ function renderOut3Storage() {
                     alert("晶石槽已滿，請先消除晶石空出位置喔！");
                     return;
                 }
-                if (GameState.isAnimatingMatch) return; // 🌟 消除動畫中禁用
+                if (GameState.isAnimatingMatch || GameState.flyingCount > 0) return; // 🌟 消除動畫中或有卡牌飛入中禁用
                 Sound.playClick();
                 
                 // 記錄玩家將移出區卡牌點擊送回的動作
@@ -2105,8 +2109,8 @@ function renderOut3Storage() {
                 
                 // 消除完後再次更新 UI，讓剩餘晶石靠攏
                 updateUI();
-                await saveCurrentGameSession(false);
                 await checkGameStatus();
+                await saveCurrentGameSession(false);
             });
             container.appendChild(el);
             drawCachedTile(canvas, tile.template.id);
@@ -2132,7 +2136,7 @@ function saveHistoryState() {
 
 // 23. 道具功能實現
 async function useSkillUndo() {
-    if (GameState.isAnimatingMatch) return; // 🌟 正在執行三消亮起與消失動畫時，暫時停用道具
+    if (GameState.isAnimatingMatch || GameState.flyingCount > 0) return; // 🌟 正在執行三消亮起與消失動畫，或有卡牌飛入中時，暫時停用道具
     if (GameState.skills.undo <= 0 || GameState.history.length === 0) return;
     Sound.playClick();
     
@@ -2150,7 +2154,7 @@ async function useSkillUndo() {
 }
 
 async function useSkillOut3() {
-    if (GameState.isAnimatingMatch) return; // 🌟 正在執行三消亮起與消失動畫時，暫時停用道具
+    if (GameState.isAnimatingMatch || GameState.flyingCount > 0) return; // 🌟 正在執行三消亮起與消失動畫，或有卡牌飛入中時，暫時停用道具
     if (GameState.skills.out3 <= 0 || GameState.slots.length < 3) return;
     Sound.playClick();
     
@@ -2162,12 +2166,12 @@ async function useSkillOut3() {
     GameState.out3Storage.push(...toMove);
     renderField();
     updateUI();
-    await saveCurrentGameSession(false);
     await checkGameStatus();
+    await saveCurrentGameSession(false);
 }
 
 async function useSkillShuffle() {
-    if (GameState.isAnimatingMatch) return; // 🌟 正在執行三消亮起與消失動畫時，暫時停用道具
+    if (GameState.isAnimatingMatch || GameState.flyingCount > 0) return; // 🌟 正在執行三消亮起與消失動畫，或有卡牌飛入中時，暫時停用道具
     if (GameState.skills.shuffle <= 0 || GameState.tiles.length === 0) return;
     Sound.playShuffle();
     

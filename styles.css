@@ -468,3 +468,51 @@ input[type="range"]::-webkit-slider-thumb:active {
 .gem-slot-slide-bounce {
     animation: gem-elastic-slide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
 }
+
+/* ==========================================
+   ✨ 道具計數氣泡 (Skill Badges) 豪華重置
+   ========================================== */
+.skill-badge {
+    position: absolute !important;
+    top: -6px !important;
+    right: -4px !important;
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    border: 1.5px solid #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.badge-undo {
+    background: linear-gradient(135deg, #ff6b8b 0%, #d90429 100%) !important;
+    box-shadow: 
+        0 3px 6px rgba(217, 4, 41, 0.4), 
+        inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+.badge-out3 {
+    background: linear-gradient(135deg, #52b788 0%, #007f5f 100%) !important;
+    box-shadow: 
+        0 3px 6px rgba(0, 127, 95, 0.4), 
+        inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+.badge-shuffle {
+    background: linear-gradient(135deg, #4cc9f0 0%, #3a0ca3 100%) !important;
+    box-shadow: 
+        0 3px 6px rgba(58, 12, 163, 0.4), 
+        inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+/* 當滑鼠懸停在道具按鈕上時，數量氣泡微幅放大呼吸 */
+.group:hover .skill-badge {
+    transform: scale(1.15);
+}

@@ -760,17 +760,23 @@ app.post('/api/consume-ticket', verifyFirebaseToken, async (req, res) => {
  */
 app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
     const uid = req.user.uid;
-    const { result, currentLevelIndex, dateStr, movesLog } = req.body;
+    const { currentLevelIndex, dateStr, movesLog } = req.body;
     
-    if (!result || !['victory', 'defeat'].includes(result) || currentLevelIndex === undefined || !dateStr) {
+    if (currentLevelIndex === undefined || !dateStr) {
         return res.status(400).json({ error: "無效的請求參數。" });
     }
     
-    // 🔒 1. 核心安全檢驗：在後端重播玩家的每一步操作 (movesLog)，若判定為作弊則拒絕寫入資料庫！
-    const verification = validateMovesLog(dateStr, currentLevelIndex, movesLog, result);
+    // 🔒 1. 核心安全檢驗：在後端重播玩家的每一步操作 (movesLog)，並由後端推導出遊戲勝負結果！
+    const verification = validateMovesLog(dateStr, currentLevelIndex, movesLog, null);
     if (!verification.success) {
         console.warn(`⚠️ [安全警告] 玩家 ${uid} 被系統判定作弊：${verification.error}`);
         return res.status(400).json({ error: `防作弊檢測失敗：${verification.error}` });
+    }
+    
+    const result = verification.result;
+    if (result === 'playing') {
+        console.warn(`⚠️ [安全警告] 玩家 ${uid} 嘗試提交未完局之結算！`);
+        return res.status(400).json({ error: "防作弊檢測：遊戲尚未結束，不可提交結算！" });
     }
     
     try {
@@ -1384,6 +1390,7 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
     let simOut3Storage = [];
     let simHistory = []; // 用於復原
     let simSkills = { undo: 1, out3: 1, shuffle: 1 };
+    let shufflePrng = null; // 🌟 專用洗牌 PRNG，與 client 的 GameState.prng 完美同步
 
     const evaluateOverlaps = () => {
         const tileWidth = 58;
@@ -1480,10 +1487,13 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
             if (simSkills.shuffle <= 0) return { success: false, error: "打亂次數不足！" };
             if (simTiles.length === 0) return { success: false, error: "場上無牌可打亂！" };
             simSkills.shuffle--;
-            // 使用一樣的 PRNG 洗牌
+            // 使用專用洗牌 PRNG，與 client (levelSeed + 10000) 完美同步
+            if (!shufflePrng) {
+                shufflePrng = mulberry32(levelSeed + 10000);
+            }
             const activeTemplates = simTiles.map(t => t.typeId);
             for (let i = activeTemplates.length - 1; i > 0; i--) {
-                const j = Math.floor(prng() * (i + 1));
+                const j = Math.floor(shufflePrng() * (i + 1));
                 [activeTemplates[i], activeTemplates[j]] = [activeTemplates[j], activeTemplates[i]];
             }
             simTiles.forEach((tile, index) => {
@@ -1503,7 +1513,7 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
     if (isWin) simResult = 'victory';
     else if (isLose) simResult = 'defeat';
 
-    if (simResult !== finalResult) {
+    if (finalResult !== undefined && finalResult !== null && simResult !== finalResult) {
         return { success: false, error: `模擬結果為 ${simResult}，但上報結果為 ${finalResult}！` };
     }
 
@@ -1518,7 +1528,7 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
         }
     }
 
-    return { success: true };
+    return { success: true, result: simResult };
 }
 
 // 6. 啟動伺服器

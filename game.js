@@ -39,6 +39,15 @@ async function initLiff() {
         await liff.init({ liffId: LIFF_ID });
         console.log("✅ LIFF: Initialization successful.");
 
+        // 🌟 CORE UX FIX: Now that LIFF is initialized, we can reliably check if we are in the LINE client.
+        if (liff.isInClient()) {
+            console.log("🕵️‍♂️ Detected running inside LINE's in-app browser. Hiding Google login button.");
+            const googleBtn = document.getElementById('btn-login-google');
+            if (googleBtn) {
+                googleBtn.classList.add('hidden');
+            }
+        }
+
         if (liff.isLoggedIn()) {
             console.log("✅ LIFF: User is logged in. Getting ID token...");
             const idToken = liff.getIDToken();
@@ -1607,17 +1616,6 @@ function setupEventListeners() {
 }
 
 function setupAuthEvents() {
-    // 🌟 CORE UX: Detect if running inside LINE's in-app browser
-    // In LINE's browser, Google login is often blocked (disallowed_useragent).
-    // To provide the smoothest experience, we intelligently hide the Google login button,
-    // leaving only the most seamless option: LINE Login.
-    if (liff && liff.isInClient()) {
-        const googleBtn = document.getElementById('btn-login-google');
-        if (googleBtn) {
-            googleBtn.classList.add('hidden');
-        }
-    }
-
     document.getElementById('btn-login-google').addEventListener('click', async () => {
         Sound.playClick();
         if (isFirebaseActive && auth) {

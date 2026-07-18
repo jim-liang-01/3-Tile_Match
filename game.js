@@ -4,12 +4,16 @@
  */
 
 // ==========================================
-// 🔥 1. FIREBASE 雲端連線設定 (由 config.js 提供，此處僅讀取)
+// 🔥 1. FIREBASE & LIFF 雲端連線設定
 // ==========================================
 let db = null;
 let auth = null;
 let isFirebaseActive = false;
+const LIFF_ID = '2010743293-T2jgQt0r'; // 這是您的 LIFF ID
 
+/**
+ * 初始化 Firebase 服務
+ */
 function initFirebase() {
     if (typeof firebase !== 'undefined' && typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey !== "YOUR_API_KEY") {
         try {
@@ -25,6 +29,70 @@ function initFirebase() {
         console.log("ℹ️ [本地離線模式] 檢測到未填寫 Firebase Config。已自動啟用本地 LocalStorage 離線模擬系統，遊戲完全可玩！");
     }
 }
+
+/**
+ * 初始化 LIFF SDK 並處理登入流程
+ */
+async function initLiff() {
+    try {
+        console.log("🚀 LIFF: Initializing with ID:", LIFF_ID);
+        await liff.init({ liffId: LIFF_ID });
+        console.log("✅ LIFF: Initialization successful.");
+
+        if (liff.isLoggedIn()) {
+            console.log("✅ LIFF: User is logged in. Getting ID token...");
+            const idToken = liff.getIDToken();
+            if (idToken) {
+                await getFirebaseTokenFromLiff(idToken);
+            } else {
+                 // 如果在 LIFF 瀏覽器中，可能需要引導用戶登入
+                console.log("🤔 LIFF: Logged in, but no ID Token. May need user action.");
+            }
+        } else {
+            console.log("🚪 LIFF: User is not logged in.");
+        }
+    } catch (error) {
+        console.error("❌ LIFF Init Error:", error.code, error.message);
+        const splash = document.getElementById('app-splash');
+        if(splash) splash.remove(); // 移除啟動畫面以顯示登入按鈕
+        document.getElementById('login-overlay').classList.remove('hidden');
+    }
+}
+
+/**
+ * 使用 LIFF ID Token 從後端獲取 Firebase Custom Token 並登入
+ * @param {string} liffIdToken
+ */
+async function getFirebaseTokenFromLiff(liffIdToken) {
+    try {
+        console.log("🔐 LIFF: Sending ID token to backend for verification...");
+        const response = await fetch('/api/login-liff', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ liffIdToken })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Backend verification failed with status: ${response.status}`);
+        }
+
+        const { customToken } = await response.json();
+        console.log("🔑 LIFF: Received Firebase custom token. Signing in...");
+
+        if (auth && customToken) {
+            await auth.signInWithCustomToken(customToken);
+            console.log("✅ Firebase: Signed in successfully with custom token from LIFF.");
+        } else {
+            throw new Error("Firebase auth service or custom token is not available.");
+        }
+    } catch (error) {
+        console.error("❌ LIFF to Firebase Auth Flow Error:", error);
+        alert(`登入驗證失敗: ${error.message}`);
+        liff.logout(); // 登出 LIFF 以便重試
+    }
+}
+
 
 // ==========================================
 // 🧬 2. DETERMINISTIC RNG (全球玩家相同關卡種子系統)
@@ -612,27 +680,25 @@ if (document.readyState === 'interactive' || document.readyState === 'complete')
 }
 
 async function setupFirebaseListeners() {
-    if (isFirebaseActive && auth) {
-        // 🌟 檢查是否有 LINE 回傳的 Custom Token
-        const urlParams = new URLSearchParams(window.location.search);
-        const customToken = urlParams.get('customToken');
-        if (customToken) {
-            try {
-                console.log("⚡ 偵測到 LINE 登入自定義 Token，正在向 Firebase 驗證...");
-                await auth.signInWithCustomToken(customToken);
-                // 登入成功後，清除 URL 參數保持網址美觀
-                window.history.replaceState({}, document.title, window.location.pathname);
-            } catch (e) {
-                console.error("Custom token sign in failed: ", e.message);
-                alert("LINE 授權登入失敗，請重試！");
-            }
-        }
+    // 🚀 Start the LIFF initialization process.
+    // This will handle login if the user is already logged in with LIFF.
+    await initLiff();
 
+    if (isFirebaseActive && auth) {
+        // The onAuthStateChanged listener remains crucial. It will fire after
+        // a successful signInWithCustomToken call, which is now triggered by the LIFF flow.
         auth.onAuthStateChanged(user => {
             handleUserAuthChange(user);
         });
     } else {
         console.warn("⚠️ Firebase 未啟動，請確認您已正確設定 config.js！");
+        // If Firebase isn't active, we might still be in a non-LIFF context or offline.
+        // We need to remove the splash screen to show the login buttons.
+        const splash = document.getElementById('app-splash');
+        if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.remove(), 400);
+        }
     }
 }
 
@@ -1541,11 +1607,11 @@ function setupEventListeners() {
 }
 
 function setupAuthEvents() {
-    // 🌟 核心 UX 優化：偵測是否在 LINE 內置瀏覽器中
-    const isLineBrowser = /Line/i.test(navigator.userAgent);
-    if (isLineBrowser) {
-        // LINE 內置 Webview 因安全政策常會阻擋 Google 登入（disallowed_useragent），
-        // 且玩家此時本就在 LINE App 中，故我們智慧化隱藏 Google 登入，僅保留體驗最流暢的 LINE 登入！
+    // 🌟 CORE UX: Detect if running inside LINE's in-app browser
+    // In LINE's browser, Google login is often blocked (disallowed_useragent).
+    // To provide the smoothest experience, we intelligently hide the Google login button,
+    // leaving only the most seamless option: LINE Login.
+    if (liff && liff.isInClient()) {
         const googleBtn = document.getElementById('btn-login-google');
         if (googleBtn) {
             googleBtn.classList.add('hidden');
@@ -1569,12 +1635,11 @@ function setupAuthEvents() {
 
     document.getElementById('btn-login-line')?.addEventListener('click', () => {
         Sound.playClick();
-        if (isFirebaseActive && auth) {
-            const originUrl = window.location.origin;
-            // 導向後端，並將目前前端網址作為 origin 傳過去，方便登入後導回
-            window.location.href = `${BACKEND_URL}/api/login-line?origin=${encodeURIComponent(originUrl)}`;
+        if (!liff.isLoggedIn()) {
+            liff.login();
         } else {
-            alert("⚠️ 雲端服務尚未啟用，無法使用 LINE 登入！");
+            // Should already be handled by init, but as a fallback
+            getFirebaseTokenFromLiff(liff.getIDToken());
         }
     });
 
@@ -1582,6 +1647,11 @@ function setupAuthEvents() {
         Sound.playClick();
         if (isFirebaseActive && auth) {
             await auth.signOut();
+        }
+        if (liff.isLoggedIn()) {
+            liff.logout();
+            // Redirect to home to clear state after LIFF logout
+            window.location.href = '/'; 
         }
     });
 }

@@ -1151,6 +1151,74 @@ app.get('/api/login-line', (req, res) => {
 });
 
 /**
+ * 🟢 API I.V2: LINE LIFF 登入 (新版，建議使用)
+ */
+app.post('/api/login-liff', async (req, res) => {
+    const { liffIdToken } = req.body;
+
+    if (!liffIdToken) {
+        return res.status(400).json({ success: false, error: "Missing LIFF ID token." });
+    }
+
+    try {
+        // 1. 🚀 向 LINE 伺服器驗證 LIFF ID Token
+        const params = new URLSearchParams();
+        params.append('id_token', liffIdToken);
+        params.append('client_id', process.env.LINE_CHANNEL_ID);
+
+        const lineResponse = await fetch('https://api.line.me/oauth2/v2.1/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params,
+        });
+        
+        const decoded = await lineResponse.json();
+
+        if (!lineResponse.ok) {
+            console.error("LINE token verification failed:", decoded);
+            throw new Error(decoded.error_description || "Invalid LIFF token");
+        }
+
+        console.log("✅ LIFF token verified for user:", decoded.name);
+
+        const lineUid = decoded.sub; // LINE User ID
+        const displayName = decoded.name;
+        const photoURL = decoded.picture;
+
+        // 2. 🛡️ 建立或更新 Firebase 使用者
+        const firebaseUid = `line:${lineUid}`;
+        
+        try {
+            await admin.auth().updateUser(firebaseUid, {
+                displayName: displayName,
+                photoURL: photoURL
+            });
+        } catch (e) {
+            if (e.code === 'auth/user-not-found') {
+                await admin.auth().createUser({
+                    uid: firebaseUid,
+                    displayName: displayName,
+                    photoURL: photoURL
+                });
+            } else {
+                throw e; // Re-throw other errors
+            }
+        }
+
+        // 3. 🔑 產生 Firebase Custom Token
+        const customToken = await admin.auth().createCustomToken(firebaseUid);
+        console.log(`✅ Firebase custom token created for ${displayName}.`);
+
+        // 4. 傳回 Custom Token 給前端
+        res.json({ success: true, customToken });
+
+    } catch (error) {
+        console.error("❌ LIFF Login Error:", error);
+        res.status(500).json({ success: false, error: error.message || "Internal Server Error" });
+    }
+});
+
+/**
  * 🟢 API J: LINE 登入安全回調 (接收 code，驗證並核發 Firebase Custom Token)
  */
 app.get('/api/line-callback', async (req, res) => {
@@ -1423,6 +1491,227 @@ function distributeTilesToLayers(total, layersCount) {
     }
     dist.push(remaining);
     return dist;
+}
+
+function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, clientSkills = null) {
+    const curLevel = LEVELS[currentLevelIndex];
+    if (!curLevel) return { success: false, error: "無效的關卡索引" };
+
+    const dailySeed = getDailySeed(dateStr);
+    const levelSeed = dailySeed + currentLevelIndex;
+    const prng = mulberry32(levelSeed);
+
+    // 1. 重構原始卡牌池
+    const pool = [];
+    const basePairs = Math.floor(curLevel.tileCount / 3);
+    const countsPerType = Array(curLevel.typesCount).fill(0);
+    for (let i = 0; i < basePairs; i++) {
+        countsPerType[i % curLevel.typesCount] += 3;
+    }
+    countsPerType.forEach((num, tIdx) => {
+        for (let i = 0; i < num; i++) {
+            pool.push({ typeId: tIdx });
+        }
+    });
+    seededShuffle(pool, prng);
+
+    // 2. 佈局定位 (與前端絕對一致，以便完全複現遮擋與點擊邏輯)
+    const centerX = 250;
+    const centerY = 200;
+    const gridSpacingX = 62;
+    const gridSpacingY = 72;
+    const tiles = [];
+    let nextTileId = 0;
+    let tileIndex = 0;
+
+    const layerDistribution = distributeTilesToLayers(pool.length, curLevel.layers);
+
+    for (let d = 0; d < layerDistribution.length; d++) {
+        const count = layerDistribution[d];
+        const gridCoords = [];
+        
+        let offsetX = (d % 2 === 1) ? gridSpacingX / 2 : 0;
+        let offsetY = (d % 2 === 1) ? gridSpacingY / 2 : 0;
+        
+        if (d === 2) { offsetX = 0; offsetY = -12; }
+        else if (d === 3) { offsetX = 28; offsetY = 12; }
+        else if (d === 4) { offsetX = -14; offsetY = -12; }
+        else if (d === 5) { offsetX = 14; offsetY = 6; }
+        
+        const numCols = 3;
+        const numRows = 2;
+        
+        for (let col = -numCols; col <= numCols; col++) {
+            for (let row = -numRows; row <= numRows; row++) {
+                gridCoords.push({
+                    x: centerX + col * gridSpacingX + offsetX,
+                    y: centerY + row * gridSpacingY + offsetY
+                });
+            }
+        }
+        
+        seededShuffle(gridCoords, prng);
+        
+        for (let i = 0; i < count; i++) {
+            if (tileIndex >= pool.length) break;
+            const pos = gridCoords[i % gridCoords.length];
+            const rawTile = pool[tileIndex];
+            tiles.push({
+                id: nextTileId++,
+                typeId: rawTile.typeId,
+                x: pos.x,
+                y: pos.y,
+                layer: d
+            });
+            tileIndex++;
+        }
+    }
+
+    // 3. 實時重播 movesLog
+    let simTiles = [...tiles];
+    let simSlots = [];
+    let simOut3Storage = [];
+    let simHistory = []; // 用於復原
+    let simSkills = { undo: 1, out3: 1, shuffle: 1 };
+    let shufflePrng = null; // 🌟 專用洗牌 PRNG，與 client 的 GameState.prng 完美同步
+
+    const evaluateOverlaps = () => {
+        const tileWidth = 58;
+        const tileHeight = 70;
+        for (const tileToCheck of simTiles) {
+            let isCovered = false;
+            const b_left = tileToCheck.x - tileWidth / 2;
+            const b_right = tileToCheck.x + tileWidth / 2;
+            const b_top = tileToCheck.y - tileHeight / 2;
+            const b_bottom = tileToCheck.y + tileHeight / 2;
+
+            for (const otherTile of simTiles) {
+                if (otherTile.layer > tileToCheck.layer) {
+                    const a_left = otherTile.x - tileWidth / 2;
+                    const a_right = otherTile.x + tileWidth / 2;
+                    const a_top = otherTile.y - tileHeight / 2;
+                    const a_bottom = otherTile.y + tileHeight / 2;
+                    
+                    const overlapsX = (a_left < b_right && a_right > b_left);
+                    const overlapsY = (a_top < b_bottom && a_bottom > b_top);
+
+                    if (overlapsX && overlapsY) {
+                        isCovered = true;
+                        break;
+                    }
+                }
+            }
+            tileToCheck.isLocked = isCovered;
+        }
+    };
+
+    const saveHistory = () => {
+        simHistory.push({
+            tiles: simTiles.map(t => ({ ...t })),
+            slots: simSlots.map(t => ({ ...t })),
+            out3Storage: simOut3Storage.map(t => ({ ...t }))
+        });
+        if (simHistory.length > 5) simHistory.shift();
+    };
+
+    const checkMatchThree = (typeId) => {
+        const count = simSlots.filter(t => t.typeId === typeId).length;
+        if (count >= 3) {
+            let removedCount = 0;
+            simSlots = simSlots.filter(t => {
+                if (t.typeId === typeId && removedCount < 3) {
+                    removedCount++;
+                    return false;
+                }
+                return true;
+            });
+        }
+    };
+
+    // 依序校驗每一步
+    for (const move of (movesLog || [])) {
+        evaluateOverlaps();
+
+        if (move.a === 'click') {
+            const tile = simTiles.find(t => t.id === move.id);
+            if (!tile) return { success: false, error: `點擊的卡牌 ID ${move.id} 不在場上！` };
+            if (tile.isLocked) return { success: false, error: `卡牌 ID ${move.id} 仍被遮擋！不可點擊！` };
+
+            saveHistory();
+            simTiles = simTiles.filter(t => t.id !== move.id);
+            simSlots.push(tile);
+            checkMatchThree(tile.typeId);
+        } 
+        else if (move.a === 'out3_click') {
+            if (simSlots.length >= 7) return { success: false, error: "巴士座位已滿，不可點擊送回！" };
+            const tile = simOut3Storage.find(t => t.id === move.id);
+            if (!tile) return { success: false, error: `移出區無卡牌 ID ${move.id}！` };
+            simOut3Storage = simOut3Storage.filter(t => t.id !== move.id);
+            simSlots.push(tile);
+            checkMatchThree(tile.typeId);
+        }
+        else if (move.a === 'undo') {
+            if (simSkills.undo <= 0) return { success: false, error: "復原次數不足！" };
+            if (simHistory.length === 0) return { success: false, error: "無可復原歷史！" };
+            simSkills.undo--;
+            const prevState = simHistory.pop();
+            simTiles = prevState.tiles;
+            simSlots = prevState.slots;
+            simOut3Storage = prevState.out3Storage;
+        }
+        else if (move.a === 'out3') {
+            if (simSkills.out3 <= 0) return { success: false, error: "移出次數不足！" };
+            if (simSlots.length < 3) return { success: false, error: "巴士不足 3 張牌！" };
+            simSkills.out3--;
+            const toMove = simSlots.splice(0, 3);
+            simOut3Storage.push(...toMove);
+        }
+        else if (move.a === 'shuffle') {
+            if (simSkills.shuffle <= 0) return { success: false, error: "打亂次數不足！" };
+            if (simTiles.length === 0) return { success: false, error: "場上無牌可打亂！" };
+            simSkills.shuffle--;
+            // 使用專用洗牌 PRNG，與 client (levelSeed + 10000) 完美同步
+            if (!shufflePrng) {
+                shufflePrng = mulberry32(levelSeed + 10000);
+            }
+            const activeTemplates = simTiles.map(t => t.typeId);
+            for (let i = activeTemplates.length - 1; i > 0; i--) {
+                const j = Math.floor(shufflePrng() * (i + 1));
+                [activeTemplates[i], activeTemplates[j]] = [activeTemplates[j], activeTemplates[i]];
+            }
+            simTiles.forEach((tile, index) => {
+                tile.typeId = activeTemplates[index];
+            });
+        }
+        else {
+            return { success: false, error: `未知的操作指令 ${move.a}` };
+        }
+    }
+
+    evaluateOverlaps();
+    const isWin = (simTiles.length === 0 && simSlots.length === 0 && simOut3Storage.length === 0);
+    const isLose = (simSlots.length >= 7);
+
+    let simResult = 'playing';
+    if (isWin) simResult = 'victory';
+    else if (isLose) simResult = 'defeat';
+
+    if (finalResult !== undefined && finalResult !== null && simResult !== finalResult) {
+        return { success: false, error: `模擬結果為 ${simResult}，但上報結果為 ${finalResult}！` };
+    }
+
+    // 🔒 道具/技能數量守恆原子校驗：確保客戶端上報的存檔中剩餘技能數，絕對沒有非法「無中生有」地增加！
+    if (clientSkills) {
+        const u = clientSkills.undo !== undefined ? clientSkills.undo : 1;
+        const o = clientSkills.out3 !== undefined ? clientSkills.out3 : 1;
+        const s = clientSkills.shuffle !== undefined ? clientSkills.shuffle : 1;
+        
+        if (u > simSkills.undo || o > simSkills.out3 || s > simSkills.shuffle) {
+            return { success: false, error: `檢測到道具數量非法溢出或竄改！重播推導剩餘: (↩️:${simSkills.undo}, 📤:${simSkills.out3}, 🔄:${simSkills.shuffle})，但上報存檔為: (↩️:${u}, 📤:${o}, 🔄:${s})` };
+        }
+    }
+
+    return { success: true, result: simResult };
 }
 
 function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, clientSkills = null) {

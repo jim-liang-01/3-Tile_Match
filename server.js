@@ -1176,6 +1176,10 @@ app.post('/api/login-liff', async (req, res) => {
 
         if (!lineResponse.ok) {
             console.error("LINE token verification failed:", decoded);
+            // 檢查是否為權杖過期錯誤
+            if (decoded.error_description && decoded.error_description.toLowerCase().includes("expired")) {
+                return res.status(401).json({ success: false, error: "ID Token expired.", errorCode: 'ID_TOKEN_EXPIRED' });
+            }
             throw new Error(decoded.error_description || "Invalid LIFF token");
         }
 

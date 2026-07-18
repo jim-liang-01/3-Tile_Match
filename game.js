@@ -82,8 +82,11 @@ async function getFirebaseTokenFromLiff(liffIdToken) {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || `Backend verification failed with status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({ error: "Backend returned non-JSON response." }));
+            // Manually create an error object that includes the errorCode
+            const error = new Error(errorData.error || `Backend verification failed with status: ${response.status}`);
+            error.errorCode = errorData.errorCode;
+            throw error;
         }
 
         const { customToken } = await response.json();
@@ -97,8 +100,18 @@ async function getFirebaseTokenFromLiff(liffIdToken) {
         }
     } catch (error) {
         console.error("❌ LIFF to Firebase Auth Flow Error:", error);
-        alert(`登入驗證失敗: ${error.message}`);
-        liff.logout(); // 登出 LIFF 以便重試
+
+        // Check if the specific error code for expired token is returned
+        if (error.errorCode === 'ID_TOKEN_EXPIRED' || (error.message && error.message.toLowerCase().includes("expired"))) {
+            console.log("🔄 ID Token expired. Forcing a refresh by logging out and in again.");
+            liff.logout();
+            liff.login(); // This will start a new login flow to get a fresh token
+        } else {
+            alert(`登入驗證失敗: ${error.message}`);
+            if (liff.isLoggedIn()) {
+                liff.logout(); // For other errors, just log out to be safe
+            }
+        }
     }
 }
 

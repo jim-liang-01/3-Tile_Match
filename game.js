@@ -1616,6 +1616,17 @@ function setupEventListeners() {
 }
 
 function setupAuthEvents() {
+    // 🌟 核心 UX 優化：偵測是否在 LINE 內置瀏覽器中
+    // 優先使用 User-Agent 偵測，這是同步操作，可以避免 LIFF 初始化前的競爭條件
+    const isLineBrowser = /Line/i.test(navigator.userAgent);
+    if (isLineBrowser || (liff && liff.isInClient())) {
+        const googleBtn = document.getElementById('btn-login-google');
+        if (googleBtn) {
+            console.log("🕵️‍♂️ Detected running inside LINE. Hiding Google login button.");
+            googleBtn.classList.add('hidden');
+        }
+    }
+
     document.getElementById('btn-login-google').addEventListener('click', async () => {
         Sound.playClick();
         if (isFirebaseActive && auth) {

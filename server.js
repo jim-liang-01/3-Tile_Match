@@ -1582,6 +1582,7 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
     const evaluateOverlaps = () => {
         const tileWidth = 58;
         const tileHeight = 70;
+        const tolerance = 4; // 4px 容差
         for (const tileToCheck of simTiles) {
             let isCovered = false;
             const b_left = tileToCheck.x - tileWidth / 2;
@@ -1596,8 +1597,11 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
                     const a_top = otherTile.y - tileHeight / 2;
                     const a_bottom = otherTile.y + tileHeight / 2;
                     
-                    const overlapsX = (a_left < b_right && a_right > b_left);
-                    const overlapsY = (a_top < b_bottom && a_bottom > b_top);
+                    const overlapX = Math.min(a_right, b_right) - Math.max(a_left, b_left);
+                    const overlapY = Math.min(a_bottom, b_bottom) - Math.max(a_top, b_top);
+
+                    const overlapsX = overlapX > tolerance;
+                    const overlapsY = overlapY > tolerance;
 
                     if (overlapsX && overlapsY) {
                         isCovered = true;
@@ -1803,6 +1807,7 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
     const evaluateOverlaps = () => {
         const tileWidth = 58;
         const tileHeight = 70;
+        const tolerance = 4; // 4px 容差
         for (const tileToCheck of simTiles) {
             let isCovered = false;
             const b_left = tileToCheck.x - tileWidth / 2;
@@ -1817,8 +1822,11 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
                     const a_top = otherTile.y - tileHeight / 2;
                     const a_bottom = otherTile.y + tileHeight / 2;
                     
-                    const overlapsX = (a_left < b_right && a_right > b_left);
-                    const overlapsY = (a_top < b_bottom && a_bottom > b_top);
+                    const overlapX = Math.min(a_right, b_right) - Math.max(a_left, b_left);
+                    const overlapY = Math.min(a_bottom, b_bottom) - Math.max(a_top, b_top);
+
+                    const overlapsX = overlapX > tolerance;
+                    const overlapsY = overlapY > tolerance;
 
                     if (overlapsX && overlapsY) {
                         isCovered = true;

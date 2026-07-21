@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="gemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffccd5" />
+      <stop offset="50%" stop-color="#f1c0e8" />
+      <stop offset="100%" stop-color="#a0c4ff" />
+    </linearGradient>
+    <linearGradient id="sparkleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#ffd700" />
+    </linearGradient>
+  </defs>
+  <!-- Background soft circle -->
+  <circle cx="50" cy="50" r="46" fill="#fff5f7" stroke="#dfb364" stroke-width="4" />
+  <!-- Gemstone Polygon Shape (Hexagon/Diamond facets) -->
+  <polygon points="50,18 76,36 76,64 50,82 24,64 24,36" fill="url(#gemGrad)" stroke="#6d28d9" stroke-width="3" />
+  <!-- Inner Facets for 3D Gem effect -->
+  <line x1="50" y1="18" x2="50" y2="82" stroke="#ffffff" stroke-width="2" stroke-opacity="0.7" />
+  <line x1="24" y1="36" x2="76" y2="36" stroke="#ffffff" stroke-width="2" stroke-opacity="0.7" />
+  <line x1="24" y1="64" x2="76" y2="64" stroke="#ffffff" stroke-width="2" stroke-opacity="0.7" />
+  <line x1="24" y1="36" x2="50" y2="82" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.5" />
+  <line x1="76" y1="36" x2="50" y2="82" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.5" />
+  <line x1="24" y1="64" x2="50" y2="18" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.5" />
+  <line x1="76" y1="64" x2="50" y2="18" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.5" />
+  <!-- Sparkling Star -->
+  <path d="M 72,26 Q 77,26 77,16 Q 77,26 82,26 Q 77,26 77,36 Q 77,26 72,26" fill="url(#sparkleGrad)" />
+  <path d="M 18,66 Q 22,66 22,59 Q 22,66 26,66 Q 22,66 22,73 Q 22,66 18,66" fill="url(#sparkleGrad)" />
+</svg>

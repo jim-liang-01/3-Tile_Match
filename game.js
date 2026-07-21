@@ -1710,10 +1710,11 @@ async function startGame(isContinuing = false, preloadedTiles = null) {
     await restoreMidGameState(dailySession.midGameState, preloadedTiles);
 }
 
-// 15. 核心遮擋演算法 - AABB 完全對齊版
+// 15. 核心遮擋演算法 - AABB 完全對齊版（新增 4px 容差，防止邊緣極微小重疊造成誤判鎖定，同時確保視覺上明顯遮擋的牌能被正確鎖定）
 function evaluateTileOverlaps() {
     const tileWidth = 58;
     const tileHeight = 70;
+    const tolerance = 4; // 4px 容差
 
     for (const tileToCheck of GameState.tiles) {
         let isCovered = false;
@@ -1729,8 +1730,11 @@ function evaluateTileOverlaps() {
                 const a_top = otherTile.y - tileHeight / 2;
                 const a_bottom = otherTile.y + tileHeight / 2;
                 
-                const overlapsX = (a_left < b_right && a_right > b_left);
-                const overlapsY = (a_top < b_bottom && a_bottom > b_top);
+                const overlapX = Math.min(a_right, b_right) - Math.max(a_left, b_left);
+                const overlapY = Math.min(a_bottom, b_bottom) - Math.max(a_top, b_top);
+
+                const overlapsX = overlapX > tolerance;
+                const overlapsY = overlapY > tolerance;
 
                 if (overlapsX && overlapsY) {
                     isCovered = true;
@@ -1881,7 +1885,7 @@ function animateTileFly(fromRect, targetSlotIdx, tile, onComplete) {
     const scaleX = targetRect.width / fromRect.width;
     const scaleY = targetRect.height / fromRect.height;
     
-    flyEl.style.transition = "transform 0.22s cubic-bezier(0.215, 0.610, 0.355, 1)";
+    flyEl.style.transition = "transform 0.15s cubic-bezier(0.215, 0.610, 0.355, 1)";
     flyEl.clientHeight; // reflow
     flyEl.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
     
@@ -1928,8 +1932,8 @@ async function checkMatchThree(typeId, particleX, particleY) {
             });
         }
         
-        // 2. 等待亮起動畫的第一階段完成 (400ms)
-        await new Promise(resolve => setTimeout(resolve, 400));
+        // 2. 等待亮起動畫的第一階段完成 (200ms)
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         if (container) {
             // 3. 換成消失 (Disappear) 動畫類別
@@ -1948,8 +1952,8 @@ async function checkMatchThree(typeId, particleX, particleY) {
             });
         }
         
-        // 4. 等待消失動畫的第二階段完成 (300ms)
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // 4. 等待消失動畫的第二階段完成 (150ms)
+        await new Promise(resolve => setTimeout(resolve, 150));
         
         // 5. 真正從資料狀態中移除這 3 顆寶石
         let removedCount = 0;

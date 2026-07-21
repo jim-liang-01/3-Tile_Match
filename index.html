@@ -33,18 +33,47 @@
 <body class="text-[#4a3e3d] min-h-screen flex flex-col items-center justify-between font-sans selection:bg-pink-300 selection:text-pink-900 overflow-x-hidden">
 
     <!-- 🌲 Instant-Render Retro Loading Splash Screen (z-[300] to cover everything instantly on slow networks) -->
-    <div id="app-splash" style="position: fixed; inset: 0; background-color: #fcf8f2; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; transition: opacity 0.4s ease;">
-        <div style="font-size: 70px; margin-bottom: 20px; animation: bounce-splash 1.2s infinite; select-none: none;">🔮</div>
-        <div style="font-size: 16px; font-weight: 900; color: #ff8fa3; margin-bottom: 8px; letter-spacing: 1px;">正在進入聖域晶石殿堂...</div>
-        <div style="font-size: 10px; color: #94a3b8; font-weight: bold; animation: pulse-splash 1.5s infinite;">正在引導聖殿晶能法陣，請稍候 🚍</div>
+    <div id="app-splash" style="position: fixed; inset: 0; background: radial-gradient(circle at center, #180d2b 0%, #06030c 100%); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Noto Sans TC', sans-serif; transition: opacity 0.4s ease; select-none: none;">
+        <!-- Glowing Crystal Aura -->
+        <div class="splash-glow" style="position: absolute; width: 300px; height: 300px; background: radial-gradient(circle, rgba(138, 75, 235, 0.25) 0%, rgba(0,0,0,0) 70%); filter: blur(30px); animation: aura-pulse 3s infinite ease-in-out; pointer-events: none;"></div>
+        
+        <!-- Large 3D Glowing Magic Ball -->
+        <div style="font-size: 96px; margin-bottom: 25px; animation: bounce-splash 1.5s infinite ease-in-out; filter: drop-shadow(0 0 20px rgba(160, 106, 255, 0.6)); position: relative; z-index: 10;">🔮</div>
+        
+        <!-- Stylish Huge Title -->
+        <h1 style="font-family: 'Press Start 2P', 'Noto Sans TC', cursive, sans-serif; font-size: 32px; font-weight: 900; color: #ffffff; letter-spacing: 2px; margin-bottom: 12px; text-shadow: 0 0 10px #ff8fa3, 0 0 20px #ff8fa3, 0 4px 0 #bf153f; position: relative; z-index: 10; text-align: center;">聖域晶石殿堂</h1>
+        
+        <!-- Subtitle with Typing/Pulsing Style -->
+        <div style="font-size: 18px; font-weight: 700; color: #f3d291; margin-bottom: 24px; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); position: relative; z-index: 10; animation: pulse-splash 1.5s infinite; text-align: center;">
+            正在引導聖殿晶能法陣... 🌟
+        </div>
+        
+        <!-- Progress Bar Placeholder / Loading details -->
+        <div style="width: 200px; height: 6px; background: rgba(255, 255, 255, 0.08); border: 1.5px solid #dfb364; border-radius: 4px; overflow: hidden; position: relative; z-index: 10; margin-bottom: 12px; box-shadow: 0 0 8px rgba(223, 179, 100, 0.3);">
+            <div style="height: 100%; width: 0%; background: linear-gradient(90deg, #ff8fa3, #dfb364); border-radius: 4px; animation: progress-mock 3s infinite cubic-bezier(0.4, 0, 0.2, 1);"></div>
+        </div>
+        
+        <div style="font-size: 11px; color: #8e87a3; font-weight: bold; font-family: 'Press Start 2P', monospace; letter-spacing: 1px; position: relative; z-index: 10; text-transform: uppercase;">
+            Loading Divine Crystals
+        </div>
+        
         <style>
             @keyframes bounce-splash {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-15px); }
+                0%, 100% { transform: translateY(0) scale(1); }
+                50% { transform: translateY(-18px) scale(1.05); }
             }
             @keyframes pulse-splash {
-                0%, 100% { opacity: 0.5; }
-                50% { opacity: 1; }
+                0%, 100% { opacity: 0.6; transform: scale(0.98); }
+                50% { opacity: 1; transform: scale(1.02); }
+            }
+            @keyframes aura-pulse {
+                0%, 100% { transform: scale(0.9); opacity: 0.7; }
+                50% { transform: scale(1.2); opacity: 1; }
+            }
+            @keyframes progress-mock {
+                0% { width: 0%; }
+                50% { width: 75%; }
+                100% { width: 100%; }
             }
         </style>
     </div>

@@ -20,12 +20,13 @@ body {
     font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    background-color: #f7f5ed;
-    /* 💎 聖域晶石氛圍優化：採用極其柔和的「暖陽白 ➔ 晶石紫」縱向漸層，搭配僅有 2% - 3.5% 超低透明度的像素水晶/星能背景紋理，自帶清新的聖殿晨光氛圍，同時絕不喧賓奪主、不干擾卡牌讀取！ */
+    background-color: #06030c;
+    /* 💎 聖域晶石夜空優化：採用極致奢華的深邃星能「暗夜紫羅蘭 ➔ 晶石墨黑」縱向漸層，搭配超低透明度的像素水晶/星能背景紋理，神秘而夢幻，完美契合載入畫面，凸顯晶石立體感！ */
     background-image: 
-        linear-gradient(180deg, #f7f5ed 0%, #ede6f2 60%, #e0d8f0 100%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M60 20 L72 40 L60 60 L48 40 Z' fill='%239c82d4' fill-opacity='0.03'/%3E%3Cpath d='M20 70 L28 82 L20 94 L12 82 Z' fill='%239c82d4' fill-opacity='0.02'/%3E%3Cpath d='M100 60 L106 72 L100 84 L94 72 Z' fill='%239c82d4' fill-opacity='0.02'/%3E%3Cpath d='M30 30 L32 35 L38 37 L32 39 L30 44 L28 39 L22 37 L28 35 Z' fill='%23e0a3ff' fill-opacity='0.025'/%3E%3C/svg%3E");
+        linear-gradient(180deg, #180d2b 0%, #0c071a 50%, #06030c 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M60 20 L72 40 L60 60 L48 40 Z' fill='%239c82d4' fill-opacity='0.05'/%3E%3Cpath d='M20 70 L28 82 L20 94 L12 82 Z' fill='%239c82d4' fill-opacity='0.03'/%3E%3Cpath d='M100 60 L106 72 L100 84 L94 72 Z' fill='%239c82d4' fill-opacity='0.03'/%3E%3Cpath d='M30 30 L32 35 L38 37 L32 39 L30 44 L28 39 L22 37 L28 35 Z' fill='%23e0a3ff' fill-opacity='0.04'/%3E%3C/svg%3E");
     background-attachment: fixed;
+    color: #fdf2f8; /* 預設文字設為亮粉白，在深色背景下極其清晰 */
 }
 
 /* Pixel Font for titles and values */
@@ -258,26 +259,26 @@ input[type="range"]::-webkit-slider-thumb:active {
     }
 }
 
-/* 💎 聖域晶石殿堂符合寶石風格的奢華面板與背景 */
+/* 💎 聖域晶石殿堂符合寶石風格的奢華面板與背景（升級為暗夜星能晶瑩磨砂面板） */
 .gemstone-panel {
-    background: linear-gradient(135deg, rgba(255, 253, 249, 0.94) 0%, rgba(255, 245, 247, 0.94) 100%) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: linear-gradient(135deg, rgba(24, 13, 43, 0.82) 0%, rgba(10, 5, 22, 0.92) 100%) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border: 4px solid #f3d291 !important; /* 晶瑩香檳金邊框 */
     box-shadow: 
-        0 10px 30px rgba(181, 148, 16, 0.08), 
-        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 10px 30px rgba(138, 75, 235, 0.15), 
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.15),
         0 4px 0 #dfb364 !important; /* 立體金屬底座厚度 */
     border-radius: 20px;
     position: relative;
     overflow: hidden;
 }
 
-/* 頂部狀態欄也進行金箔與魔法粉晶點綴 */
+/* 頂部狀態欄也進行金箔與魔法夜色點綴 */
 .gemstone-status-bar {
-    background: linear-gradient(135deg, #fdfaf5 0%, #fff0f3 100%) !important; /* 溫潤大理石粉晶色 */
+    background: linear-gradient(135deg, #1b0e2f 0%, #0d0618 100%) !important; /* 晶瑩夜星紫色 */
     border-bottom: 3px solid #dfb364 !important; /* 奢華香檳金邊框線 */
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 /* 👑 奢華珠寶/晶石盒外襯 */
@@ -349,15 +350,15 @@ input[type="range"]::-webkit-slider-thumb:active {
     /* 🚀 提高大理石與拱門的明亮對比度，並改用稍微溫潤高貴的香檳金沙粉晶背景（不再是死板板的純白），使大理石神柱與黃金拱門細節極致醒目！ */
     background-image: 
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 320 600'%3E%3Cdefs%3E%3ClinearGradient id='gold' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23b59410' stop-opacity='0.4'/%3E%3Cstop offset='50%25' stop-color='%23f3d291' stop-opacity='0.65'/%3E%3Cstop offset='100%25' stop-color='%23b59410' stop-opacity='0.4'/%3E%3C/linearGradient%3E%3ClinearGradient id='pillar' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23f5e1cc' stop-opacity='0.95'/%3E%3Cstop offset='50%25' stop-color='%23ebd0bd' stop-opacity='0.98'/%3E%3Cstop offset='100%25' stop-color='%23ddb5ad' stop-opacity='0.95'/%3E%3C/linearGradient%3E%3C/defs%3E%3C!-- 頂部拱門 --%3E%3Cpath d='M 15,600 L 12,120 Q 160,20 308,120 L 305,600' fill='none' stroke='%23dfb364' stroke-width='2' stroke-opacity='0.45'/%3E%3Cpath d='M 22,600 L 20,130 Q 160,35 300,130 L 298,600' fill='none' stroke='%23dfb364' stroke-width='1' stroke-opacity='0.3' stroke-dasharray='8 4'/%3E%3C!-- 左神柱 --%3E%3Crect x='6' y='110' width='16' height='490' fill='url(%23pillar)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.35'/%3E%3Cline x1='11' y1='115' x2='11' y2='595' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.25'/%3E%3Cline x1='17' y1='115' x2='17' y2='595' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.25'/%3E%3Crect x='3' y='100' width='22' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.4'/%3E%3Crect x='4' y='590' width='20' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.4'/%3E%3C!-- 右神柱 --%3E%3Crect x='298' y='110' width='16' height='490' fill='url(%23pillar)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.35'/%3E%3Cline x1='303' y1='115' x2='303' y2='595' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.25'/%3E%3Cline x1='309' y1='115' x2='309' y2='595' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.25'/%3E%3Crect x='295' y='100' width='22' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.4'/%3E%3Crect x='296' y='590' width='20' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='1' stroke-opacity='0.4'/%3E%3C!-- 中央神聖晶石浮雕 --%3E%3Cg transform='translate(160, 240) scale(1.1)' opacity='0.16'%3E%3Cpolygon points='0,-30 25,0 0,30 -25,0' fill='none' stroke='%23b59410' stroke-width='1.5'/%3E%3Ccircle cx='0' cy='0' r='18' fill='none' stroke='%23b59410' stroke-width='1'/%3E%3C/g%3E%3C!-- 🏰 底部小神柱欄杆，填補下方留白，極致延伸神殿視覺細節 --%3E%3Crect x='40' y='505' width='240' height='10' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.45' rx='3'/%3E%3Crect x='45' y='500' width='230' height='5' fill='%23fff' fill-opacity='0.35' rx='1'/%3E%3Crect x='60' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='57' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='57' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='110' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='107' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='107' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='160' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='157' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='157' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='210' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='207' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='207' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='260' y='515' width='14' height='65' fill='url(%23pillar)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='257' y='515' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='257' y='574' width='20' height='6' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.5' stroke-opacity='0.35'/%3E%3Crect x='40' y='580' width='240' height='15' fill='url(%23gold)' stroke='%23b59410' stroke-width='0.75' stroke-opacity='0.45' rx='2'/%3E%3C/svg%3E") !important,
-        linear-gradient(135deg, #f7efe2 0%, #ebdce4 100%) !important;
+        linear-gradient(135deg, rgba(24, 13, 43, 0.82) 0%, rgba(10, 5, 22, 0.92) 100%) !important;
     background-size: cover !important;
     background-position: center !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border: 4px solid #f3d291 !important; /* 晶瑩香檳金邊框 */
     box-shadow: 
-        0 10px 30px rgba(181, 148, 16, 0.08), 
-        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 10px 30px rgba(138, 75, 235, 0.15), 
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.15),
         0 4px 0 #dfb364 !important; /* 立體金屬底座厚度 */
     border-radius: 20px;
     position: relative;
@@ -542,40 +543,40 @@ input[type="range"]::-webkit-slider-thumb:active {
 }
 
 /* ==========================================
-   ✨ Sidebar Tab Buttons (Codex/Leaderboard)
+   ✨ Sidebar Tab Buttons (Codex/Leaderboard)（升級為暗夜星能面板按鈕）
    ========================================== */
 .sidebar-tab {
     flex: 1;
     padding: 10px 5px;
     font-size: 14px;
     font-weight: 900; /* font-black */
-    color: #8a6c6a;
-    background: linear-gradient(135deg, #fdfaf5, #f5efe6);
-    border: 2px solid #e9decb;
+    color: #dfccd7;
+    background: linear-gradient(135deg, #240d2b, #11051a);
+    border: 2px solid #dfb364;
     border-bottom-width: 5px;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.15s ease-out;
-    text-shadow: 0 1px 1px #fff;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05), inset 0 1px 0 #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
     outline: none;
 }
 
 .sidebar-tab:hover:not(.active) {
-    background: linear-gradient(135deg, #ffffff, #f9f5f0);
-    color: #6d5654;
+    background: linear-gradient(135deg, #32123c, #1a0828);
+    color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 7px 10px rgba(0,0,0,0.07), inset 0 1px 0 #fff;
+    box-shadow: 0 7px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 
 .sidebar-tab.active {
-    background: linear-gradient(135deg, #fffbf4, #fbeee0);
+    background: linear-gradient(135deg, #180d2b, #0c071a);
     color: #ff8fa3;
     border-color: #ffb3c1;
     border-bottom-width: 2px;
     margin-top: 3px; /* Compensate for border-bottom-width change */
-    box-shadow: inset 0 3px 5px rgba(0,0,0,0.08);
-    text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.5);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
     cursor: default;
 }
 
@@ -696,4 +697,23 @@ input[type="range"]::-webkit-slider-thumb:active {
     font-size: 11px;
     font-weight: 900;
     color: #9ca3af; /* gray-400 */
+}
+
+/* ==========================================
+   🌌 Dark Cosmic Overrides for Leaderboard Tabs
+   ========================================== */
+#panel-leaderboard button.bg-white {
+    background-color: #dfb364 !important;
+    color: #06030c !important;
+    box-shadow: 0 0 10px rgba(223, 179, 100, 0.4) !important;
+}
+#panel-leaderboard button.text-gray-500 {
+    color: #dfccd7 !important;
+}
+#panel-leaderboard button.text-gray-700 {
+    color: #06030c !important;
+}
+#panel-leaderboard .bg-gray-100 {
+    background-color: rgba(6, 3, 12, 0.6) !important;
+    border-color: rgba(223, 179, 100, 0.2) !important;
 }

@@ -79,12 +79,12 @@
     </div>
 
     <!-- Header Section (Restart button removed) -->
-    <header class="w-full max-w-4xl px-4 py-3 flex justify-between items-center border-b-4 border-[#e9decb] bg-[#fffbf4] mt-2 rounded-t-2xl shadow-md">
+    <header class="w-full max-w-4xl px-4 py-3 flex justify-between items-center border-b-4 border-[#dfb364] bg-slate-950/75 backdrop-blur-md mt-2 rounded-t-2xl shadow-[0_4px_20px_rgba(138,75,235,0.15)]">
         <div class="flex items-center gap-3">
             <span class="text-3xl animate-bounce">🔮</span>
             <div>
-                <h1 class="text-xl md:text-2xl font-black text-[#ff8fa3] tracking-wider font-pixel shadow-sm">聖域晶石殿堂</h1>
-                <p class="text-xs text-gray-500 font-bold" id="header-subtitle">每日限定挑戰 • 像素晶石共鳴</p>
+                <h1 class="text-xl md:text-2xl font-black text-[#ff8fa3] tracking-wider font-pixel [text-shadow:0_0_8px_rgba(255,143,163,0.5)]">聖域晶石殿堂</h1>
+                <p class="text-xs text-pink-200/70 font-bold" id="header-subtitle">每日限定挑戰 • 像素晶石共鳴</p>
             </div>
         </div>
         
@@ -92,10 +92,10 @@
         <div id="user-profile" class="hidden items-center gap-2.5">
             <img id="user-avatar" class="w-11 h-11 rounded-full border-2 border-pink-300 bg-pink-100 flex-shrink-0" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Panda" alt="Avatar">
             <div class="flex flex-col items-start leading-none">
-                <span id="user-name" class="text-sm font-black text-gray-700 truncate max-w-[130px]">遊客</span>
-                <span id="user-stats" class="text-[11px] text-pink-400 font-bold mt-1 cursor-help" title="正在載入戰績...">🏆 0勝/0敗 (0%)</span>
+                <span id="user-name" class="text-sm font-black text-pink-100 truncate max-w-[130px]">遊客</span>
+                <span id="user-stats" class="text-[11px] text-amber-300 font-bold mt-1 cursor-help" title="正在載入戰績...">🏆 0勝/0敗 (0%)</span>
             </div>
-            <button id="btn-logout" class="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-red-50 to-[#ffe5ec] hover:from-red-100 hover:to-[#ffd0d6] text-red-600 hover:text-red-700 border border-red-200 hover:border-[#ffb3c1] rounded-xl text-xs font-black tracking-wider transition-all shadow-sm hover:scale-[1.03] active:scale-95 cursor-pointer" title="登出">
+            <button id="btn-logout" class="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-red-950/40 to-[#991b1b]/30 hover:from-red-900/50 hover:to-[#991b1b]/40 text-red-300 hover:text-red-200 border border-red-800/50 hover:border-red-600 rounded-xl text-xs font-black tracking-wider transition-all shadow-sm hover:scale-[1.03] active:scale-95 cursor-pointer" title="登出">
                 <span class="text-xs">🚪</span>
                 <span>登出</span>
             </button>
@@ -113,12 +113,12 @@
                 <!-- Left: Level Badge & Remaining count -->
                 <div class="flex items-center gap-3">
                     <span id="level-badge" class="px-3.5 py-1.5 bg-gradient-to-r from-[#a11d33] to-[#ff4d6d] text-white font-black rounded-full border-2 border-[#dfb364] shadow-md text-xs md:text-[13px] tracking-wide animate-pulse-slow">載入中...</span>
-                    <span id="tile-ratio" class="text-gray-700 font-black text-xs md:text-sm bg-[#fff8eb] px-3 py-1.5 rounded-full border border-[#f5efe6] shadow-inner">🔮 剩餘: 0 / 0</span>
+                    <span id="tile-ratio" class="text-amber-200 font-black text-xs md:text-sm bg-slate-900/60 px-3 py-1.5 rounded-full border border-[#dfb364]/30 shadow-inner">🔮 剩餘: 0 / 0</span>
                 </div>
                 
                 <!-- Right: Ticket & Hearts Gauge in Top Status Bar -->
-                <div class="flex items-center gap-2.5 bg-gradient-to-r from-[#fdfbf7] to-[#f5efe6] px-4 py-1.5 rounded-full border-2 border-[#dfb364] shadow-md">
-                    <span class="text-xs md:text-sm text-amber-800 font-black flex items-center gap-1" id="lbl-tickets-left">🎫 <span class="text-amber-500 font-black text-sm md:text-base">x3</span></span>
+                <div class="flex items-center gap-2.5 bg-gradient-to-r from-slate-900 to-slate-950 px-4 py-1.5 rounded-full border-2 border-[#dfb364] shadow-md">
+                    <span class="text-xs md:text-sm text-amber-300 font-black flex items-center gap-1" id="lbl-tickets-left">🎫 <span class="text-amber-400 font-black text-sm md:text-base">x3</span></span>
                     <div class="w-px h-4 bg-[#dfb364]/40 mx-1"></div>
                     <span id="ticket-visual-hearts" class="text-sm md:text-base select-none tracking-wider text-red-500 animate-pulse-slow drop-shadow-sm">❤️ ❤️ ❤️</span>
                 </div>
@@ -145,7 +145,7 @@
             </div>
             
             <!-- Skill Items Bar -->
-            <div class="px-3 py-3 bg-[#fefdfa] border-t-2 border-[#e9decb] flex justify-center gap-3 select-none">
+            <div class="px-3 py-3 bg-slate-950/80 border-t-2 border-[#dfb364] flex justify-center gap-3 select-none">
                 <button id="skill-undo" class="skill-button skill-button--undo">
                     <div class="skill-button__icon">↩️</div>
                     <div class="skill-button__text">時光倒流</div>
@@ -164,25 +164,25 @@
             </div>
 
             <!-- Out-of-slot storage -->
-            <div id="out3-storage" class="w-full px-4 py-2 bg-[#fffdf9] border-2 border-dashed border-[#ffb3c1] rounded-2xl mb-4 hidden animate-fade-in flex-col items-center">
-                <div class="text-[10px] text-gray-500 font-bold mb-1 flex justify-between w-full max-w-[300px]">
+            <div id="out3-storage" class="w-full px-4 py-2 bg-slate-950/60 border-2 border-dashed border-[#ffb3c1]/40 rounded-2xl mb-4 hidden animate-fade-in flex-col items-center">
+                <div class="text-[10px] text-pink-200/60 font-bold mb-1 flex justify-between w-full max-w-[300px]">
                     <span>🔮 臨時緩存法陣 (點選晶石可返回下方晶石槽)</span>
-                    <span class="text-pink-500 font-bold" id="out3-count-text">0 / 3</span>
+                    <span class="text-pink-400 font-bold" id="out3-count-text">0 / 3</span>
                 </div>
-                <div class="flex gap-2 p-2 bg-[#f4fbf4] rounded-xl border border-green-200 min-h-[70px] min-w-[200px] justify-center items-center" id="out3-container"></div>
+                <div class="flex gap-2 p-2 bg-slate-900/40 rounded-xl border border-[#dfb364]/20 min-h-[70px] min-w-[200px] justify-center items-center" id="out3-container"></div>
             </div>
         </div>
 
         <!-- Right Side: Sidebar Panel (Contains Gemstone Codex only) -->
         <div class="w-full md:w-80 flex flex-col">
             <div class="gemstone-sidebar-panel p-4 shadow-md flex-1 flex flex-col">
-                <div class="p-3 bg-[#ffe5ec]/50 border border-[#ffccd5] rounded-xl flex flex-col gap-1.5 mb-3 shadow-inner">
-                    <div class="flex justify-between text-xs font-black text-[#5c4a49]">
+                <div class="p-3 bg-slate-900/50 border border-[#dfb364]/30 rounded-xl flex flex-col gap-1.5 mb-3 shadow-inner">
+                    <div class="flex justify-between text-xs font-black text-pink-100">
                         <span>🏁 每日探險關卡</span>
-                        <span id="lbl-level-num" class="text-pink-500 font-pixel text-[10px]">1 / 5</span>
+                        <span id="lbl-level-num" class="text-pink-400 font-pixel text-[10px]">1 / 5</span>
                     </div>
-                    <div class="w-full h-3 bg-white rounded-full overflow-hidden p-0.5 border border-[#ffccd5]">
-                        <div id="bar-level-progress" class="h-full bg-[#ff8fa3] rounded-full transition-all duration-500" style="width: 33.3%;"></div>
+                    <div class="w-full h-3 bg-slate-950/40 rounded-full overflow-hidden p-0.5 border border-[#dfb364]/20">
+                        <div id="bar-level-progress" class="h-full bg-gradient-to-r from-[#ff8fa3] to-[#dfb364] rounded-full transition-all duration-500" style="width: 33.3%;"></div>
                     </div>
                 </div>
 
@@ -268,16 +268,16 @@
     </div>
     
     <!-- Victory/Defeat Overlay Screen (z-[100]) -->
-    <div id="game-overlay" class="fixed inset-0 bg-[#fcf8f2]/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-start md:justify-center overflow-y-auto p-4 py-10 md:p-6 text-center animate-fade-in hidden">
-        <div class="bg-white p-8 rounded-2xl border-4 border-[#ffb3c1] max-w-md w-full shadow-2xl relative overflow-hidden my-auto">
-            <div class="absolute top-0 inset-x-0 h-3 bg-[#ffb3c1]"></div>
+    <div id="game-overlay" class="fixed inset-0 bg-[#06030c]/90 backdrop-blur-md z-[100] flex flex-col items-center justify-start md:justify-center overflow-y-auto p-4 py-10 md:p-6 text-center animate-fade-in hidden">
+        <div class="bg-slate-950 p-8 rounded-2xl border-4 border-[#dfb364] max-w-md w-full shadow-2xl relative overflow-hidden my-auto text-pink-100">
+            <div class="absolute top-0 inset-x-0 h-3 bg-[#dfb364]"></div>
             
             <div id="overlay-icon" class="text-6xl mb-4 animate-bounce">🎉</div>
             <h2 id="overlay-title" class="text-2xl font-black text-[#ff8fa3] mb-2 font-pixel">寶石共鳴大成功！</h2>
-            <p id="overlay-subtitle" class="text-gray-600 mb-6 text-sm font-bold">您成功集齊了所有璀璨的聖域寶石！</p>
+            <p id="overlay-subtitle" class="text-pink-200/70 mb-6 text-sm font-bold">您成功集齊了所有璀璨的聖域寶石！</p>
             
             <!-- Overlay Level Stats -->
-            <div id="overlay-stats" class="bg-[#fef7ed] p-4 rounded-xl mb-6 text-xs text-left space-y-2 border-2 border-[#e9decb] text-[#5c4a49]"></div>
+            <div id="overlay-stats" class="bg-slate-900/80 p-4 rounded-xl mb-6 text-xs text-left space-y-2 border-2 border-[#dfb364]/30 text-pink-100"></div>
 
             <div class="flex flex-col gap-2">
                 <button id="btn-overlay-action" class="w-full py-3 bg-[#ff8fa3] hover:bg-[#ffb3c1] text-white font-black text-base border-b-4 border-[#ff4d6d] active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md">
@@ -288,9 +288,9 @@
     </div>
 
     <!-- Footer -->
-    <footer class="w-full py-4 bg-[#fffbf4] text-center text-[10px] text-gray-400 border-t-4 border-[#e9decb] mt-auto shadow-inner relative z-[110]">
-        <p class="font-pixel">🔮 聖域寶石殿堂 © 2026 | 完美像素風美學</p>
-        <p class="mt-1 font-semibold text-gray-400">極致奢華的每日限定晶石消 • 相同種子相同關卡</p>
+    <footer class="w-full py-4 bg-slate-950/75 backdrop-blur-md text-center text-[10px] text-pink-200/50 border-t-4 border-[#dfb364] mt-auto shadow-inner relative z-[110]">
+        <p class="font-pixel text-pink-200/60">🔮 聖域寶石殿堂 © 2026 | 完美像素風美學</p>
+        <p class="mt-1 font-semibold text-pink-300/40">極致奢華的每日限定晶石消 • 相同種子相同關卡</p>
     </footer>
 
     <!-- Audio and Particle rendering system -->

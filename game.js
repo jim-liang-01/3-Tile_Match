@@ -1449,29 +1449,29 @@ function renderCodex() {
         
         const itemEl = document.createElement('div');
         
-        let borderClass = "border-[#e9decb]";
+        let borderClass = "border-[#dfb364]/20";
         if (isShiny) borderClass = "shiny-border";
         else if (isCurrentAvatar) borderClass = "border-green-400 shadow-sm";
         
-        itemEl.className = `flex items-start gap-2.5 p-2 bg-[#fffcf8]/70 backdrop-blur-sm rounded-xl border-2 ${borderClass} transition-all text-xs ${
+        itemEl.className = `flex items-start gap-2.5 p-2 bg-slate-900/50 backdrop-blur-sm rounded-xl border-2 ${borderClass} transition-all text-xs ${
             isUnlocked 
-                ? 'cursor-pointer hover:border-pink-300 hover:bg-[#fffbf4]/90' 
+                ? 'cursor-pointer hover:border-pink-300 hover:bg-slate-900/80' 
                 : 'locked-grayscale'
         }`;
         
         itemEl.title = isUnlocked 
             ? (isCurrentAvatar ? "當前選用的個人頭像" : "點擊設定為個人頭像 🐾") 
-            : "每週或每月排行前 50 名解鎖此圖鑑 🔒";
+            : "每週 or 每月排行前 50 名解鎖此圖鑑 🔒";
         
         const canvas = document.createElement('canvas');
         canvas.width = 36;
         canvas.height = 36;
-        canvas.className = "bg-white p-0.5 rounded-lg border border-[#e9decb] flex-shrink-0";
+        canvas.className = "bg-slate-950 p-0.5 rounded-lg border border-[#dfb364]/20 flex-shrink-0";
         
         itemEl.appendChild(canvas);
         
         const info = document.createElement('div');
-        info.className = "flex-1 min-w-0 text-[#5c4a49]";
+        info.className = "flex-1 min-w-0 text-pink-100";
         
         const avatarBadge = isCurrentAvatar ? `<span class="text-[8px] bg-green-500 text-white font-black px-1.5 py-0.5 rounded-full ml-1 select-none">使用中</span>` : "";
         const shinyText = isShiny ? `<span class="text-[8.5px] text-amber-500 font-bold ml-1">★閃耀</span>` : "";
@@ -1480,10 +1480,10 @@ function renderCodex() {
         
         info.innerHTML = `
             <div class="flex justify-between items-center mb-0.5">
-                <span class="font-black text-pink-500 font-sans">${nameText}${avatarBadge}${shinyText}</span>
-                <span class="text-[9px] text-gray-400 font-pixel">ID: ${String(item.id).padStart(2, '0')}</span>
+                <span class="font-black text-pink-300 font-sans">${nameText}${avatarBadge}${shinyText}</span>
+                <span class="text-[9px] text-pink-300/40 font-pixel">ID: ${String(item.id).padStart(2, '0')}</span>
             </div>
-            <p class="text-[10px] text-gray-500 leading-relaxed font-medium mt-1 break-words">${descText}</p>
+            <p class="text-[10px] text-pink-100/70 leading-relaxed font-medium mt-1 break-words">${descText}</p>
         `;
         itemEl.appendChild(info);
         container.appendChild(itemEl);
@@ -2404,9 +2404,9 @@ function renderLeaderboard() {
 
     if (list.length === 0) {
         container.innerHTML = `
-            <div class="flex flex-col items-center justify-center py-12 text-gray-400 text-xs">
+            <div class="flex flex-col items-center justify-center py-12 text-pink-200/40 text-xs">
                 <span>🔮 聖殿裡目前空空如也 🔮</span>
-                <span class="text-[10px] text-gray-400 mt-1">快去引導法陣，成為第一個留下共鳴烙印的冒險者吧！</span>
+                <span class="text-[10px] text-pink-200/30 mt-1">快去引導法陣，成為第一個留下共鳴烙印的冒險者吧！</span>
             </div>
         `;
         return;
@@ -2444,18 +2444,18 @@ function renderLeaderboard() {
         } else {
             row.className = `flex items-center gap-3 p-2.5 rounded-xl border ${
                 isSelf 
-                    ? 'bg-pink-100/60 backdrop-blur-sm border-pink-200 shadow-sm' 
-                    : 'bg-white/60 backdrop-blur-sm hover:bg-white/80 border-gray-100'
+                    ? 'bg-pink-950/40 backdrop-blur-sm border-pink-500/40 shadow-sm' 
+                    : 'bg-slate-900/40 backdrop-blur-sm hover:bg-slate-900/60 border-slate-800/40'
             } transition-all text-sm`;
         }
 
         const avatarClass = isShinyAvatar 
             ? "w-10 h-10 rounded-full border-2 border-amber-400 bg-amber-50 flex-shrink-0 shiny-avatar-glow shadow-[0_0_8px_rgba(251,191,36,0.6)]"
-            : "w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex-shrink-0";
+            : "w-10 h-10 rounded-full border border-gray-600 bg-gray-900 flex-shrink-0";
 
         const nameStyle = isShinyAvatar
-            ? `font-black text-amber-700 truncate flex items-center gap-0.5`
-            : `font-black text-gray-700 truncate ${isSelf ? 'text-pink-600 font-bold' : ''}`;
+            ? `font-black text-amber-500 truncate flex items-center gap-0.5`
+            : `font-black text-pink-100 truncate ${isSelf ? 'text-pink-400 font-bold' : ''}`;
 
         const starPrefix = isShinyAvatar ? `<span class="text-amber-500 font-bold animate-pulse mr-0.5 select-none">✨</span>` : "";
         const shinyBadge = isShinyAvatar ? `<span class="text-[7.5px] bg-amber-400 text-white font-black px-1.5 py-0.5 rounded-full ml-1 scale-90 inline-block shadow-sm">閃耀</span>` : "";
@@ -2465,11 +2465,11 @@ function renderLeaderboard() {
             <img class="${avatarClass}" src="${avatarSrc}" alt="Avatar">
             <div class="flex-1 min-w-0">
                 <div class="${nameStyle}">${starPrefix}${player.playerName}${shinyBadge}</div>
-                <div class="text-xs text-gray-400 font-semibold mt-0.5">勝率: ${winRatePercent}% | 總局數: ${player.totalGames || 0}</div>
+                <div class="text-xs text-pink-200/50 font-semibold mt-0.5">勝率: ${winRatePercent}% | 總局數: ${player.totalGames || 0}</div>
             </div>
             <div class="text-right flex-shrink-0 font-pixel">
                 <span class="text-[#ff8fa3] font-black text-base">${player.wins || 0}</span>
-                <span class="text-[11px] text-gray-400 font-bold ml-0.5">勝</span>
+                <span class="text-[11px] text-pink-200/40 font-bold ml-0.5">勝</span>
             </div>
         `;
 
@@ -2617,7 +2617,7 @@ function updateAvatarUI(gemId) {
             if (nameEl) {
                 const baseName = currentUser ? (currentUser.isAnonymous ? "匿名冒險者" : (currentUser.displayName || "冒險者")) : "冒險者";
                 nameEl.innerHTML = baseName;
-                nameEl.className = "text-sm font-black text-gray-700 truncate max-w-[130px]";
+                nameEl.className = "text-sm font-black text-pink-100 truncate max-w-[130px]";
             }
         }
     } else {

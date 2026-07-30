@@ -247,9 +247,9 @@ async function performWeeklySettlement(targetWeek) {
             return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
         
-        const top50 = players.slice(0, 50);
-        for (let i = 0; i < top50.length; i++) {
-            const player = top50[i];
+        const top10 = players.slice(0, 10);
+        for (let i = 0; i < top10.length; i++) {
+            const player = top10[i];
             const rank = i + 1;
             
             const playerDocRef = db.collection('players').doc(player.uid);
@@ -325,9 +325,9 @@ async function performMonthlySettlement(targetMonth) {
             return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
         
-        const top50 = players.slice(0, 50);
-        for (let i = 0; i < top50.length; i++) {
-            const player = top50[i];
+        const top30 = players.slice(0, 30);
+        for (let i = 0; i < top30.length; i++) {
+            const player = top30[i];
             const rank = i + 1;
             
             const playerDocRef = db.collection('players').doc(player.uid);
@@ -591,7 +591,7 @@ app.get('/api/sync-daily-session/:dateStr', verifyFirebaseToken, async (req, res
                 dailySession.tiles = [];
                 outOfTickets = true;
                 console.log(`🛡️ [安全防護] 玩家 ${uid} 票券已耗盡且無進行中牌局，已強制銷毀後端回傳內容。`);
-            } else if (dailySession.dailyLevelIndex < LEVELS.length) {
+            } else {
                 dailySession.midGameState = getInitialMidGameState(dateStr, dailySession.dailyLevelIndex);
             }
         }
@@ -631,11 +631,7 @@ app.post('/api/save-session', verifyFirebaseToken, async (req, res) => {
             dailyDocRef.get()
         ]);
         
-        // 🔒 2. 用作「防回溯/防 Save-Scum 步驟嚴格遞增校驗」與「大滿貫鎖定檢驗」
-        if (dailyDoc.exists && dailyDoc.data().dailyLevelIndex >= LEVELS.length) {
-            return res.status(400).json({ error: "防作弊檢測：您今天已經通關所有每日關卡，無法再儲存中途存檔！" });
-        }
-        
+        // 🔒 2. 用作「防回溯/防 Save-Scum 步驟嚴格遞增校驗」
         let dbMoves = [];
         if (dailyDoc.exists && dailyDoc.data().midGameState && dailyDoc.data().midGameState.movesLog) {
             dbMoves = dailyDoc.data().midGameState.movesLog;
@@ -718,10 +714,6 @@ app.post('/api/consume-ticket', verifyFirebaseToken, async (req, res) => {
                 dailyLevelIndex = doc.data().dailyLevelIndex || 0;
             }
             
-            if (dailyLevelIndex >= LEVELS.length) {
-                throw new Error("防作弊檢測：您今天已經達成大滿貫挑戰，不允許再度扣票開始新局！");
-            }
-            
             if (ticketsUsed >= 3) {
                 throw new Error("今日免費挑戰券 (3次) 已耗盡，無法繼續搭乘小巴！");
             }
@@ -800,10 +792,6 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 transaction.get(monthlyLeaderboardRef)
             ]);
             
-            if (dailyDoc.exists && dailyDoc.data().dailyLevelIndex >= LEVELS.length) {
-                throw new Error("防作弊檢測：您今天已經達成大滿貫挑戰，不允許再度提交遊戲結算！");
-            }
-            
             let stats = {
                 wins: 0,
                 losses: 0,
@@ -825,7 +813,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 stats.wins++;
                 // 如果當前關卡等於已記錄的最高關卡，解鎖下一關
                 if (currentLevelIndex >= stats.maxLevelReached) {
-                    stats.maxLevelReached = Math.min(LEVELS.length - 1, currentLevelIndex + 1);
+                    stats.maxLevelReached = currentLevelIndex + 1;
                 }
             } else {
                 stats.losses++;
@@ -837,7 +825,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
             // 更新每日進度 session (下一關或留在本關，並在後端強制清除 midGameState)
             let nextDailyLevel = currentLevelIndex;
             if (result === 'victory') {
-                nextDailyLevel = currentLevelIndex < LEVELS.length - 1 ? currentLevelIndex + 1 : LEVELS.length; // 贏了最後一關設為 LEVELS.length 表示今天完成大滿貫！
+                nextDailyLevel = currentLevelIndex + 1;
             }
             
             const pName = req.user.name || "冒險者";
@@ -936,7 +924,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
             
             let nextLevelInitialState = null;
             let nextLevelTiles = [];
-            if (result === 'victory' && nextDailyLevel < LEVELS.length) {
+            if (result === 'victory') {
                 nextLevelInitialState = getInitialMidGameState(dateStr, nextDailyLevel);
                 nextLevelTiles = generateLevelLayout(dateStr, nextDailyLevel);
             }
@@ -1328,11 +1316,11 @@ app.get('/api/line-callback', async (req, res) => {
  */
 function generateLevelLayout(dateStr, levelIndex) {
     const lIdx = parseInt(levelIndex);
-    if (isNaN(lIdx) || lIdx < 0 || lIdx >= LEVELS.length) {
+    if (isNaN(lIdx) || lIdx < 0) {
         return [];
     }
     
-    const curLevel = LEVELS[lIdx];
+    const curLevel = getLevelConfig(lIdx);
     const dailySeed = getDailySeed(dateStr);
     const levelSeed = dailySeed + lIdx;
     const prng = mulberry32(levelSeed);
@@ -1429,13 +1417,12 @@ function getInitialMidGameState(dateStr, lIdx) {
 // 🛡️ 5. 後端遊戲邏輯重播與防作弊校驗引擎 (Deterministic Game Replay Engine)
 // ==========================================
 
-const LEVELS = [
-    { tileCount: 36, typesCount: 6, layers: 4 }, // 第 1 關：晶石集結 🐣
-    { tileCount: 54, typesCount: 9, layers: 5 }, // 第 2 關：微光漸亮 🌿
-    { tileCount: 72, typesCount: 11, layers: 6 }, // 第 3 關：繁星晶格 🐱
-    { tileCount: 162, typesCount: 12, layers: 9 }, // 第 4 關：聖域奧秘 🏔️
-    { tileCount: 252, typesCount: 12, layers: 13 } // 第 5 關：終極共鳴 🐼
-];
+function getLevelConfig(levelIndex) {
+    const typesCount = Math.min(12, 6 + Math.floor(levelIndex / 2));
+    const tileCount = Math.min(324, 36 + Math.floor(levelIndex / 2) * 18);
+    const layers = Math.min(18, 4 + Math.floor(levelIndex * 1.2));
+    return { tileCount, typesCount, layers };
+}
 
 function mulberry32(a) {
     return function() {
@@ -1498,7 +1485,7 @@ function distributeTilesToLayers(total, layersCount) {
 }
 
 function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, clientSkills = null) {
-    const curLevel = LEVELS[currentLevelIndex];
+    const curLevel = getLevelConfig(currentLevelIndex);
     if (!curLevel) return { success: false, error: "無效的關卡索引" };
 
     const dailySeed = getDailySeed(dateStr);
@@ -1723,7 +1710,7 @@ function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, cli
 }
 
 function validateMovesLog(dateStr, currentLevelIndex, movesLog, finalResult, clientSkills = null) {
-    const curLevel = LEVELS[currentLevelIndex];
+    const curLevel = getLevelConfig(currentLevelIndex);
     if (!curLevel) return { success: false, error: "無效的關卡索引" };
 
     const dailySeed = getDailySeed(dateStr);

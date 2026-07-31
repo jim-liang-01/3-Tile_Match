@@ -1425,7 +1425,7 @@ function renderCodex() {
         
         itemEl.title = isUnlocked 
             ? (isCurrentAvatar ? "當前選用的個人頭像" : "點擊設定為個人頭像 🐾") 
-            : "每週 or 每月排行前 50 名解鎖此圖鑑 🔒";
+            : "每週前 10 名 or 每月前 30 名解鎖此圖鑑 🔒";
         
         const canvas = document.createElement('canvas');
         canvas.width = 36;
@@ -1440,7 +1440,7 @@ function renderCodex() {
         const avatarBadge = isCurrentAvatar ? `<span class="text-[8px] bg-green-500 text-white font-black px-1.5 py-0.5 rounded-full ml-1 select-none">使用中</span>` : "";
         const shinyText = isShiny ? `<span class="text-[8.5px] text-amber-500 font-bold ml-1">★閃耀</span>` : "";
         const nameText = isUnlocked ? `${item.name}` : `🔒 未知晶石`;
-        const descText = isUnlocked ? item.desc : "達到每週或每月排行榜前 50 名，即可解鎖並收藏此精緻晶石！";
+        const descText = isUnlocked ? item.desc : "達到每週排行前 10 名或每月排行前 30 名，即可解鎖並收藏此精緻晶石！";
         
         info.innerHTML = `
             <div class="flex justify-between items-center mb-0.5">

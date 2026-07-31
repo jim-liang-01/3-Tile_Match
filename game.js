@@ -1437,7 +1437,7 @@ function renderCodex() {
         const info = document.createElement('div');
         info.className = "flex-1 min-w-0 text-pink-100";
         
-        const avatarBadge = isCurrentAvatar ? `<span class="text-[8px] bg-green-500 text-white font-black px-1.5 py-0.5 rounded-full ml-1 select-none">使用中</span>` : "";
+        const avatarBadge = isCurrentAvatar ? `<span class="text-[11px] bg-green-500 text-white font-black px-2 py-0.5 rounded-full ml-1.5 select-none shadow">使用中</span>` : "";
         const shinyText = isShiny ? `<span class="text-[8.5px] text-amber-500 font-bold ml-1">★閃耀</span>` : "";
         const nameText = isUnlocked ? `${item.name}` : `🔒 未知晶石`;
         const descText = isUnlocked ? item.desc : "達到每週排行前 10 名或每月排行前 30 名，即可解鎖並收藏此精緻晶石！";

@@ -115,9 +115,6 @@ function getTodayString() {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-let isSettlingWeekly = false;
-let isSettlingMonthly = false;
-
 // 🚀 極致效能優化：增加伺服器記憶體中的結算狀態快取，避免 99.99% 的 profile-load 產生額外的 Firestore 讀取！
 let cachedWeeklySettled = null;
 let cachedMonthlySettled = null;
@@ -234,7 +231,7 @@ async function performWeeklySettlement(targetWeek) {
             players.push(doc.data());
         });
         
-        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依總通關時間由少至多排序，若仍相同則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
@@ -243,6 +240,13 @@ async function performWeeklySettlement(targetWeek) {
             const winRateB = b.winRate || 0;
             if (winRateB !== winRateA) {
                 return winRateB - winRateA;
+            }
+            const timeA = a.totalClearanceTime || 0;
+            const timeB = b.totalClearanceTime || 0;
+            if (timeA !== timeB) {
+                if (timeA === 0) return 1;
+                if (timeB === 0) return -1;
+                return timeA - timeB;
             }
             return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
@@ -312,7 +316,7 @@ async function performMonthlySettlement(targetMonth) {
             players.push(doc.data());
         });
         
-        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依總通關時間由少至多排序，若仍相同則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
@@ -321,6 +325,13 @@ async function performMonthlySettlement(targetMonth) {
             const winRateB = b.winRate || 0;
             if (winRateB !== winRateA) {
                 return winRateB - winRateA;
+            }
+            const timeA = a.totalClearanceTime || 0;
+            const timeB = b.totalClearanceTime || 0;
+            if (timeA !== timeB) {
+                if (timeA === 0) return 1;
+                if (timeB === 0) return -1;
+                return timeA - timeB;
             }
             return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
@@ -566,6 +577,7 @@ app.get('/api/sync-daily-session/:dateStr', verifyFirebaseToken, async (req, res
             ticketsUsed: 0,
             dailyLevelIndex: 0,
             midGameState: null,
+            dayStartedAt: 0,
             tiles: [] // 🚀 平行合併下發原始地圖佈局
         };
         
@@ -574,30 +586,49 @@ app.get('/api/sync-daily-session/:dateStr', verifyFirebaseToken, async (req, res
             dailySession.ticketsUsed = data.ticketsUsed || 0;
             dailySession.dailyLevelIndex = data.dailyLevelIndex || 0;
             dailySession.midGameState = data.midGameState || null;
+            
+            if (!data.dayStartedAt) {
+                // 為舊數據或遺漏的情況補上 dayStartedAt 並寫回資料庫
+                const fallbackTime = Date.now();
+                dailySession.dayStartedAt = fallbackTime;
+                await dailyDocRef.set({ dayStartedAt: fallbackTime }, { merge: true });
+            } else {
+                dailySession.dayStartedAt = data.dayStartedAt;
+            }
+
+            // 安全防禦：如果 ticketsUsed === 0 且 midGameState 為空（首次遊玩），自動補上初始存盤並寫回
+            if (dailySession.ticketsUsed === 0 && !dailySession.midGameState && dailySession.dailyLevelIndex < DAILY_LEVEL_LIMIT) {
+                const initialMidGameState = getInitialMidGameState(dateStr, dailySession.dailyLevelIndex);
+                dailySession.midGameState = initialMidGameState;
+                await dailyDocRef.set({ midGameState: initialMidGameState }, { merge: true });
+            }
         } else {
             // 今日新首次進入，初始化
+            const now = Date.now();
+            const initialMidGameState = getInitialMidGameState(dateStr, 0);
             await dailyDocRef.set({
                 ticketsUsed: 0,
                 dailyLevelIndex: 0,
-                midGameState: null,
+                midGameState: initialMidGameState,
+                dayStartedAt: now,
                 created: admin.firestore.FieldValue.serverTimestamp()
             });
+            dailySession.dayStartedAt = now;
+            dailySession.midGameState = initialMidGameState;
         }
 
         let outOfTickets = false;
 
         if (!dailySession.midGameState) {
+            dailySession.tiles = [];
             if (dailySession.ticketsUsed >= 3) {
-                dailySession.tiles = [];
                 outOfTickets = true;
                 console.log(`🛡️ [安全防護] 玩家 ${uid} 票券已耗盡且無進行中牌局，已強制銷毀後端回傳內容。`);
-            } else {
-                dailySession.midGameState = getInitialMidGameState(dateStr, dailySession.dailyLevelIndex);
             }
         }
         
         // 🚀 高效優化：直接在後端依據當前關卡 dailyLevelIndex 產生確定性佈局並伴隨同步狀態一次性下發！
-        if (!outOfTickets) {
+        if (!outOfTickets && dailySession.midGameState) {
             dailySession.tiles = generateLevelLayout(dateStr, dailySession.dailyLevelIndex);
         }
         
@@ -631,7 +662,11 @@ app.post('/api/save-session', verifyFirebaseToken, async (req, res) => {
             dailyDocRef.get()
         ]);
         
-        // 🔒 2. 用作「防回溯/防 Save-Scum 步驟嚴格遞增校驗」
+        // 🔒 2. 用作「防回溯/防 Save-Scum 步驟嚴格遞增校驗」與「大滿貫鎖定檢驗」
+        if (dailyDoc.exists && dailyDoc.data().dailyLevelIndex >= DAILY_LEVEL_LIMIT) {
+            return res.status(400).json({ error: "防作弊檢測：您今天已經通關所有每日關卡，無法再儲存中途存檔！" });
+        }
+        
         let dbMoves = [];
         if (dailyDoc.exists && dailyDoc.data().midGameState && dailyDoc.data().midGameState.movesLog) {
             dbMoves = dailyDoc.data().midGameState.movesLog;
@@ -709,9 +744,15 @@ app.post('/api/consume-ticket', verifyFirebaseToken, async (req, res) => {
         await db.runTransaction(async (transaction) => {
             const doc = await transaction.get(dailyDocRef);
             let ticketsUsed = 0;
+            let dayStartedAt = Date.now();
             if (doc.exists) {
                 ticketsUsed = doc.data().ticketsUsed || 0;
                 dailyLevelIndex = doc.data().dailyLevelIndex || 0;
+                dayStartedAt = doc.data().dayStartedAt || Date.now();
+            }
+            
+            if (dailyLevelIndex >= DAILY_LEVEL_LIMIT) {
+                throw new Error("防作弊檢測：您今天已經達成大滿貫挑戰，不允許再度扣票開始新局！");
             }
             
             if (ticketsUsed >= 3) {
@@ -726,6 +767,7 @@ app.post('/api/consume-ticket', verifyFirebaseToken, async (req, res) => {
             transaction.set(dailyDocRef, {
                 ticketsUsed: newTicketsUsed,
                 midGameState: initialMidGameState, // 清除舊的中途牌局並寫入新局
+                dayStartedAt,
                 lastUpdated: admin.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
         });
@@ -792,6 +834,10 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 transaction.get(monthlyLeaderboardRef)
             ]);
             
+            if (dailyDoc.exists && dailyDoc.data().dailyLevelIndex >= DAILY_LEVEL_LIMIT) {
+                throw new Error("防作弊檢測：您今天已經達成大滿貫挑戰，不允許再度提交遊戲結算！");
+            }
+            
             let stats = {
                 wins: 0,
                 losses: 0,
@@ -813,7 +859,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 stats.wins++;
                 // 如果當前關卡等於已記錄的最高關卡，解鎖下一關
                 if (currentLevelIndex >= stats.maxLevelReached) {
-                    stats.maxLevelReached = currentLevelIndex + 1;
+                    stats.maxLevelReached = Math.min(DAILY_LEVEL_LIMIT - 1, currentLevelIndex + 1);
                 }
             } else {
                 stats.losses++;
@@ -825,7 +871,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
             // 更新每日進度 session (下一關或留在本關，並在後端強制清除 midGameState)
             let nextDailyLevel = currentLevelIndex;
             if (result === 'victory') {
-                nextDailyLevel = currentLevelIndex + 1;
+                nextDailyLevel = currentLevelIndex < DAILY_LEVEL_LIMIT - 1 ? currentLevelIndex + 1 : DAILY_LEVEL_LIMIT;
             }
             
             const pName = req.user.name || "冒險者";
@@ -840,6 +886,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 isAvatarShiny = shinyCodex.includes(curAvatarId);
             }
             
+            let prevDailyClearanceTime = 0;
             let dailyLeaderboardData = {
                 uid,
                 dateStr,
@@ -850,6 +897,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 losses: 0,
                 totalGames: 0,
                 winRate: 0,
+                totalClearanceTime: 0,
                 lastUpdated: admin.firestore.FieldValue.serverTimestamp()
             };
             
@@ -857,8 +905,11 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 const data = dailyLeaderboardDoc.data();
                 dailyLeaderboardData.wins = data.wins || 0;
                 dailyLeaderboardData.losses = data.losses || 0;
+                prevDailyClearanceTime = data.totalClearanceTime || 0;
+                dailyLeaderboardData.totalClearanceTime = prevDailyClearanceTime;
             }
 
+            let prevWeeklyClearanceTime = 0;
             let weeklyLeaderboardData = {
                 uid,
                 weekStr,
@@ -869,6 +920,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 losses: 0,
                 totalGames: 0,
                 winRate: 0,
+                totalClearanceTime: 0,
                 lastUpdated: admin.firestore.FieldValue.serverTimestamp()
             };
             
@@ -876,8 +928,11 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 const data = weeklyLeaderboardDoc.data();
                 weeklyLeaderboardData.wins = data.wins || 0;
                 weeklyLeaderboardData.losses = data.losses || 0;
+                prevWeeklyClearanceTime = data.totalClearanceTime || 0;
+                weeklyLeaderboardData.totalClearanceTime = prevWeeklyClearanceTime;
             }
             
+            let prevMonthlyClearanceTime = 0;
             let monthlyLeaderboardData = {
                 uid,
                 monthStr,
@@ -888,6 +943,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 losses: 0,
                 totalGames: 0,
                 winRate: 0,
+                totalClearanceTime: 0,
                 lastUpdated: admin.firestore.FieldValue.serverTimestamp()
             };
             
@@ -895,12 +951,22 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
                 const data = monthlyLeaderboardDoc.data();
                 monthlyLeaderboardData.wins = data.wins || 0;
                 monthlyLeaderboardData.losses = data.losses || 0;
+                prevMonthlyClearanceTime = data.totalClearanceTime || 0;
+                monthlyLeaderboardData.totalClearanceTime = prevMonthlyClearanceTime;
             }
             
             if (result === 'victory') {
                 dailyLeaderboardData.wins++;
                 weeklyLeaderboardData.wins++;
                 monthlyLeaderboardData.wins++;
+                
+                const dayStartedAt = (dailyDoc.exists && dailyDoc.data().dayStartedAt) ? dailyDoc.data().dayStartedAt : Date.now();
+                const currentClearanceTime = Math.floor((Date.now() - dayStartedAt) / 1000);
+                const timeAdded = Math.max(0, currentClearanceTime - prevDailyClearanceTime);
+
+                dailyLeaderboardData.totalClearanceTime = currentClearanceTime;
+                weeklyLeaderboardData.totalClearanceTime = prevWeeklyClearanceTime + timeAdded;
+                monthlyLeaderboardData.totalClearanceTime = prevMonthlyClearanceTime + timeAdded;
             } else {
                 dailyLeaderboardData.losses++;
                 weeklyLeaderboardData.losses++;
@@ -924,7 +990,7 @@ app.post('/api/end-game', verifyFirebaseToken, async (req, res) => {
             
             let nextLevelInitialState = null;
             let nextLevelTiles = [];
-            if (result === 'victory') {
+            if (result === 'victory' && nextDailyLevel < DAILY_LEVEL_LIMIT) {
                 nextLevelInitialState = getInitialMidGameState(dateStr, nextDailyLevel);
                 nextLevelTiles = generateLevelLayout(dateStr, nextDailyLevel);
             }
@@ -966,7 +1032,7 @@ app.get('/api/leaderboard/daily/:dateStr', verifyFirebaseToken, async (req, res)
             players.push(doc.data());
         });
         
-        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依總通關時間由少至多排序，若仍相同則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
@@ -975,6 +1041,13 @@ app.get('/api/leaderboard/daily/:dateStr', verifyFirebaseToken, async (req, res)
             const winRateB = b.winRate || 0;
             if (winRateB !== winRateA) {
                 return winRateB - winRateA;
+            }
+            const timeA = a.totalClearanceTime || 0;
+            const timeB = b.totalClearanceTime || 0;
+            if (timeA !== timeB) {
+                if (timeA === 0) return 1;
+                if (timeB === 0) return -1;
+                return timeA - timeB;
             }
             return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
@@ -1004,7 +1077,7 @@ app.get('/api/leaderboard/weekly/:weekStr', verifyFirebaseToken, async (req, res
             players.push(doc.data());
         });
         
-        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依總通關時間由少至多排序，若仍相同則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
@@ -1013,6 +1086,13 @@ app.get('/api/leaderboard/weekly/:weekStr', verifyFirebaseToken, async (req, res
             const winRateB = b.winRate || 0;
             if (winRateB !== winRateA) {
                 return winRateB - winRateA;
+            }
+            const timeA = a.totalClearanceTime || 0;
+            const timeB = b.totalClearanceTime || 0;
+            if (timeA !== timeB) {
+                if (timeA === 0) return 1;
+                if (timeB === 0) return -1;
+                return timeA - timeB;
             }
             return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
@@ -1042,7 +1122,7 @@ app.get('/api/leaderboard/monthly/:monthStr', verifyFirebaseToken, async (req, r
             players.push(doc.data());
         });
         
-        // 依勝場遞減，再依勝率遞減排序，同勝率則依 lastUpdated 由舊至新排序
+        // 依勝場遞減，再依勝率遞減排序，同勝率則依總通關時間由少至多排序，若仍相同則依 lastUpdated 由舊至新排序
         players.sort((a, b) => {
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
@@ -1051,6 +1131,13 @@ app.get('/api/leaderboard/monthly/:monthStr', verifyFirebaseToken, async (req, r
             const winRateB = b.winRate || 0;
             if (winRateB !== winRateA) {
                 return winRateB - winRateA;
+            }
+            const timeA = a.totalClearanceTime || 0;
+            const timeB = b.totalClearanceTime || 0;
+            if (timeA !== timeB) {
+                if (timeA === 0) return 1;
+                if (timeB === 0) return -1;
+                return timeA - timeB;
             }
             return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         });
@@ -1089,6 +1176,13 @@ app.get('/api/leaderboard/all', verifyFirebaseToken, async (req, res) => {
             const winRateB = b.winRate || 0;
             if (winRateB !== winRateA) {
                 return winRateB - winRateA;
+            }
+            const timeA = a.totalClearanceTime || 0;
+            const timeB = b.totalClearanceTime || 0;
+            if (timeA !== timeB) {
+                if (timeA === 0) return 1;
+                if (timeB === 0) return -1;
+                return timeA - timeB;
             }
             return getMillis(a.lastUpdated) - getMillis(b.lastUpdated);
         };
@@ -1321,6 +1415,10 @@ function generateLevelLayout(dateStr, levelIndex) {
     }
     
     const curLevel = getLevelConfig(lIdx);
+    if (!curLevel) {
+        return [];
+    }
+    
     const dailySeed = getDailySeed(dateStr);
     const levelSeed = dailySeed + lIdx;
     const prng = mulberry32(levelSeed);
@@ -1409,7 +1507,9 @@ function getInitialMidGameState(dateStr, lIdx) {
         status: "playing",
         nextTileId: tiles.length,
         currentLevelIndex: lIdx,
-        movesLog: []
+        movesLog: [],
+        accumulatedSeconds: 0,
+        lastSessionStartedAt: Date.now()
     };
 }
 
@@ -1417,10 +1517,23 @@ function getInitialMidGameState(dateStr, lIdx) {
 // 🛡️ 5. 後端遊戲邏輯重播與防作弊校驗引擎 (Deterministic Game Replay Engine)
 // ==========================================
 
+const DAILY_LEVEL_LIMIT = 7;
+
 function getLevelConfig(levelIndex) {
-    const typesCount = Math.min(12, 6 + Math.floor(levelIndex / 2));
-    const tileCount = Math.min(324, 36 + Math.floor(levelIndex / 2) * 18);
-    const layers = Math.min(18, 4 + Math.floor(levelIndex * 1.2));
+    if (levelIndex >= DAILY_LEVEL_LIMIT || levelIndex < 0) return null;
+    
+    // const typesCounts = [6, 8, 10, 12, 12, 12, 12];
+    // const tileCounts = [36, 72, 108, 144, 180, 252, 324];
+    // const layersList = [4, 6, 8, 10, 12, 14, 16];
+
+    const typesCounts = [6, 8, 10, 12, 12, 12, 6];
+    const tileCounts = [36, 72, 108, 144, 180, 252, 36];
+    const layersList = [4, 6, 8, 10, 12, 14, 4];
+    
+    const typesCount = typesCounts[levelIndex];
+    const tileCount = tileCounts[levelIndex];
+    const layers = layersList[levelIndex];
+    
     return { tileCount, typesCount, layers };
 }
 

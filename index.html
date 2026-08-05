@@ -93,7 +93,7 @@
                         <span>遊戲說明</span>
                     </button>
                 </div>
-                <p class="text-xs text-pink-200/70 font-bold" id="header-subtitle">每日無限挑戰 • 像素晶石共鳴</p>
+                <p class="text-xs text-pink-200/70 font-bold" id="header-subtitle">每日 7 大地獄級試煉 • 像素晶石共鳴</p>
             </div>
         </div>
         
@@ -126,6 +126,12 @@
                     <div class="w-24 md:w-36 h-3.5 bg-slate-950/50 rounded-full overflow-hidden p-0.5 border border-[#dfb364]/30 flex-shrink-0 shadow-inner">
                         <div id="bar-level-progress" class="h-full bg-gradient-to-r from-[#ff8fa3] to-[#dfb364] rounded-full transition-all duration-500" style="width: 0%;"></div>
                     </div>
+                </div>
+                
+                <!-- Middle: Live Today's Accumulated Time -->
+                <div id="live-timer-container" class="flex items-center gap-1 bg-slate-950/40 backdrop-blur-sm px-2.5 py-1 rounded-full border border-[#dfb364]/20 text-pink-200/80 font-pixel text-[10px] md:text-xs">
+                    <span>⏱️ <span class="hidden md:inline">今日累計:</span></span>
+                    <span id="lbl-live-timer" class="font-black text-amber-300">00:00</span>
                 </div>
                 
                 <!-- Right: Ticket & Hearts Gauge in Top Status Bar -->
@@ -230,7 +236,7 @@
             <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-pink-500 via-amber-300 to-indigo-500"></div>
             <span class="text-6xl mb-4 block animate-bounce">🔮</span>
             <h2 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#ffa4b6] via-[#ffe59b] to-[#ffa4b6] font-pixel mb-2 drop-shadow">歡迎光臨聖域晶石殿堂</h2>
-            <p class="text-xs text-pink-200/80 mb-6 font-bold leading-relaxed">這是一個每日無限挑戰！所有玩家每天都將面對相同的獨特關卡，請登入以扣除每日晶能啟動券並統計您的共鳴戰績！</p>
+            <p class="text-xs text-pink-200/80 mb-6 font-bold leading-relaxed">這是一個每日 7 大地獄級關卡挑戰！所有玩家每天都將面對相同的獨特關卡，請登入以扣除每日晶能啟動券並統計您的共鳴戰績！</p>
             
             <div class="space-y-3">
                 <button id="btn-login-google" class="w-full py-3.5 px-4 bg-[#4285f4] hover:bg-[#357ae8] text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 border-b-4 border-[#215cbd] active:border-b-0 active:mt-1 hover:scale-[1.02] transition-all shadow-[0_4px_15px_rgba(66,133,244,0.3)] cursor-pointer focus:outline-none">
@@ -262,7 +268,7 @@
                 <div>📅 今天的日期: <span id="info-ticket-date" class="text-pink-300">2026-06-26</span></div>
                 <div>🎫 剩餘啟動券: <span class="text-red-400">0 / 3 張</span></div>
             </div>
-            <p class="text-[10px] text-pink-300/40 font-bold">💡 明天會更換全新配置的無限挑戰法陣哦！</p>
+            <p class="text-[10px] text-pink-300/40 font-bold">💡 明天會更換全新配置的 7 大地獄級試煉法陣哦！</p>
             
             <button id="btn-close-ticket" class="mt-4 w-full py-2 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl border-b-4 border-amber-800 active:border-b-0 active:mt-1.5 transition-all shadow-md focus:outline-none cursor-pointer">
                 留在聖殿隨意逛逛 🔮
@@ -319,7 +325,8 @@
                         <p class="font-bold text-pink-300">📊 英雄榜機制：</p>
                         <ul class="list-disc list-inside space-y-1 text-[11px] text-pink-100/80 pl-2">
                             <li>榜單分為「每日」、「每週」與「每月」統計，全服玩家同台競逐。</li>
-                            <li>依據玩家在相應期間內挑戰成功的<span class="font-black text-amber-300">勝局數</span>進行降序排序。</li>
+                            <li>榜單排序標準依序為：<span class="font-black text-amber-300">勝場數更多</span> ➔ <span class="font-black text-amber-300">勝率更高</span> ➔ <span class="font-black text-amber-300">總通關時間更短</span> ➔ <span class="font-black text-amber-300">最後更新時間更早 (先達成者優先)</span>。</li>
+                            <li>⏱️ <span class="font-bold text-pink-300">通關計時規則</span>：自每日首次看到第一關盤面起，由後端安全計時器開始累計，每通關一關會將目前累計時間安全記錄於伺服器。中途失敗重挑戰不會重設計時器。越少失誤、手速越快者，將在同勝場與同勝率時享有絕對優勢！</li>
                             <li>開啟新牌局消耗 <span class="font-bold text-rose-300">1 張免費啟動券</span>，每日免費 3 張；但<span class="font-bold text-emerald-300">通關成功時可無痛免費共鳴下一關</span>，完全不耗費門票！</li>
                         </ul>
                         

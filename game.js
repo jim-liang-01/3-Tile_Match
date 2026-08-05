@@ -556,28 +556,33 @@ const Particles = {
 };
 
 // ==========================================
-// 📊 6. 每日三關配置系統 (無限動態關卡模式)
+// 📊 6. 每日三關配置系統 (七大地獄級試煉關卡模式)
 // ==========================================
+const DAILY_LEVEL_LIMIT = 7;
+
 function getLevelConfig(levelIndex) {
-    const num = levelIndex + 1;
-    // 種類：從第 1 關的 6 種，每 2 關增加 1 種，最多 12 種
-    const typesCount = Math.min(12, 6 + Math.floor(levelIndex / 2));
-    // 數量：從 36 顆開始，每 2 關增加 18 顆，最多 324 顆
-    const tileCount = Math.min(324, 36 + Math.floor(levelIndex / 2) * 18);
-    // 層數：從 4 層開始，隨著關卡逐漸加深，最多 18 層
-    const layers = Math.min(18, 4 + Math.floor(levelIndex * 1.2));
+    if (levelIndex >= DAILY_LEVEL_LIMIT || levelIndex < 0) return null;
     
-    const titleEmoji = ["🐣", "🌿", "🐱", "🏔️", "🐼", "🦊", "🐯", "🦁", "🐉", "🐙", "🦄", "🐨", "🦉", "🦋", "🍄", "🔮", "🌌", "⚡", "🔥", "🌀"];
-    const emoji = titleEmoji[levelIndex % titleEmoji.length];
+    const num = levelIndex + 1;
+    const typesCounts = [6, 8, 10, 12, 12, 12, 12];
+    const tileCounts = [36, 72, 108, 144, 180, 252, 324];
+    const layersList = [4, 6, 8, 10, 12, 14, 16];
+    
+    const typesCount = typesCounts[levelIndex];
+    const tileCount = tileCounts[levelIndex];
+    const layers = layersList[levelIndex];
+    
+    const titleEmoji = ["🐣", "🌿", "🐱", "🏔️", "🐼", "🐉", "🌀"];
+    const emoji = titleEmoji[levelIndex] || "🔮";
     
     return {
         num,
-        title: `第 ${num} 關：無限共鳴 ${emoji}`,
+        title: `第 ${num} 關：地獄試煉 ${emoji}`,
         badge: `第 ${num} 關`,
         tileCount,
         typesCount,
         layers,
-        desc: `無限共鳴法陣第 ${num} 關！此處共有 ${tileCount} 顆晶石堆疊成 ${layers} 層。努力向更高維度突破吧！`
+        desc: `聖域第 ${num} 關地獄試煉！此處共有 ${tileCount} 顆能量晶石堆疊成 ${layers} 層。這是一場極其艱難的硬仗！`
     };
 }
 
@@ -660,6 +665,7 @@ function initAll() {
         Particles.init();
         renderCodex();
         resizeGameContainer();
+        startLiveTimer();
     });
 
     window.addEventListener('resize', () => {
@@ -885,7 +891,8 @@ function updateStatsUI() {
 let dailySession = {
     ticketsUsed: 0,
     dailyLevelIndex: 0,
-    midGameState: null
+    midGameState: null,
+    dayStartedAt: 0
 };
 
 function loadLocalDailySession(dateStr) {
@@ -897,6 +904,7 @@ function loadLocalDailySession(dateStr) {
                 dailySession.ticketsUsed = data.ticketsUsed || 0;
                 dailySession.dailyLevelIndex = data.dailyLevelIndex || 0;
                 dailySession.midGameState = data.midGameState || null;
+                dailySession.dayStartedAt = data.dayStartedAt || 0;
             }
         } else {
             // 向後相容舊的 tickets_used 鍵
@@ -935,6 +943,7 @@ async function restoreMidGameState(state, preloadedTiles = null) {
     // 恢復 GameState 全局變數
     GameState.currentLevelIndex = targetLevelIndex;
     const curLevel = getLevelConfig(GameState.currentLevelIndex);
+    if (!curLevel) return;
     const dailySeed = getDailySeed();
     const levelSeed = dailySeed + GameState.currentLevelIndex;
     // 🌟 核心防護：使用獨立於地圖生成步驟的專用種子 (levelSeed + 10000)，保證客戶端與後端重播時洗牌結果 100% 同步！
@@ -1089,11 +1098,17 @@ async function sendSessionToCloud(dateStr, midGameState) {
 }
 
 // 🏆 8.8 展示今日極致共鳴通關畫面並鎖定遊戲
-function showGrandSlamOverlay() {
+function showGrandSlamOverlay(shouldOpenOverlay = true) {
+    // 強制將當前關卡索引設定為大滿貫鎖定值 (7)
+    GameState.currentLevelIndex = DAILY_LEVEL_LIMIT;
+    
     // 在展示大滿貫覆蓋層時，同步更新頂部關卡指示器為當前關卡
     loadLevelWithoutRestart(GameState.currentLevelIndex);
     const badge = document.getElementById('level-badge');
-    if (badge) badge.innerText = getLevelConfig(GameState.currentLevelIndex).badge;
+    if (badge) {
+        const config = getLevelConfig(GameState.currentLevelIndex);
+        badge.innerText = config ? config.badge : "🏆 大滿貫";
+    }
 
     // 🚀 UX 優化：在主遊戲盤面上，渲染一個精緻、 centered 的「極致共鳴已達成」看板！
     const stackContainer = document.getElementById('stack-container');
@@ -1120,7 +1135,7 @@ function showGrandSlamOverlay() {
     const actionBtn = document.getElementById('btn-overlay-action');
     const statsEl = document.getElementById('overlay-stats');
     
-    if (overlay) overlay.classList.remove('hidden');
+    if (overlay && shouldOpenOverlay) overlay.classList.remove('hidden');
     if (icon) icon.innerText = "🏆";
     if (title) {
         title.innerText = "今日極致共鳴通關！";
@@ -1171,7 +1186,8 @@ async function syncDailyTickets() {
     dailySession = {
         ticketsUsed: 0,
         dailyLevelIndex: 0,
-        midGameState: null
+        midGameState: null,
+        dayStartedAt: 0
     };
     
     if (isFirebaseActive && currentUser && !currentUser.isAnonymous) {
@@ -1197,6 +1213,12 @@ async function syncDailyTickets() {
     // 將關卡設為今日紀錄的關卡
     GameState.currentLevelIndex = dailySession.dailyLevelIndex;
     
+    // 🔒 核心安全防護：如果今日已達成大滿貫地獄挑戰，直接彈出鎖定畫面，不允許載入或重啟！
+    if (GameState.currentLevelIndex >= DAILY_LEVEL_LIMIT) {
+        showGrandSlamOverlay();
+        return;
+    }
+    
     // 🛡️ [狀態優先] 
     console.log("🔍 [Debug] syncDailyTickets state:", {
         midGameState: dailySession.midGameState,
@@ -1218,7 +1240,7 @@ async function syncDailyTickets() {
         console.log("✅ [新牌局] 有票且無存檔，開始新遊戲。");
         hideTicketOverlay();
         loadLevelWithoutRestart(GameState.currentLevelIndex, false);
-        startGame(true, dailySession.tiles);
+        startGame(false);
     }
 }
 
@@ -1541,12 +1563,23 @@ function setupEventListeners() {
 
     document.getElementById('btn-overlay-action').addEventListener('click', () => {
         document.getElementById('game-overlay').classList.add('hidden');
+        
+        // 🔒 如果今日已完成大滿貫，點擊按鈕會展示大滿貫看板並鎖定
+        if (dailySession.dailyLevelIndex >= DAILY_LEVEL_LIMIT) {
+            console.log("🏆 大滿貫挑戰已完成，展示大滿貫看板並鎖定（不彈出彈窗）。");
+            showGrandSlamOverlay(false);
+            return;
+        }
 
         if (GameState.status === "victory") {
-            GameState.currentLevelIndex++;
-            loadLevelWithoutRestart(GameState.currentLevelIndex);
-            // 🚀 極致優化：進入下一關時，直接傳送後端結算時伴隨下發的全新關卡佈局，0 網路開銷！
-            startGame(true, dailySession.tiles);
+            if (GameState.currentLevelIndex < DAILY_LEVEL_LIMIT - 1) {
+                GameState.currentLevelIndex++;
+                loadLevelWithoutRestart(GameState.currentLevelIndex);
+                // 🚀 極致優化：進入下一關時，直接傳送後端結算時伴隨下發的全新關卡佈局，0 網路開銷！
+                startGame(true, dailySession.tiles);
+            } else {
+                showGrandSlamOverlay();
+            }
         } else {
             // 檢查票券後再決定是否開始
             if (dailyTicketsLeft <= 0) {
@@ -2037,7 +2070,7 @@ async function endGame(result) {
 
     // 🚀 當 API 回應完畢，立即用真實數據更新視窗並解鎖互動按鈕！
     const curLevel = getLevelConfig(GameState.currentLevelIndex);
-    if (statsEl) {
+    if (statsEl && curLevel) {
         const total = playerStats.totalGames || 0;
         const wins = playerStats.wins || 0;
         const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
@@ -2057,8 +2090,16 @@ async function endGame(result) {
         if (subtitle) subtitle.innerText = "太厲害了！您成功將法陣中所有璀璨晶石完美共鳴！";
         if (actionBtn) {
             actionBtn.disabled = false;
-            actionBtn.innerText = "共鳴下一關 🔮";
-            actionBtn.className = "w-full py-3 bg-pink-400 hover:bg-pink-300 text-white font-black text-base border-b-4 border-pink-600 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md";
+            if (GameState.currentLevelIndex < DAILY_LEVEL_LIMIT - 1) {
+                actionBtn.innerText = "共鳴下一關 🔮";
+                actionBtn.className = "w-full py-3 bg-pink-400 hover:bg-pink-300 text-white font-black text-base border-b-4 border-pink-600 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md";
+            } else {
+                actionBtn.innerText = "今日極致共鳴達成！🏆 (點此返回)";
+                actionBtn.className = "w-full py-3 bg-amber-400 hover:bg-amber-300 text-white font-black text-base border-b-4 border-amber-600 active:border-b-0 active:mt-1 rounded-xl transition-all font-pixel shadow-md cursor-pointer";
+                if (subtitle) {
+                    subtitle.innerText = "🏆 太震撼了！您已順利通關今日所有晶石法陣，達成極致共鳴！明天的全新晶石法陣將在午夜開啟，明天見！🔮";
+                }
+            }
         }
     } else {
         Sound.playLose();
@@ -2080,10 +2121,14 @@ function performLocalEndGameCalculation(result) {
     if (result === "victory") {
         playerStats.wins++;
         if (GameState.currentLevelIndex >= playerStats.maxLevelReached) {
-            playerStats.maxLevelReached = GameState.currentLevelIndex + 1;
+            playerStats.maxLevelReached = Math.min(DAILY_LEVEL_LIMIT - 1, GameState.currentLevelIndex + 1);
         }
         
-        dailySession.dailyLevelIndex = GameState.currentLevelIndex + 1;
+        if (GameState.currentLevelIndex < DAILY_LEVEL_LIMIT - 1) {
+            dailySession.dailyLevelIndex = GameState.currentLevelIndex + 1;
+        } else {
+            dailySession.dailyLevelIndex = DAILY_LEVEL_LIMIT; // 贏了最後一關設為 DAILY_LEVEL_LIMIT 代表今天完成大滿貫！
+        }
     } else {
         playerStats.losses++;
         dailySession.dailyLevelIndex = GameState.currentLevelIndex;
@@ -2100,6 +2145,8 @@ function performLocalEndGameCalculation(result) {
 // 21. UI 更新
 function updateUI() {
     const curLevel = getLevelConfig(GameState.currentLevelIndex);
+    if (!curLevel) return;
+    
     const totalCount = curLevel.tileCount;
     const remainingField = GameState.tiles.length;
     const inSlots = GameState.slots.length;
@@ -2107,6 +2154,9 @@ function updateUI() {
     const totalRemaining = remainingField + inSlots + inOut;
     
     // 🔥 更新進度條與關卡指示器
+    const badge = document.getElementById('level-badge');
+    if (badge) badge.innerText = curLevel.badge;
+    
     const cleared = Math.max(0, totalCount - totalRemaining);
     const progressPercent = totalCount > 0 ? (cleared / totalCount) * 100 : 0;
     const bar = document.getElementById('bar-level-progress');
@@ -2362,6 +2412,41 @@ async function loadLeaderboardData() {
     renderLeaderboard();
 }
 
+function formatClearanceTime(seconds) {
+    if (!seconds || seconds <= 0) return "0分0秒";
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}分${s}秒`;
+}
+
+function startLiveTimer() {
+    setInterval(() => {
+        const timerEl = document.getElementById('lbl-live-timer');
+        if (!timerEl) return;
+        
+        if (dailySession && dailySession.dayStartedAt && dailySession.dayStartedAt > 0) {
+            if (dailySession.dailyLevelIndex >= DAILY_LEVEL_LIMIT) {
+                timerEl.innerText = "已通關";
+                return;
+            }
+            
+            if (dailyTicketsLeft <= 0 && !dailySession.midGameState) {
+                timerEl.innerText = "挑戰結束";
+                return;
+            }
+            
+            const elapsed = Math.floor((Date.now() - dailySession.dayStartedAt) / 1000);
+            if (elapsed >= 0) {
+                timerEl.innerText = formatClearanceTime(elapsed);
+            } else {
+                timerEl.innerText = "0分0秒";
+            }
+        } else {
+            timerEl.innerText = "--:--";
+        }
+    }, 1000);
+}
+
 function renderLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;
@@ -2427,12 +2512,13 @@ function renderLeaderboard() {
         const starPrefix = isShinyAvatar ? `<span class="text-amber-500 font-bold animate-pulse mr-0.5 select-none">✨</span>` : "";
         const shinyBadge = isShinyAvatar ? `<span class="text-[7.5px] bg-amber-400 text-white font-black px-1.5 py-0.5 rounded-full ml-1 scale-90 inline-block shadow-sm">閃耀</span>` : "";
 
+        const timeStr = player.totalClearanceTime ? ` | ⏱️ ${formatClearanceTime(player.totalClearanceTime)}` : "";
         row.innerHTML = `
             ${rankBadge}
             <img class="${avatarClass}" src="${avatarSrc}" alt="Avatar">
             <div class="flex-1 min-w-0">
                 <div class="${nameStyle}">${starPrefix}${player.playerName}${shinyBadge}</div>
-                <div class="text-xs text-pink-200/50 font-semibold mt-0.5">勝率: ${winRatePercent}% | 總局數: ${player.totalGames || 0}</div>
+                <div class="text-xs text-pink-200/50 font-semibold mt-0.5">勝率: ${winRatePercent}% | 總局數: ${player.totalGames || 0}${timeStr}</div>
             </div>
             <div class="text-right flex-shrink-0 font-pixel">
                 <span class="text-[#ff8fa3] font-black text-base">${player.wins || 0}</span>

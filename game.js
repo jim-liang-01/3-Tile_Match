@@ -1,6 +1,5 @@
 /**
- * 可愛動物森林：像素堆疊三消 (Cute Animal Forest)
- * Core Game Engine - Cute Animal Firebase & Seeded RNG Edition
+ * 
  */
 
 // ==========================================
@@ -168,23 +167,6 @@ function seededShuffle(arr, prng) {
     }
 }
 
-// ==========================================
-// 🎨 3. 可愛馬卡龍粉嫩配色調色盤 & 動物範本
-// ==========================================
-const PALETTE = {
-    'k': '#2b1f1d', // 深色輪廓
-    'w': '#ffffff', // 亮白
-    'p': '#ffb5a7', // 粉嫩桃紅
-    'o': '#fec89a', // 溫暖橘黃
-    'y': '#ffd166', // 鵝蛋黃
-    'Y': '#ffe5ec', // 粉白
-    'g': '#94a3b8', // 考拉大象灰
-    'G': '#70e000', // 活潑草綠
-    'b': '#e8e0d5', // 溫暖燕麥
-    'B': '#f1c0e8', // 浪漫紫
-    'c': '#a06a42', // 巧克力褐
-    'r': '#ff4d6d', // 愛心紅
-};
 // ==========================================
 // 🖼️ 3.5 載入 gem_assets 中的 12 張真實寶石圖片素材
 // ==========================================
@@ -739,14 +721,39 @@ async function handleUserAuthChange(user) {
         if (loginOverlay) loginOverlay.classList.add('hidden');
         
         const nameEl = document.getElementById('user-name');
-        if (nameEl) nameEl.innerText = user.isAnonymous ? "匿名冒險者" : (user.displayName || "冒險者");
+        if (nameEl) nameEl.innerText = user.displayName || "冒險者";
         
         const avatarEl = document.getElementById('user-avatar');
         if (avatarEl) avatarEl.src = user.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.uid}`;
         
+        const linkBtn = document.getElementById('btn-link-google');
+        const logoutBtn = document.getElementById('btn-logout');
+        if (linkBtn) {
+            if (user.isAnonymous) {
+                linkBtn.classList.remove('hidden');
+                linkBtn.classList.add('flex');
+            } else {
+                linkBtn.classList.remove('flex');
+                linkBtn.classList.add('hidden');
+            }
+        }
+        if (logoutBtn) {
+            if (user.isAnonymous) {
+                logoutBtn.classList.add('hidden');
+            } else {
+                logoutBtn.classList.remove('hidden');
+            }
+        }
+        
         await loadPlayerStats();
         await syncDailyTickets();
     } else {
+        const linkBtn = document.getElementById('btn-link-google');
+        if (linkBtn) {
+            linkBtn.classList.remove('flex');
+            linkBtn.classList.add('hidden');
+        }
+
         if (profileEl) {
             profileEl.classList.remove('flex');
             profileEl.classList.add('hidden');
@@ -776,8 +783,8 @@ async function handleUserAuthChange(user) {
 
 // 🌐 8.2 後端 API 授權傳輸元件
 async function fetchWithAuth(endpoint, options = {}) {
-    if (!currentUser || currentUser.isAnonymous) {
-        throw new Error("Only fully logged-in non-anonymous users can access the backend server.");
+    if (!currentUser) {
+        throw new Error("Only fully logged-in users can access the backend server.");
     }
     
     try {
@@ -827,8 +834,8 @@ async function loadPlayerStats() {
         console.warn("Failed to load local player stats: ", e);
     }
 
-    // 2. 若有 Firebase 且使用者為實名登入，則透過安全後端讀取並同步
-    if (isFirebaseActive && currentUser && !currentUser.isAnonymous) {
+    // 2. 若有 Firebase，則透過安全後端讀取並同步
+    if (isFirebaseActive && currentUser) {
         try {
             const res = await fetchWithAuth('/api/load-profile');
             if (res && res.success) {
@@ -1059,7 +1066,7 @@ async function saveCurrentGameSession(clearMidGame = false) {
     saveLocalDailySession(dateStr);
     
     // 2. 存入雲端 (使用防抖 Debounce 節流機制，避免頻繁點擊造成大量重複 API 請求)
-    if (isFirebaseActive && currentUser && !currentUser.isAnonymous) {
+    if (isFirebaseActive && currentUser) {
         if (saveSessionTimeout) {
             console.log("⏳ [雲端防抖] 偵測到連續點擊，已清除舊的同步排程。");
             clearTimeout(saveSessionTimeout);
@@ -1082,7 +1089,7 @@ async function saveCurrentGameSession(clearMidGame = false) {
 }
 
 async function sendSessionToCloud(dateStr, midGameState) {
-    if (isFirebaseActive && currentUser && !currentUser.isAnonymous) {
+    if (isFirebaseActive && currentUser) {
         try {
             await fetchWithAuth('/api/save-session', {
                 method: 'POST',
@@ -1190,7 +1197,7 @@ async function syncDailyTickets() {
         dayStartedAt: 0
     };
     
-    if (isFirebaseActive && currentUser && !currentUser.isAnonymous) {
+    if (isFirebaseActive && currentUser) {
         try {
             const res = await fetchWithAuth(`/api/sync-daily-session/${dateStr}`);
             if (res && res.success && res.dailySession) {
@@ -1255,7 +1262,7 @@ async function consumeTicket() {
     
     const dateStr = getTodayString();
     
-    if (isFirebaseActive && currentUser && !currentUser.isAnonymous) {
+    if (isFirebaseActive && currentUser) {
         try {
             // 🔒 實名帳號：向後端安全 API 請求扣票，後端會在資料庫事務中原子化累加並清除中途存檔！
             const res = await fetchWithAuth('/api/consume-ticket', {
@@ -1674,6 +1681,20 @@ function setupAuthEvents() {
         }
     });
 
+    document.getElementById('btn-login-guest')?.addEventListener('click', async () => {
+        Sound.playClick();
+        if (isFirebaseActive && auth) {
+            try {
+                await auth.signInAnonymously();
+            } catch (e) {
+                console.error("Guest login failed: ", e);
+                alert("訪客登入失敗，請重試！");
+            }
+        } else {
+            alert("⚠️ 雲端服務尚未啟用，無法使用訪客登入！");
+        }
+    });
+
     document.getElementById('btn-logout').addEventListener('click', async () => {
         Sound.playClick();
         if (isFirebaseActive && auth) {
@@ -1683,6 +1704,25 @@ function setupAuthEvents() {
             liff.logout();
             // Redirect to home to clear state after LIFF logout
             window.location.href = '/'; 
+        }
+    });
+
+    document.getElementById('btn-link-google')?.addEventListener('click', async () => {
+        Sound.playClick();
+        if (isFirebaseActive && auth && auth.currentUser) {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                await auth.currentUser.linkWithPopup(provider);
+                alert("🎉 帳號綁定升級成功！您的進度已安全永久保存至 Google 帳號！");
+                location.reload();
+            } catch (error) {
+                if (error.code === 'auth/credential-already-in-use') {
+                    alert("⚠️ 此 Google 帳號已被其他玩家綁定！無法進行重複綁定。");
+                } else {
+                    console.error("Link failed: ", error);
+                    alert("綁定失敗，請重試！");
+                }
+            }
         }
     });
 }
@@ -2037,7 +2077,7 @@ async function endGame(result) {
     
     const dateStr = getTodayString();
     
-    if (isFirebaseActive && currentUser && !currentUser.isAnonymous) {
+    if (isFirebaseActive && currentUser) {
         try {
             // 實名帳號：將結算、戰績統計與每日關卡前進，完全交給安全後端校驗與寫入
             const res = await fetchWithAuth('/api/end-game', {
@@ -2391,7 +2431,7 @@ async function loadLeaderboardData() {
     let fetchedWeekly = null;
     let fetchedMonthly = null;
 
-    if (isFirebaseActive && currentUser && !currentUser.isAnonymous) {
+    if (isFirebaseActive && currentUser) {
         try {
             const allRes = await fetchWithAuth(`/api/leaderboard/all?dateStr=${dateStr}&weekStr=${weekStr}&monthStr=${monthStr}`);
             if (allRes && allRes.success) {
@@ -2660,7 +2700,7 @@ function updateAvatarUI(gemId) {
             // 閃耀頭像樣式
             avatarEl.className = "w-11 h-11 rounded-full border-2 border-amber-400 bg-amber-50 flex-shrink-0 shiny-avatar-glow shadow-[0_0_10px_rgba(251,191,36,0.65)]";
             if (nameEl) {
-                const baseName = currentUser ? (currentUser.isAnonymous ? "匿名冒險者" : (currentUser.displayName || "冒險者")) : "冒險者";
+                const baseName = currentUser ? (currentUser.displayName || "冒險者") : "冒險者";
                 nameEl.innerHTML = `<span class="text-amber-500 font-bold select-none mr-0.5 animate-pulse">✨</span>${baseName} <span class="text-[8px] bg-amber-400 text-white font-black px-1.5 py-0.5 rounded-full ml-1 scale-90 inline-block shadow-sm">閃耀</span>`;
                 nameEl.className = "text-sm font-black text-amber-600 truncate max-w-[130px] flex items-center";
             }
@@ -2668,7 +2708,7 @@ function updateAvatarUI(gemId) {
             // 一般頭像樣式
             avatarEl.className = "w-11 h-11 rounded-full border-2 border-pink-300 bg-pink-100 flex-shrink-0";
             if (nameEl) {
-                const baseName = currentUser ? (currentUser.isAnonymous ? "匿名冒險者" : (currentUser.displayName || "冒險者")) : "冒險者";
+                const baseName = currentUser ? (currentUser.displayName || "冒險者") : "冒險者";
                 nameEl.innerHTML = baseName;
                 nameEl.className = "text-sm font-black text-pink-100 truncate max-w-[130px]";
             }

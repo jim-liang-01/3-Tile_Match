@@ -104,6 +104,10 @@
                 <span id="user-name" class="text-sm font-black text-pink-100 truncate max-w-[130px]">遊客</span>
                 <span id="user-stats" class="text-[11px] text-amber-300 font-bold mt-1 cursor-help" title="正在載入戰績...">🏆 0勝/0敗 (0%)</span>
             </div>
+            <button id="btn-link-google" class="hidden items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:via-yellow-300 hover:to-amber-400 text-indigo-950 font-black text-xs rounded-xl border-2 border-amber-300 border-b-4 border-amber-700 active:border-b-2 active:mt-0.5 hover:scale-[1.05] transition-all duration-300 shadow-[0_0_15px_rgba(251,191,36,0.45)] hover:shadow-[0_0_25px_rgba(251,191,36,0.7)] cursor-pointer focus:outline-none" title="將當前訪客進度永久綁定至 Google 帳號">
+                <span class="animate-pulse">✨</span>
+                <span class="tracking-wide">綁定 Google 帳號</span>
+            </button>
             <button id="btn-logout" class="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-red-950/40 to-[#991b1b]/30 hover:from-red-900/50 hover:to-[#991b1b]/40 text-red-300 hover:text-red-200 border border-red-800/50 hover:border-red-600 rounded-xl text-xs font-black tracking-wider transition-all shadow-sm hover:scale-[1.03] active:scale-95 cursor-pointer" title="登出">
                 <span class="text-xs">🚪</span>
                 <span>登出</span>
@@ -250,6 +254,12 @@
                         <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" class="w-3.5 h-3.5">
                     </span> 
                     <span>使用 LINE 快速登入</span>
+                </button>
+                <button id="btn-login-guest" class="w-full py-3.5 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 border-b-4 border-indigo-800 active:border-b-0 active:mt-1 hover:scale-[1.02] transition-all shadow-[0_4px_15px_rgba(99,102,241,0.3)] cursor-pointer focus:outline-none">
+                    <span class="w-6 h-6 bg-white rounded-lg flex items-center justify-center shadow-inner flex-shrink-0">
+                        <span class="text-xs">👤</span>
+                    </span> 
+                    <span>使用訪客身分快速登入</span>
                 </button>
             </div>
         </div>

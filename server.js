@@ -1522,13 +1522,13 @@ const DAILY_LEVEL_LIMIT = 7;
 function getLevelConfig(levelIndex) {
     if (levelIndex >= DAILY_LEVEL_LIMIT || levelIndex < 0) return null;
     
-    // const typesCounts = [6, 8, 10, 12, 12, 12, 12];
-    // const tileCounts = [36, 72, 108, 144, 180, 252, 324];
-    // const layersList = [4, 6, 8, 10, 12, 14, 16];
+    const typesCounts = [6, 8, 10, 12, 12, 12, 12];
+    const tileCounts = [36, 72, 108, 144, 180, 252, 324];
+    const layersList = [4, 6, 8, 10, 12, 14, 16];
 
-    const typesCounts = [6, 8, 10, 12, 12, 12, 6];
-    const tileCounts = [36, 72, 108, 144, 180, 252, 36];
-    const layersList = [4, 6, 8, 10, 12, 14, 4];
+    // const typesCounts = [6, 8, 10, 12, 12, 12, 6];
+    // const tileCounts = [36, 72, 108, 144, 180, 252, 36];
+    // const layersList = [4, 6, 8, 10, 12, 14, 4];
     
     const typesCount = typesCounts[levelIndex];
     const tileCount = tileCounts[levelIndex];

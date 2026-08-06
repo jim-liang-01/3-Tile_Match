@@ -134,14 +134,14 @@
                 
                 <!-- Middle: Live Today's Accumulated Time -->
                 <div id="live-timer-container" class="flex items-center gap-1 bg-slate-950/40 backdrop-blur-sm px-2.5 py-1 rounded-full border border-[#dfb364]/20 text-pink-200/80 font-pixel text-[10px] md:text-xs">
-                    <span>⏱️ <span class="hidden md:inline">今日累計:</span></span>
+                    <span>⏱️</span>
                     <span id="lbl-live-timer" class="font-black text-amber-300">00:00</span>
                 </div>
                 
                 <!-- Right: Ticket & Hearts Gauge in Top Status Bar -->
                 <div class="flex items-center gap-2.5 bg-gradient-to-r from-slate-900 to-slate-950 px-4 py-1.5 rounded-full border-2 border-[#dfb364] shadow-md">
-                    <span class="text-xs md:text-sm text-amber-300 font-black flex items-center gap-1" id="lbl-tickets-left">🎫 <span class="text-amber-400 font-black text-sm md:text-base">x3</span></span>
-                    <div class="w-px h-4 bg-[#dfb364]/40 mx-1"></div>
+                    <span class="text-xs md:text-sm text-amber-300 font-black flex items-center gap-1 hidden" id="lbl-tickets-left">🎫 <span class="text-amber-400 font-black text-sm md:text-base">x3</span></span>
+                    <div class="w-px h-4 bg-[#dfb364]/40 mx-1 hidden"></div>
                     <span id="ticket-visual-hearts" class="text-sm md:text-base select-none tracking-wider text-red-500 animate-pulse-slow drop-shadow-sm">❤️ ❤️ ❤️</span>
                 </div>
             </div>
@@ -156,7 +156,7 @@
             <!-- Matching Slots Bar (7 slots) (Redesigned as Luxurious Jewelry/Gemstone Box) -->
             <div class="gem-box-outer flex flex-col items-center">
                 <div class="text-[11px] text-amber-200 font-black uppercase tracking-wider mb-2 flex justify-between w-full max-w-[450px] px-1 drop-shadow">
-                    <span>👑 聖域晶石收納盒 (最多收藏 7 顆晶石)</span>
+                    <span>👑 聖域晶石收納盒</span>
                     <span id="slot-count-text" class="text-amber-400 font-bold">0 / 7</span>
                 </div>
                 <div class="relative w-full max-w-[450px] min-h-[78px] h-auto gem-box-inner flex items-center p-2">

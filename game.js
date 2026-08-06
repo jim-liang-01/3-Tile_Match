@@ -1012,15 +1012,13 @@ async function restoreMidGameState(state, preloadedTiles = null) {
         GameState.out3Storage = (state.out3Storage || []).map(mapSavedToFullTile);
     }
     
+    // 更新關卡指示器，避免還原高關卡時 UI 顯示為第一關
+    loadLevelWithoutRestart(GameState.currentLevelIndex, true); // 👈 確保傳入 true
+    
     // 重新繪製畫面與 UI
     evaluateTileOverlaps();
     renderField();
     updateUI();
-    
-    // 更新關卡指示器與徽章 UI，避免還原高關卡時 UI 顯示為第一關
-    loadLevelWithoutRestart(GameState.currentLevelIndex, true); // 👈 確保傳入 true
-    const badge = document.getElementById('level-badge');
-    if (badge) badge.innerText = curLevel.badge;
     
     // 如果有移出儲存區的卡牌，更新其顯示狀態
     const out3Container = document.getElementById('out3-storage');
@@ -2193,12 +2191,13 @@ function updateUI() {
     const inOut = GameState.out3Storage.length;
     const totalRemaining = remainingField + inSlots + inOut;
     
-    // 🔥 更新進度條與關卡指示器
-    const badge = document.getElementById('level-badge');
-    if (badge) badge.innerText = curLevel.badge;
-    
     const cleared = Math.max(0, totalCount - totalRemaining);
     const progressPercent = totalCount > 0 ? (cleared / totalCount) * 100 : 0;
+    
+    // 🔥 更新進度條與關卡指示器 (包含當前關卡與總關卡數)
+    const badge = document.getElementById('level-badge');
+    if (badge) badge.innerText = `第 ${GameState.currentLevelIndex + 1} / 7 關`;
+    
     const bar = document.getElementById('bar-level-progress');
     if (bar) bar.style.width = `${progressPercent}%`;
     

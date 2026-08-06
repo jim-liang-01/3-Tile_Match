@@ -2551,13 +2551,17 @@ function renderLeaderboard() {
         const starPrefix = isShinyAvatar ? `<span class="text-amber-500 font-bold animate-pulse mr-0.5 select-none">✨</span>` : "";
         const shinyBadge = isShinyAvatar ? `<span class="text-[7.5px] bg-amber-400 text-white font-black px-1.5 py-0.5 rounded-full ml-1 scale-90 inline-block shadow-sm">閃耀</span>` : "";
 
-        const timeStr = player.totalClearanceTime ? ` | ⏱️ ${formatClearanceTime(player.totalClearanceTime)}` : "";
+        const timeLine = player.totalClearanceTime ? `<div>⏱️ ${formatClearanceTime(player.totalClearanceTime)}</div>` : "";
         row.innerHTML = `
             ${rankBadge}
             <img class="${avatarClass}" src="${avatarSrc}" alt="Avatar">
             <div class="flex-1 min-w-0">
                 <div class="${nameStyle}">${starPrefix}${player.playerName}${shinyBadge}</div>
-                <div class="text-xs text-pink-200/50 font-semibold mt-0.5">勝率: ${winRatePercent}% | 總局數: ${player.totalGames || 0}${timeStr}</div>
+                <div class="text-[10px] md:text-xs text-pink-200/50 font-semibold mt-1 space-y-0.5">
+                    <div>📈 勝率: ${winRatePercent}%</div>
+                    <div>🎮 總局數: ${player.totalGames || 0}</div>
+                    ${timeLine}
+                </div>
             </div>
             <div class="text-right flex-shrink-0 font-pixel">
                 <span class="text-[#ff8fa3] font-black text-base">${player.wins || 0}</span>

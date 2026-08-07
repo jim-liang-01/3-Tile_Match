@@ -2551,21 +2551,30 @@ function renderLeaderboard() {
         const starPrefix = isShinyAvatar ? `<span class="text-amber-500 font-bold animate-pulse mr-0.5 select-none">✨</span>` : "";
         const shinyBadge = isShinyAvatar ? `<span class="text-[7.5px] bg-amber-400 text-white font-black px-1.5 py-0.5 rounded-full ml-1 scale-90 inline-block shadow-sm">閃耀</span>` : "";
 
-        const timeLine = player.totalClearanceTime ? `<div>⏱️ ${formatClearanceTime(player.totalClearanceTime)}</div>` : "";
+        const winsCount = player.wins || 0;
+        const winsStr = winsCount.toString();
+        let winsFontSizeClass = "text-sm md:text-base";
+        if (winsStr.length >= 3) {
+            winsFontSizeClass = "text-[10px] md:text-xs";
+        } else if (winsStr.length === 2) {
+            winsFontSizeClass = "text-xs md:text-sm";
+        }
+
+        const timeLine = player.totalClearanceTime ? `<div class="whitespace-nowrap">⏱️ 通關時間: <strong class="text-sky-300 font-black">${formatClearanceTime(player.totalClearanceTime)}</strong></div>` : "";
         row.innerHTML = `
             ${rankBadge}
             <img class="${avatarClass}" src="${avatarSrc}" alt="Avatar">
             <div class="flex-1 min-w-0">
                 <div class="${nameStyle}">${starPrefix}${player.playerName}${shinyBadge}</div>
-                <div class="text-[10px] md:text-xs text-pink-200/50 font-semibold mt-1 space-y-0.5">
-                    <div>📈 勝率: ${winRatePercent}%</div>
-                    <div>🎮 總局數: ${player.totalGames || 0}</div>
+                <div class="text-[10px] md:text-xs text-pink-100/70 font-semibold mt-1.5 space-y-1">
+                    <div class="whitespace-nowrap">📈 勝率: <strong class="text-amber-300 font-black">${winRatePercent}%</strong></div>
+                    <div class="whitespace-nowrap">🎮 總局數: <strong class="text-pink-300 font-black">${player.totalGames || 0}</strong></div>
                     ${timeLine}
                 </div>
             </div>
-            <div class="text-right flex-shrink-0 font-pixel">
-                <span class="text-[#ff8fa3] font-black text-base">${player.wins || 0}</span>
-                <span class="text-[11px] text-pink-200/40 font-bold ml-0.5">勝</span>
+            <div class="text-right flex-shrink-0 font-pixel whitespace-nowrap ml-2">
+                <span class="text-[#ff8fa3] font-black ${winsFontSizeClass}">${winsCount}</span>
+                <span class="text-[10px] md:text-[11px] text-pink-300/80 font-black ml-1">勝</span>
             </div>
         `;
 

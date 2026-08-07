@@ -533,12 +533,12 @@ input[type="range"]::-webkit-slider-thumb:active {
 }
 
 /* ==========================================
-   ✨ Sidebar Tab Buttons (Codex/Leaderboard)（升級為暗夜星能面板按鈕）
+   ✨ Sidebar Tab Buttons (Codex/Leaderboard) (魔法動態面板升級)
    ========================================== */
 .sidebar-tab {
     flex: 1;
-    padding: 10px 5px;
-    font-size: 14px;
+    padding: 11px 5px;
+    font-size: 13px;
     font-weight: 900; /* font-black */
     color: #dfccd7;
     background: linear-gradient(135deg, #240d2b, #11051a);
@@ -546,112 +546,196 @@ input[type="range"]::-webkit-slider-thumb:active {
     border-bottom-width: 5px;
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.15s ease-out;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
     outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    /* 🌟 新手與畫面的引流吸引力：微幅呼吸動畫 */
+    animation: sidebar-tab-breathe 3s infinite ease-in-out;
+}
+
+@keyframes sidebar-tab-breathe {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2.5px);
+    }
 }
 
 .sidebar-tab:hover:not(.active) {
-    background: linear-gradient(135deg, #32123c, #1a0828);
+    background: linear-gradient(135deg, #3c1647, #1d072b);
     color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 7px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+    transform: scale(1.03) translateY(-3px);
+    animation-play-state: paused;
 }
 
-.sidebar-tab.active {
-    background: linear-gradient(135deg, #180d2b, #0c071a);
-    color: #ff8fa3;
-    border-color: #ffb3c1;
-    border-bottom-width: 2px;
-    margin-top: 3px; /* Compensate for border-bottom-width change */
-    box-shadow: inset 0 3px 5px rgba(0,0,0,0.5);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-    cursor: default;
+/* 寶石圖鑑 (Codex) 啟用狀態：極奢粉紫魔法光暈 */
+.sidebar-tab--codex.active {
+    background: linear-gradient(135deg, #3c142c, #1a0614) !important;
+    color: #ffa4b6 !important;
+    border-color: #ff8fa3 !important;
+    border-bottom-width: 2px !important;
+    margin-top: 3px !important; /* 補償底部高度變化 */
+    cursor: default !important;
+    animation: codex-active-glow 2.5s infinite ease-in-out !important;
+    text-shadow: 0 0 6px rgba(255, 143, 163, 0.6) !important;
+}
+
+@keyframes codex-active-glow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 143, 163, 0.45), inset 0 1px 0 rgba(255,255,255,0.1);
+        transform: scale(1) translateY(0);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 143, 163, 0.9), inset 0 1px 0 rgba(255,255,255,0.15);
+        transform: scale(1.02) translateY(-1px);
+    }
+}
+
+/* 聖域英雄榜 (Leaderboard) 啟用狀態：琥珀金榮耀烈陽光暈 */
+.sidebar-tab--leaderboard.active {
+    background: linear-gradient(135deg, #3c2d10, #1a1204) !important;
+    color: #ffd875 !important;
+    border-color: #dfb364 !important;
+    border-bottom-width: 2px !important;
+    margin-top: 3px !important;
+    cursor: default !important;
+    animation: leaderboard-active-glow 2.5s infinite ease-in-out !important;
+    text-shadow: 0 0 6px rgba(251, 191, 36, 0.6) !important;
+}
+
+@keyframes leaderboard-active-glow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.45), inset 0 1px 0 rgba(255,255,255,0.1);
+        transform: scale(1) translateY(0);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.9), inset 0 1px 0 rgba(255,255,255,0.15);
+        transform: scale(1.02) translateY(-1px);
+    }
 }
 
 .sidebar-tab:active:not(.active) {
     transform: translateY(1px);
     border-bottom-width: 2px;
     margin-top: 3px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    animation-play-state: paused;
 }
 
 /* ==========================================
    ✨ Skill Buttons (道具按鈕) Redesign
    ========================================== */
+/* ==========================================
+   ✨ Skill Buttons (道具按鈕) Redesign: Circular 3D Magic Crystals
+   ========================================== */
 .skill-button {
-    flex: 1;
+    width: 52px;
+    height: 52px;
     position: relative;
-    padding: 8px 4px;
-    border-radius: 14px;
-    background: #f0f0f0; /* Fallback */
+    border-radius: 50%;
     border: none;
     border-bottom-width: 5px;
     border-bottom-style: solid;
     cursor: pointer;
-    transition: all 0.1s ease-out;
+    transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     font-weight: 900; /* font-black */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.7);
+}
+
+@media (min-width: 768px) {
+    .skill-button {
+        width: 60px;
+        height: 60px;
+    }
 }
 
 .skill-button__icon {
-    font-size: 22px;
+    font-size: 24px;
     line-height: 1;
-    margin-bottom: 2px;
 }
 
-.skill-button__text {
-    font-size: 11px;
-    letter-spacing: 0.5px;
+@media (min-width: 768px) {
+    .skill-button__icon {
+        font-size: 26px;
+    }
 }
 
 .skill-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.8);
-    filter: brightness(1.05);
+    transform: translateY(-3px);
 }
 
 .skill-button:active:not(:disabled) {
     transform: translateY(1px);
     border-bottom-width: 2px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
-    filter: brightness(0.95);
 }
 
 .skill-button:disabled {
     opacity: 0.45;
-    filter: grayscale(60%);
+    filter: grayscale(85%) brightness(0.85);
     cursor: not-allowed;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.5);
+    border-bottom-width: 2px;
+    transform: translateY(2px) !important;
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.2) !important;
 }
 
-/* Undo Button - Pink */
+/* Undo Button - Pink Crystal */
 .skill-button--undo {
-    background: linear-gradient(145deg, #ffe5ec, #ffcdd8);
-    border-color: #ff8fa3;
-    color: #c53051;
-    text-shadow: 0 1px 1px #fff5f7;
+    background: radial-gradient(circle at 35% 35%, #fff2f5 0%, #ffd0d8 45%, #ff8fa3 100%);
+    border-color: #f43f5e;
+    border-bottom-color: #be123c;
+    color: #9f1239;
+    box-shadow: 0 4px 10px rgba(244, 63, 94, 0.3), inset 0 3px 5px rgba(255,255,255,0.6), inset 0 -3px 5px rgba(0,0,0,0.15);
 }
 
-/* Out3 Button - Green */
+.skill-button--undo:hover:not(:disabled) {
+    box-shadow: 0 8px 16px rgba(244, 63, 94, 0.55), inset 0 3px 5px rgba(255,255,255,0.8), inset 0 -3px 5px rgba(0,0,0,0.15);
+}
+
+.skill-button--undo:active:not(:disabled) {
+    box-shadow: inset 0 3px 6px rgba(159, 18, 57, 0.4);
+}
+
+/* Out3 Button - Green Crystal */
 .skill-button--out3 {
-    background: linear-gradient(145deg, #e8f5e9, #c8e6c9);
-    border-color: #81c784;
-    color: #2e7d32;
-    text-shadow: 0 1px 1px #f8fcf8;
+    background: radial-gradient(circle at 35% 35%, #f4fbf7 0%, #d1fae5 45%, #a7f3d0 100%);
+    border-color: #10b981;
+    border-bottom-color: #047857;
+    color: #065f46;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3), inset 0 3px 5px rgba(255,255,255,0.6), inset 0 -3px 5px rgba(0,0,0,0.15);
 }
 
-/* Shuffle Button - Blue */
+.skill-button--out3:hover:not(:disabled) {
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.55), inset 0 3px 5px rgba(255,255,255,0.8), inset 0 -3px 5px rgba(0,0,0,0.15);
+}
+
+.skill-button--out3:active:not(:disabled) {
+    box-shadow: inset 0 3px 6px rgba(6, 95, 70, 0.4);
+}
+
+/* Shuffle Button - Blue Crystal */
 .skill-button--shuffle {
-    background: linear-gradient(145deg, #e3f2fd, #bbdefb);
-    border-color: #64b5f6;
-    color: #1565c0;
-    text-shadow: 0 1px 1px #f7fbff;
+    background: radial-gradient(circle at 35% 35%, #f5f9ff 0%, #e0f2fe 45%, #bae6fd 100%);
+    border-color: #3b82f6;
+    border-bottom-color: #1d4ed8;
+    color: #1e40af;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3), inset 0 3px 5px rgba(255,255,255,0.6), inset 0 -3px 5px rgba(0,0,0,0.15);
+}
+
+.skill-button--shuffle:hover:not(:disabled) {
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.55), inset 0 3px 5px rgba(255,255,255,0.8), inset 0 -3px 5px rgba(0,0,0,0.15);
+}
+
+.skill-button--shuffle:active:not(:disabled) {
+    box-shadow: inset 0 3px 6px rgba(30, 64, 175, 0.4);
 }
 
 /* ==========================================

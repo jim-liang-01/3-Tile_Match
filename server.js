@@ -597,11 +597,11 @@ app.get('/api/sync-daily-session/:dateStr', verifyFirebaseToken, async (req, res
             }
 
             // 安全防禦：如果 ticketsUsed === 0 且 midGameState 為空（首次遊玩），自動補上初始存盤並寫回
-            if (dailySession.ticketsUsed === 0 && !dailySession.midGameState && dailySession.dailyLevelIndex < DAILY_LEVEL_LIMIT) {
-                const initialMidGameState = getInitialMidGameState(dateStr, dailySession.dailyLevelIndex);
-                dailySession.midGameState = initialMidGameState;
-                await dailyDocRef.set({ midGameState: initialMidGameState }, { merge: true });
-            }
+            // if (dailySession.ticketsUsed === 0 && !dailySession.midGameState && dailySession.dailyLevelIndex < DAILY_LEVEL_LIMIT) {
+            //     const initialMidGameState = getInitialMidGameState(dateStr, dailySession.dailyLevelIndex);
+            //     dailySession.midGameState = initialMidGameState;
+            //     await dailyDocRef.set({ midGameState: initialMidGameState }, { merge: true });
+            // }
         } else {
             // 今日新首次進入，初始化
             const now = Date.now();
